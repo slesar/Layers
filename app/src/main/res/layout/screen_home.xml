@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/horizontal_margin"
+    android:paddingTop="@dimen/vertical_margin"
+    android:paddingRight="@dimen/horizontal_margin"
+    android:paddingBottom="@dimen/vertical_margin"
+    android:clickable="true">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:textSize="@dimen/text_medium"
+        android:text="Introduction"/>
+
+    <Button
+        android:id="@+id/home_stack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stack demo"/>
+
+    <Button
+        android:id="@+id/home_children"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Children layers demo"/>
+
+    <Button
+        android:id="@+id/home_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dialog layer demo"/>
+
+    <Button
+        android:id="@+id/home_activity_listener"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Activity lifecycle demo"/>
+
+</LinearLayout>
