@@ -8,9 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.View;
 
-/**
- * Created by slesar on 5/18/16.
- */
 public abstract class LayersFragment extends Fragment {
 
     private Layers layers;

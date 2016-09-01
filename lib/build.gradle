@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'de.mobilej.unmock'
 
 android {
     compileSdkVersion 24
@@ -15,6 +16,13 @@ android {
 
         }
     }
+}
+
+unMock {
+    keep "android.os.Bundle"
+    keep "android.os.Parcelable"
+    keep "android.util.SparseArray"
+    keep "com.android.internal.util.ArrayUtils"
 }
 
 dependencies {

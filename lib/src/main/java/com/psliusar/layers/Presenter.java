@@ -3,9 +3,6 @@ package com.psliusar.layers;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-/**
- * Created by slesar on 8/4/16.
- */
 public abstract class Presenter<M extends Model, L extends Layer> {
 
     private LayersHost host;

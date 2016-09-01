@@ -1,5 +1,7 @@
 package com.psliusar.layers;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.IdRes;
@@ -19,9 +21,9 @@ public class Layers {
     private final LayersHost host;
     private final int containerId;
     private ViewGroup container;
-    private SparseArray<Layers> layerList;
+    private SparseArray<Layers> layerGroup;
     private ArrayList<StackEntry> layerStack;
-    private boolean viewPaused = false; // TODO add checks and tests
+    private boolean viewPaused = false;
 
     public Layers(@NonNull LayersHost host, @Nullable Bundle savedState) {
         this(host, View.NO_ID, savedState);
@@ -55,7 +57,7 @@ public class Layers {
             layerStack = new ArrayList<>();
         }
 
-        ensureViews();
+        //ensureViews();
     }
 
     public Layers at(@IdRes int containerId) {
@@ -66,10 +68,10 @@ public class Layers {
     }
 
     private Layers at(int containerId, @Nullable Bundle state) {
-        Layers layers = getLayersList().get(containerId);
+        Layers layers = getLayerGroup().get(containerId);
         if (layers == null) {
             layers = new Layers(host, containerId, state);
-            getLayersList().put(containerId, layers);
+            getLayerGroup().put(containerId, layers);
         }
         return layers;
     }
@@ -89,34 +91,44 @@ public class Layers {
             return;
         }
         viewPaused = false;
+
         ensureViews();
+
+        if (layerGroup != null) {
+            final int count = layerGroup.size();
+            for (int i = 0; i < count; i++) {
+                int key = layerGroup.keyAt(i);
+                layerGroup.get(key).resumeView();
+            }
+        }
     }
 
-    public void saveState(@Nullable Bundle outState) {
-        int size = layerStack.size();
-        if (size == 0 || outState == null) {
+    void saveState(@Nullable Bundle outState) {
+        if (outState == null) {
             return;
         }
-        for (int i = size - 1; i >= 0; i--) {
-            StackEntry entry = layerStack.get(i);
-            moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, true);
-        }
-        outState.putParcelableArrayList(STATE_STACK, layerStack);
 
-        final int layersCount = layerList == null ? -1 : layerList.size();
-        final SparseArray<Bundle> layersArray;
-        if (layersCount > 0) {
-            layersArray = new SparseArray<>();
+        int size = layerStack.size();
+        if (size != 0) {
+            for (int i = size - 1; i >= 0; i--) {
+                StackEntry entry = layerStack.get(i);
+                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, true);
+            }
+            outState.putParcelableArrayList(STATE_STACK, layerStack);
+        }
+
+        // Save state of layers which are at other containers
+        final int layersCount = layerGroup == null ? -1 : layerGroup.size();
+        if (layersCount >= 0) {
+            final SparseArray<Bundle> layersArray = new SparseArray<>();
             for (int i = 0; i < layersCount; i++) {
-                int key = layerList.keyAt(i);
+                int key = layerGroup.keyAt(i);
                 Bundle state = new Bundle();
-                layerList.get(key).saveState(state);
+                layerGroup.get(key).saveState(state);
                 layersArray.put(key, state);
             }
-        } else {
-            layersArray = null;
+            outState.putSparseParcelableArray(STATE_LAYERS, layersArray);
         }
-        outState.putSparseParcelableArray(STATE_LAYERS, layersArray);
     }
 
     private StackEntry createEntry(Class<? extends Layer<?>> layerClass, Bundle arguments, String name, int type) {
@@ -129,11 +141,11 @@ public class Layers {
             //noinspection unchecked
             layer = (L) entry.getLayerClass().newInstance();
         } catch (InstantiationException e) {
-            // TODO
-            throw new RuntimeException("", e);
+            throw new RuntimeException("Unable to instantiate layer " + entry.getLayerClass()
+                    + ": make sure class exists, is public, and has an empty constructor", e);
         } catch (IllegalAccessException e) {
-            // TODO
-            throw new RuntimeException("", e);
+            throw new RuntimeException("Unable to instantiate layer " + entry.getLayerClass()
+                    + ": make sure class has an empty constructor that is public", e);
         }
 
         layer.create(host, entry.arguments, entry.name);
@@ -269,8 +281,8 @@ public class Layers {
     }
 
     private void ensureViews() {
-        int size = layerStack.size();
-        if (viewPaused || size == 0) {
+        final int count;
+        if (viewPaused || (count = layerStack.size()) == 0) {
             return;
         }
 
@@ -278,7 +290,7 @@ public class Layers {
         boolean found = false;
 
         // from end to beginning, search for opaque layer
-        for (int i = size - 1; i >= 0; i--) {
+        for (int i = count - 1; i >= 0; i--) {
             final StackEntry entry = layerStack.get(i);
 
             if (found) {
@@ -309,22 +321,13 @@ public class Layers {
         }
     }
 
-    public static class RevLink<T> {
-
-        private RevLink<T> prev;
-        private final T current;
-
-        public RevLink(T current) {
-            this.current = current;
-        }
-    }
-
     public boolean isViewPaused() {
         return viewPaused;
     }
 
     /**
      * Add layer and add View
+     *
      * @param layerClass
      * @param name
      * @param <L>
@@ -342,6 +345,7 @@ public class Layers {
 
     /**
      * Remove layer and View
+     *
      * @param layer
      * @return
      */
@@ -372,6 +376,7 @@ public class Layers {
 
     /**
      * Replace layer
+     *
      * @return
      */
     @NonNull
@@ -516,19 +521,43 @@ public class Layers {
     }
 
     @NonNull
-    private SparseArray<Layers> getLayersList() {
-        if (layerList == null) {
-            layerList = new SparseArray<>();
+    private SparseArray<Layers> getLayerGroup() {
+        if (layerGroup == null) {
+            layerGroup = new SparseArray<>();
         }
-        return layerList;
+        return layerGroup;
     }
 
     private ViewGroup getContainer() {
         if (container == null) {
-            container = containerId == View.NO_ID ? host.getDefaultContainer() : (ViewGroup) host.getView(containerId);
-            // TODO for API < 11
-            container.setSaveFromParentEnabled(false);
+            final ViewGroup viewGroup = containerId == View.NO_ID
+                    ? host.getDefaultContainer() : (ViewGroup) host.getView(containerId);
+            if (Build.VERSION.SDK_INT == 0 || Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                container = getContainerHc(viewGroup);
+            } else {
+                container = getContainerPreHc(viewGroup);
+            }
         }
         return container;
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    private ViewGroup getContainerHc(ViewGroup viewGroup) {
+        viewGroup.setSaveFromParentEnabled(false);
+        return viewGroup;
+    }
+
+    private ViewGroup getContainerPreHc(ViewGroup viewGroup) {
+        return WrapperLayout.addTo(viewGroup);
+    }
+
+    private static class RevLink<T> {
+
+        private RevLink<T> prev;
+        private final T current;
+
+        public RevLink(T current) {
+            this.current = current;
+        }
     }
 }

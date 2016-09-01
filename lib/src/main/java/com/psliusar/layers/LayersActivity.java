@@ -12,11 +12,19 @@ import android.view.ViewGroup;
 public abstract class LayersActivity extends AppCompatActivity implements LayersHost {
 
     private Layers layers;
+    private boolean layersStateRestored = false;
 
     @Override
     protected void onCreate(@Nullable Bundle state) {
         super.onCreate(state);
+        layersStateRestored = state != null;
         layers = new Layers(this, state);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        ensureLayerViews();
     }
 
     @Override
@@ -30,6 +38,7 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
     @NonNull
     @Override
     public Layers getLayers() {
+        ensureLayerViews();
         return layers;
     }
 
@@ -72,5 +81,12 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
             }
         }
         super.onBackPressed();
+    }
+
+    private void ensureLayerViews() {
+        if (layersStateRestored) {
+            layers.resumeView();
+            layersStateRestored = false;
+        }
     }
 }

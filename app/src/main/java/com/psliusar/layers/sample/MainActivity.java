@@ -18,7 +18,6 @@ public class MainActivity extends LayersActivity {
         if (state == null) {
             getLayers().add(HomeLayer.class, null, null, true);
         }
-        getLayers().resumeView();
     }
 
     @NonNull

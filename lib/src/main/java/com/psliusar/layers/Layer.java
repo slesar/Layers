@@ -21,9 +21,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     View view;
     String name;
     Bundle arguments;
-    // TODO ?
     boolean attached;
     private LayoutInflater layoutInflater;
+    boolean fromSavedState;
 
     public Layer() {
         // Default constructor
@@ -55,6 +55,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     protected void onCreate(@Nullable Bundle savedState) {
+        fromSavedState = savedState != null;
         layers = new Layers(this, savedState);
     }
 
@@ -92,9 +93,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     protected void onDestroy(@Nullable Bundle outState) {
-        if (layers != null) {
-            layers.saveState(outState);
-        }
+        layers.saveState(outState);
     }
 
     void destroy() {
@@ -107,6 +106,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     public boolean isAttached() {
         return attached;
+    }
+
+    public boolean isFromSavedState() {
+        return fromSavedState;
     }
 
     @Nullable
@@ -136,6 +139,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     protected <V extends View> V inflate(@LayoutRes int layoutRes, @NonNull ViewGroup parent) {
+        //noinspection unchecked
         return (V) getLayoutInflater().inflate(layoutRes, parent, false);
     }
 
@@ -148,8 +152,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     public <T extends View> T getView(@IdRes int id) {
         final T view = findView(id);
         if (view == null) {
-            // TODO
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("Failed to find View with ID: " + id);
         }
         return view;
     }

@@ -49,31 +49,11 @@ public class LayersTest {
         layers = new Layers(host, 0, null);
     }
 
-    /*@Test
-    public void testAt() throws Exception {
-        //noinspection ResourceType
-        Layers layers1 = layers.at(1);
-        //noinspection ResourceType
-        Layers layers2 = layers.at(2);
-
-        assertNotNull(layers1);
-        assertNotNull(layers2);
-        assertFalse(layers1 == layers2);
-    }*/
-
-    public void testStart() throws Exception {
-        // TODO
-    }
-
     public void testPauseView() throws Exception {
         // TODO
     }
 
     public void testResumeView() throws Exception {
-        // TODO
-    }
-
-    public void testStop() throws Exception {
         // TODO
     }
 

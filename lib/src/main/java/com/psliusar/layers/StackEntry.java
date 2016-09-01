@@ -49,8 +49,7 @@ class StackEntry implements Parcelable {
             }
             return layerClass;
         } catch (ClassNotFoundException e) {
-            // TODO
-            throw new RuntimeException("!!");
+            throw new RuntimeException("Failed to load class " + className);
         }
     }
 
