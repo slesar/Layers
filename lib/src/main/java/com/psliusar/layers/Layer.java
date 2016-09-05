@@ -13,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.LinkedList;
+
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
     LayersHost host;
@@ -24,6 +26,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     boolean attached;
     private LayoutInflater layoutInflater;
     boolean fromSavedState;
+    LinkedList<ActivityCallbacks.EventSubscription> subscriptions;
 
     public Layer() {
         // Default constructor
@@ -89,7 +92,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     protected void onDestroyView() {
-
+        unsubscribeAll();
     }
 
     protected void onDestroy(@Nullable Bundle outState) {
@@ -208,6 +211,24 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     protected void onClick(@NonNull View.OnClickListener listener, @IdRes int... ids) {
         for (int id : ids) {
             getView(id).setOnClickListener(listener);
+        }
+    }
+
+    public void manage(ActivityCallbacks.EventSubscription subscription) {
+        if (subscriptions == null) {
+            subscriptions = new LinkedList<>();
+        }
+        subscriptions.add(subscription);
+    }
+
+    private void unsubscribeAll() {
+        if (subscriptions == null) {
+            return;
+        }
+        for (ActivityCallbacks.EventSubscription subscription : subscriptions) {
+            if (subscription.isSubscribed()) {
+                subscription.unsubscribe();
+            }
         }
     }
 }

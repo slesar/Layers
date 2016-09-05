@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import com.psliusar.layers.LayersActivity;
 import com.psliusar.layers.sample.screen.child.ChildrenContainerLayer;
 import com.psliusar.layers.sample.screen.home.HomeLayer;
+import com.psliusar.layers.sample.screen.listener.ListenerLayer;
 import com.psliusar.layers.sample.screen.stack.StackLayer;
 
 public class MainActivity extends LayersActivity {
@@ -40,6 +41,6 @@ public class MainActivity extends LayersActivity {
     }
 
     public void showActivityListener() {
-
+        getLayers().add(ListenerLayer.class, null, "Listener", true);
     }
 }

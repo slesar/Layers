@@ -1,6 +1,8 @@
 package com.psliusar.layers;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
@@ -11,20 +13,54 @@ import android.view.ViewGroup;
 
 public abstract class LayersActivity extends AppCompatActivity implements LayersHost {
 
+    private ActivityCallbacks activityCallbacks;
     private Layers layers;
     private boolean layersStateRestored = false;
 
     @Override
     protected void onCreate(@Nullable Bundle state) {
         super.onCreate(state);
+        activityCallbacks = new ActivityCallbacks();
         layersStateRestored = state != null;
         layers = new Layers(this, state);
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_CREATE, state);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_RESTORE_STATE, state);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_RESTART);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         ensureLayerViews();
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_START);
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle state) {
+        super.onPostCreate(state);
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_POST_CREATE, state);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_RESUME);
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_POST_RESUME);
     }
 
     @Override
@@ -33,6 +69,73 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
         if (layers != null) {
             layers.saveState(isFinishing() ? null : outState);
         }
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_SAVE_STATE, outState);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_PAUSE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_STOP);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_DESTROY);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_NEW_INTENT, intent);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_CONFIGURATION_CHANGED, newConfig);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_ACTIVITY_RESULT, requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_REQUEST_PERMISSIONS_RESULT, requestCode, permissions, grantResults);
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_TRIM_MEMORY, level);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_LOW_MEMORY);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (layers != null && layers.getStackSize() > 1) {
+            final Layer<?> topLayer = layers.peek();
+            if (topLayer != null && !topLayer.onBackPressed()) {
+                layers.pop();
+                return;
+            }
+        }
+        super.onBackPressed();
     }
 
     @NonNull
@@ -71,16 +174,8 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
         return null;
     }
 
-    @Override
-    public void onBackPressed() {
-        if (layers != null && layers.getStackSize() > 1) {
-            final Layer<?> topLayer = layers.peek();
-            if (topLayer != null && !topLayer.onBackPressed()) {
-                layers.pop();
-                return;
-            }
-        }
-        super.onBackPressed();
+    public ActivityCallbacks getActivityCallbacks() {
+        return activityCallbacks;
     }
 
     private void ensureLayerViews() {

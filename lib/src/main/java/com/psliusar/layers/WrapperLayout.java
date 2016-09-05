@@ -1,6 +1,8 @@
 package com.psliusar.layers;
 
 import android.content.Context;
+import android.os.Parcelable;
+import android.util.SparseArray;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -17,6 +19,15 @@ public class WrapperLayout extends FrameLayout {
 
     public WrapperLayout(Context context) {
         super(context);
-        setId(NO_ID);
+    }
+
+    @Override
+    protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
+        dispatchFreezeSelfOnly(container);
+    }
+
+    @Override
+    protected void dispatchRestoreInstanceState(SparseArray<Parcelable> container) {
+        dispatchThawSelfOnly(container);
     }
 }
