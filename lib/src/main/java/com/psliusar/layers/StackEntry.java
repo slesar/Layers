@@ -58,7 +58,12 @@ class StackEntry implements Parcelable {
         if (savedState == null) {
             return null;
         }
-        return savedState.getBundle(STATE_LAYER);
+        final Bundle bundle = savedState.getBundle(STATE_LAYER);
+        savedState.remove(STATE_LAYER);
+        if (savedState.size() == 0) {
+            savedState = null;
+        }
+        return bundle;
     }
 
     void setLayerSavedState(Bundle state) {
@@ -72,7 +77,12 @@ class StackEntry implements Parcelable {
         if (savedState == null) {
             return null;
         }
-        return savedState.getSparseParcelableArray(STATE_VIEW);
+        final SparseArray<Parcelable> array = savedState.getSparseParcelableArray(STATE_VIEW);
+        savedState.remove(STATE_VIEW);
+        if (savedState.size() == 0) {
+            savedState = null;
+        }
+        return array;
     }
 
     void setViewSavedState(SparseArray<Parcelable> viewState) {

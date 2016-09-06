@@ -111,6 +111,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         return attached;
     }
 
+    public boolean isViewInLayout() {
+        return true;
+    }
+
     public boolean isFromSavedState() {
         return fromSavedState;
     }
@@ -125,10 +129,12 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         return name;
     }
 
+    @NonNull
     public Context getContext() {
         return host.getActivity().getApplicationContext();
     }
 
+    @NonNull
     public LayersHost getHost() {
         return host;
     }
@@ -141,6 +147,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         return layoutInflater;
     }
 
+    @NonNull
     protected <V extends View> V inflate(@LayoutRes int layoutRes, @NonNull ViewGroup parent) {
         //noinspection unchecked
         return (V) getLayoutInflater().inflate(layoutRes, parent, false);
@@ -185,8 +192,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         return host.getActivity();
     }
 
+    @Nullable
     public Layer<?> getParentLayer() {
-        return host.getParentLayer();
+        return (host instanceof Layer) ? (Layer) host : null;
     }
 
     @Nullable

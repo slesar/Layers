@@ -164,18 +164,18 @@ public class Layers {
         Layer<?> layer = entry.layerInstance;
         final View layerView = layer.onCreateView(getContainer());
         layer.view = layerView;
-        if (layerView != null) {
+        if (layerView != null && layer.isViewInLayout()) {
             getContainer().addView(layerView);
+        }
 
-            entry.attached = true;
-            layer.attached = true;
+        entry.attached = true;
+        layer.attached = true;
 
-            layer.onAttach();
+        layer.onAttach();
 
+        if (layerView != null) {
             layer.getLayers().resumeView();
-
             layer.onBindView(layerView);
-
             restoreViewState(entry);
         }
     }
@@ -198,7 +198,7 @@ public class Layers {
     private void destroyView(StackEntry entry, boolean saveState) {
         Layer<?> layer = entry.layerInstance;
 
-        if (saveState && entry.layerInstance.view != null) {
+        if (saveState && layer.view != null) {
             saveViewState(entry);
         }
 
@@ -207,10 +207,13 @@ public class Layers {
         entry.attached = false;
         layer.attached = false;
 
-        getContainer().removeView(layer.view);
-
-        layer.onDestroyView();
-        layer.view = null;
+        if (layer.view != null) {
+            if (layer.isViewInLayout()) {
+                getContainer().removeView(layer.view);
+            }
+            layer.onDestroyView();
+            layer.view = null;
+        }
     }
 
     private void destroyLayer(StackEntry entry, boolean saveState) {

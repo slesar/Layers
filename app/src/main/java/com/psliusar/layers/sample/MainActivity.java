@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import com.psliusar.layers.LayersActivity;
 import com.psliusar.layers.sample.screen.child.ChildrenContainerLayer;
+import com.psliusar.layers.sample.screen.dialog.DialogsLayer;
 import com.psliusar.layers.sample.screen.home.HomeLayer;
 import com.psliusar.layers.sample.screen.listener.ListenerLayer;
 import com.psliusar.layers.sample.screen.stack.StackLayer;
@@ -37,7 +38,7 @@ public class MainActivity extends LayersActivity {
     }
 
     public void showDialogLayers() {
-
+        getLayers().add(DialogsLayer.class, null, "Dialogs", true);
     }
 
     public void showActivityListener() {
