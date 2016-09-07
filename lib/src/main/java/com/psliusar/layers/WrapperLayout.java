@@ -9,10 +9,9 @@ import android.widget.FrameLayout;
 public class WrapperLayout extends FrameLayout {
 
     static WrapperLayout addTo(ViewGroup container) {
-        final WrapperLayout wrapper = new WrapperLayout(container.getContext());
-
         final ViewGroup.LayoutParams lp = container.getLayoutParams();
         final LayoutParams newParams = new LayoutParams(lp.width, lp.height);
+        final WrapperLayout wrapper = new WrapperLayout(container.getContext());
         wrapper.setLayoutParams(newParams);
         return wrapper;
     }

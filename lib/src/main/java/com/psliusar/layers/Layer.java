@@ -24,7 +24,6 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     String name;
     Bundle arguments;
     boolean attached;
-    private LayoutInflater layoutInflater;
     boolean fromSavedState;
     LinkedList<ActivityCallbacks.EventSubscription> subscriptions;
 
@@ -63,7 +62,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     @Nullable
-    protected abstract View onCreateView(@NonNull ViewGroup parent);
+    protected abstract View onCreateView(@Nullable ViewGroup parent);
 
     protected void onBindView(@NonNull View view) {
 
@@ -103,10 +102,6 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         presenter = null;
     }
 
-    protected void _requestSaveState() {
-
-    }
-
     public boolean isAttached() {
         return attached;
     }
@@ -141,14 +136,11 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     @NonNull
     protected LayoutInflater getLayoutInflater() {
-        if (layoutInflater == null) {
-            layoutInflater = host.getActivity().getLayoutInflater();
-        }
-        return layoutInflater;
+        return host.getActivity().getLayoutInflater();
     }
 
     @NonNull
-    protected <V extends View> V inflate(@LayoutRes int layoutRes, @NonNull ViewGroup parent) {
+    protected <V extends View> V inflate(@LayoutRes int layoutRes, @Nullable ViewGroup parent) {
         //noinspection unchecked
         return (V) getLayoutInflater().inflate(layoutRes, parent, false);
     }
@@ -211,14 +203,16 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     protected void onClick(@NonNull View.OnClickListener listener, View... views) {
-        for (View view : views) {
-            view.setOnClickListener(listener);
+        final int size = views.length;
+        for (int i = 0; i < size; i++) {
+            views[i].setOnClickListener(listener);
         }
     }
 
     protected void onClick(@NonNull View.OnClickListener listener, @IdRes int... ids) {
-        for (int id : ids) {
-            getView(id).setOnClickListener(listener);
+        final int size = ids.length;
+        for (int i = 0; i < size; i++) {
+            getView(ids[i]).setOnClickListener(listener);
         }
     }
 

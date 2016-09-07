@@ -122,6 +122,11 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
         }
     }
 
+    @Override
+    public boolean isViewInLayout() {
+        return false;
+    }
+
     @NonNull
     @Override
     protected LayoutInflater getLayoutInflater() {
@@ -130,17 +135,12 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
         return (LayoutInflater) dialog.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    public void setStyle(int style) {
-
-    }
-
     public void setStyle(int style, @StyleRes int theme) {
         this.style = style;
-        if ((style == STYLE_NO_FRAME || style == STYLE_NO_INPUT) && theme == 0) {
-            this.theme = android.R.style.Theme_Panel;
-        }
         if (theme != 0) {
             this.theme = theme;
+        } else if (style == STYLE_NO_FRAME || style == STYLE_NO_INPUT) {
+            this.theme = android.R.style.Theme_Panel;
         }
     }
 
@@ -157,7 +157,7 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
     protected void setupDialog() {
         switch (style) {
         case STYLE_NO_INPUT:
-            dialog.getWindow().addFlags( WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         case STYLE_NO_FRAME:
         case STYLE_NO_TITLE:
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -180,12 +180,10 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
         if (view != null) {
             dialog.setContentView(view);
         }
-        final Activity activity = getActivity();
-        dialog.setOwnerActivity(activity);
+        dialog.setOwnerActivity(getActivity());
         dialog.setCancelable(cancelable);
         dialog.setOnCancelListener(this);
         dialog.setOnDismissListener(this);
-        // TODO check dialog saved state
         dialog.show();
     }
 
@@ -203,7 +201,6 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        // TODO dismiss
         onDismiss();
     }
 

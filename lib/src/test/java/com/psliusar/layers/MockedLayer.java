@@ -110,7 +110,7 @@ public class MockedLayer extends Layer<MockedPresenter> {
 
     @Nullable
     @Override
-    protected View onCreateView(@NonNull ViewGroup parent) {
+    protected View onCreateView(@Nullable ViewGroup parent) {
         onCreateViewCalled++;
         return inflate(0, parent);
     }

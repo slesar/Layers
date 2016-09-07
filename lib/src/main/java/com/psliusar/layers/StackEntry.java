@@ -28,7 +28,6 @@ class StackEntry implements Parcelable {
     Bundle arguments;
     Bundle savedState;
     int type;
-    boolean attached;
 
     Class<? extends Layer<?>> layerClass;
     Layer<?> layerInstance;
@@ -54,7 +53,7 @@ class StackEntry implements Parcelable {
     }
 
     @Nullable
-    Bundle getLayerSavedState() {
+    Bundle pickLayerSavedState() {
         if (savedState == null) {
             return null;
         }
@@ -73,7 +72,7 @@ class StackEntry implements Parcelable {
         savedState.putBundle(STATE_LAYER, state);
     }
 
-    SparseArray<Parcelable> getViewSavedState() {
+    SparseArray<Parcelable> pickViewSavedState() {
         if (savedState == null) {
             return null;
         }
@@ -99,7 +98,6 @@ class StackEntry implements Parcelable {
         arguments = in.readBundle(classLoader);
         savedState = in.readBundle(classLoader);
         type = in.readInt();
-        attached = in.readInt() != 0;
     }
 
     @Override
@@ -114,7 +112,6 @@ class StackEntry implements Parcelable {
         dest.writeBundle(arguments);
         dest.writeBundle(savedState);
         dest.writeInt(type);
-        dest.writeInt(attached ? 1 : 0);
     }
 
     public static final Creator<StackEntry> CREATOR = new Creator<StackEntry>() {

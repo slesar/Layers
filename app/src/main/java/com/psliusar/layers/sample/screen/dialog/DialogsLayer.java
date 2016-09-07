@@ -5,14 +5,21 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.psliusar.layers.DialogLayer;
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.sample.R;
 
-public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClickListener {
+public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClickListener,
+        CustomDialogLayer.OnCustomDialogListener {
+
+    private static final String DIALOG_SIMPLE = "SimpleDialog";
+    private static final String DIALOG_CUSTOM = "CustomDialog";
+
     @Nullable
     @Override
-    protected View onCreateView(@NonNull ViewGroup parent) {
+    protected View onCreateView(@Nullable ViewGroup parent) {
         return inflate(R.layout.screen_dialogs, parent);
     }
 
@@ -39,8 +46,34 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
         }
     }
 
+    @Override
+    public void onDialogAction1(CustomDialogLayer dialog) {
+        if (DIALOG_CUSTOM.equals(dialog.getName())) {
+            Toast.makeText(getContext(), "Action 1 was selected", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onDialogAction2(CustomDialogLayer dialog) {
+        if (DIALOG_CUSTOM.equals(dialog.getName())) {
+            Toast.makeText(getContext(), "Action 2 was selected", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onDialogCancel(@NonNull DialogLayer<?> dialog) {
+        if (DIALOG_SIMPLE.equals(dialog.getName())) {
+            Toast.makeText(getContext(), "Dialog was dismissed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     void showSimpleDialog(String title, String message) {
         Bundle args = SimpleDialogLayer.createArguments(title, message);
-        getLayers().add(SimpleDialogLayer.class, args, "SimpleDialog", false);
+        getLayers().add(SimpleDialogLayer.class, args, DIALOG_SIMPLE, false);
+    }
+
+    void showCustomDialog(String title) {
+        Bundle args = CustomDialogLayer.createArguments(title);
+        getLayers().add(CustomDialogLayer.class, args, DIALOG_CUSTOM, false);
     }
 }

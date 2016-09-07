@@ -12,7 +12,7 @@ public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListe
 
     @Nullable
     @Override
-    protected View onCreateView(@NonNull ViewGroup parent) {
+    protected View onCreateView(@Nullable ViewGroup parent) {
         return inflate(R.layout.screen_home, parent);
     }
 

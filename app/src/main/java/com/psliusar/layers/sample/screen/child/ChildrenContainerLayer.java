@@ -14,7 +14,7 @@ public class ChildrenContainerLayer extends Layer<Presenter<?, ?>> {
 
     @Nullable
     @Override
-    protected View onCreateView(@NonNull ViewGroup parent) {
+    protected View onCreateView(@Nullable ViewGroup parent) {
         return inflate(R.layout.screen_children_container, parent);
     }
 

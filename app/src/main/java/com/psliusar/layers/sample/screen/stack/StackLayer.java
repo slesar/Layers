@@ -29,7 +29,7 @@ public class StackLayer extends Layer<StackPresenter> implements View.OnClickLis
 
     @Nullable
     @Override
-    protected View onCreateView(@NonNull ViewGroup parent) {
+    protected View onCreateView(@Nullable ViewGroup parent) {
         return inflate(R.layout.screen_stack, parent);
     }
 

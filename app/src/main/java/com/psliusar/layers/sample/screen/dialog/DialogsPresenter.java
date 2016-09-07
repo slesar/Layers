@@ -10,6 +10,6 @@ public class DialogsPresenter extends Presenter<Model, DialogsLayer> {
     }
 
     void customDialogClick() {
-
+        getLayer().showCustomDialog("Custom dialog");
     }
 }
