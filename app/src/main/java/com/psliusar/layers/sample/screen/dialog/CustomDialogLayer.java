@@ -61,7 +61,7 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
         if (parent != null) {
             parent.onDialogAction1(this);
         }
-        dismiss();
+        dismiss(false);
     }
 
     void performAction2Callback() {
@@ -69,7 +69,7 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
         if (parent != null) {
             parent.onDialogAction2(this);
         }
-        dismiss();
+        dismiss(false);
     }
 
     public interface OnCustomDialogListener extends OnLayerDialogListener {

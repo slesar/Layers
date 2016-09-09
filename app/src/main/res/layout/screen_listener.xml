@@ -16,5 +16,11 @@
         android:textSize="@dimen/text_medium"
         android:text="Listener"/>
 
+    <Button
+        android:id="@+id/listener_pick_photo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pick a photo"/>
+
 
 </LinearLayout>

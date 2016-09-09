@@ -86,7 +86,7 @@ public class ActivityCallbacks {
 
         void onConfigurationChanged(Configuration newConfig);
 
-        void onActivityResult(int requestCode, int resultCode, Intent data);
+        void onActivityResult(int requestCode, int resultCode, Intent intent);
         void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults);
 
         void onTrimMemory(int level);
@@ -119,7 +119,7 @@ public class ActivityCallbacks {
 
         @Override public void onConfigurationChanged(Configuration newConfig) {}
 
-        @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {}
+        @Override public void onActivityResult(int requestCode, int resultCode, Intent intent) {}
         @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {}
 
         @Override public void onTrimMemory(int level) {}
@@ -128,6 +128,29 @@ public class ActivityCallbacks {
         @Override
         public int getEventTypes() {
             return eventTypes;
+        }
+    }
+
+    public static class ManagedSubscriptions {
+
+        private LinkedList<ActivityCallbacks.EventSubscription> subscriptions;
+
+        public void manage(ActivityCallbacks.EventSubscription subscription) {
+            if (subscriptions == null) {
+                subscriptions = new LinkedList<>();
+            }
+            subscriptions.add(subscription);
+        }
+
+        public void unsubscribeAll() {
+            if (subscriptions == null) {
+                return;
+            }
+            for (ActivityCallbacks.EventSubscription subscription : subscriptions) {
+                if (subscription.isSubscribed()) {
+                    subscription.unsubscribe();
+                }
+            }
         }
     }
 
@@ -149,6 +172,10 @@ public class ActivityCallbacks {
 
         public boolean isSubscribed() {
             return subscribed;
+        }
+
+        public void manageWith(ManagedSubscriptions manager) {
+            manager.manage(this);
         }
     }
 }

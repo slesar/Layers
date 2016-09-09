@@ -87,6 +87,7 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        layers.destroyViews();
         activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_DESTROY);
     }
 

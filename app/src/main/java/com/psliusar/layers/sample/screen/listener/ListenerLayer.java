@@ -1,18 +1,16 @@
 package com.psliusar.layers.sample.screen.listener;
 
-import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.psliusar.layers.ActivityCallbacks;
 import com.psliusar.layers.Layer;
-import com.psliusar.layers.LayersActivity;
-import com.psliusar.layers.Presenter;
 import com.psliusar.layers.sample.R;
 
-public class ListenerLayer extends Layer<Presenter<?, ?>> {
+public class ListenerLayer extends Layer<ListenerPresenter> implements View.OnClickListener {
 
     @Nullable
     @Override
@@ -24,18 +22,32 @@ public class ListenerLayer extends Layer<Presenter<?, ?>> {
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
 
-        final ActivityCallbacks.EventSubscription subscription = ((LayersActivity) getActivity()).getActivityCallbacks().add(new ActivityCallbacks.BaseActivityListener(ActivityCallbacks.EVENT_ON_ACTIVITY_RESULT) {
-            @Override
-            public void onActivityResult(int requestCode, int resultCode, Intent data) {
-                //
-            }
-        });
+        onClick(this, R.id.listener_pick_photo);
 
-        manage(subscription);
+        getPresenter().viewCreated();
     }
 
     @Override
-    protected Presenter<?, ?> onCreatePresenter() {
-        return null;
+    protected void onDestroyView() {
+        super.onDestroyView();
+        getPresenter().viewDestroyed();
+    }
+
+    @Override
+    protected ListenerPresenter onCreatePresenter() {
+        return new ListenerPresenter();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+        case R.id.listener_pick_photo:
+            getPresenter().pickPhotoClick();
+            break;
+        }
+    }
+
+    void showPhoto(Uri uri) {
+        Toast.makeText(getContext(), "New photo at " + (uri == null ? "null" : uri.toString()), Toast.LENGTH_SHORT).show();
     }
 }

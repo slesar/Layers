@@ -38,7 +38,11 @@ public class Layers {
             layerStack = savedState.getParcelableArrayList(STATE_STACK);
             if (layerStack != null) {
                 for (int i = 0, size = layerStack.size(); i < size; i++) {
-                    moveToState(layerStack.get(i), StackEntry.LAYER_STATE_CREATED, false);
+                    final StackEntry entry = layerStack.get(i);
+                    // TODO honor existing state
+                    entry.layerInstance = null;
+                    entry.state = StackEntry.LAYER_STATE_EMPTY;
+                    moveToState(entry, StackEntry.LAYER_STATE_CREATED, false);
                 }
             }
 
@@ -99,6 +103,24 @@ public class Layers {
         }
     }
 
+    public void destroyViews() {
+        final int size = layerStack.size();
+        if (size != 0) {
+            for (int i = size - 1; i >= 0; i--) {
+                final StackEntry entry = layerStack.get(i);
+                moveToState(entry, StackEntry.LAYER_STATE_VIEW_DESTROYED, false);
+            }
+        }
+
+        // Layers at other containers
+        final int layersCount = (layerGroup == null ? 0 : layerGroup.size());
+        if (layersCount > 0) {
+            for (int i = 0; i < layersCount; i++) {
+                layerGroup.get(layerGroup.keyAt(i)).destroyViews();
+            }
+        }
+    }
+
     void saveState(@Nullable Bundle outState) {
         if (outState == null) {
             return;
@@ -107,8 +129,11 @@ public class Layers {
         final int size = layerStack.size();
         if (size != 0) {
             for (int i = size - 1; i >= 0; i--) {
-                StackEntry entry = layerStack.get(i);
-                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, true);
+                final StackEntry entry = layerStack.get(i);
+                if (entry.layerInstance.view != null) {
+                    saveViewState(entry);
+                }
+                saveLayerState(entry);
             }
             outState.putParcelableArrayList(STATE_STACK, layerStack);
         }
@@ -118,8 +143,8 @@ public class Layers {
         if (layersCount > 0) {
             final SparseArray<Bundle> layersArray = new SparseArray<>();
             for (int i = 0; i < layersCount; i++) {
-                int key = layerGroup.keyAt(i);
-                Bundle state = new Bundle();
+                final int key = layerGroup.keyAt(i);
+                final Bundle state = new Bundle();
                 layerGroup.get(key).saveState(state);
                 layersArray.put(key, state);
             }
@@ -165,7 +190,6 @@ public class Layers {
         layer.onAttach();
 
         if (layerView != null) {
-            layer.getLayers().resumeView();
             layer.onBindView(layerView);
             restoreViewState(entry);
         }
@@ -186,6 +210,14 @@ public class Layers {
         }
     }
 
+    private void saveLayerState(StackEntry entry) {
+        final Bundle bundle = new Bundle();
+        entry.layerInstance.saveLayerState(bundle);
+        if (bundle.size() > 0) {
+            entry.setLayerSavedState(bundle);
+        }
+    }
+
     private void destroyView(StackEntry entry, boolean saveState) {
         final Layer<?> layer = entry.layerInstance;
 
@@ -197,26 +229,18 @@ public class Layers {
 
         layer.attached = false;
 
-        if (layer.view != null) {
-            if (layer.isViewInLayout()) {
-                getContainer().removeView(layer.view);
-            }
-            layer.onDestroyView();
-            layer.view = null;
+        layer.onDestroyView();
+        if (layer.isViewInLayout() && layer.view != null) {
+            getContainer().removeView(layer.view);
         }
+        layer.view = null;
     }
 
     private void destroyLayer(StackEntry entry, boolean saveState) {
-        final Layer<?> layer = entry.layerInstance;
         if (saveState) {
-            final Bundle bundle = new Bundle();
-            layer.onDestroy(bundle);
-            if (bundle.size() > 0) {
-                entry.setLayerSavedState(bundle);
-            }
-        } else {
-            layer.onDestroy(null);
+            saveLayerState(entry);
         }
+        entry.layerInstance.onDestroy();
     }
 
     private void moveToState(StackEntry entry, int targetState, boolean saveState) {
@@ -274,6 +298,7 @@ public class Layers {
     }
 
     private void ensureViews() {
+        // FIXME broken
         final int size;
         if (viewPaused || (size = layerStack.size()) == 0) {
             return;
@@ -507,8 +532,8 @@ public class Layers {
 
     private StackEntry removeLast() {
         final int index = layerStack.size() - 1;
-        StackEntry entry = layerStack.get(index - 1);
-        layerStack.remove(index - 1);
+        StackEntry entry = layerStack.get(index);
+        layerStack.remove(index);
         return entry;
     }
 

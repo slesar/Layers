@@ -152,12 +152,16 @@ public class MockedLayer extends Layer<MockedPresenter> {
     }
 
     @Override
-    protected void onDestroy(@Nullable Bundle outState) {
-        super.onDestroy(outState);
+    void saveLayerState(@NonNull Bundle outState) {
+        super.saveLayerState(outState);
+        // TODO counter
+        outState.putString(STATE_STRING_KEY, STATE_STRING_VALUE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         onDestroyCalled++;
-        if (outState != null) {
-            outState.putString(STATE_STRING_KEY, STATE_STRING_VALUE);
-        }
     }
 
     @Override

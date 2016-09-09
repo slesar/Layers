@@ -13,8 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.LinkedList;
-
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
     LayersHost host;
@@ -25,7 +23,6 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     Bundle arguments;
     boolean attached;
     boolean fromSavedState;
-    LinkedList<ActivityCallbacks.EventSubscription> subscriptions;
 
     public Layer() {
         // Default constructor
@@ -70,6 +67,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     void restoreViewState(@NonNull SparseArray<Parcelable> inState) {
         view.restoreHierarchyState(inState);
+        getLayers().resumeView();
     }
 
     /**
@@ -90,12 +88,16 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         view.saveHierarchyState(outState);
     }
 
-    protected void onDestroyView() {
-        unsubscribeAll();
+    void saveLayerState(@NonNull Bundle outState) {
+        layers.saveState(outState);
     }
 
-    protected void onDestroy(@Nullable Bundle outState) {
-        layers.saveState(outState);
+    protected void onDestroyView() {
+        layers.destroyViews();
+    }
+
+    protected void onDestroy() {
+
     }
 
     void destroy() {
@@ -202,6 +204,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         }
     }
 
+    // TODO rename?
     protected void onClick(@NonNull View.OnClickListener listener, View... views) {
         final int size = views.length;
         for (int i = 0; i < size; i++) {
@@ -213,24 +216,6 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         final int size = ids.length;
         for (int i = 0; i < size; i++) {
             getView(ids[i]).setOnClickListener(listener);
-        }
-    }
-
-    public void manage(ActivityCallbacks.EventSubscription subscription) {
-        if (subscriptions == null) {
-            subscriptions = new LinkedList<>();
-        }
-        subscriptions.add(subscription);
-    }
-
-    private void unsubscribeAll() {
-        if (subscriptions == null) {
-            return;
-        }
-        for (ActivityCallbacks.EventSubscription subscription : subscriptions) {
-            if (subscription.isSubscribed()) {
-                subscription.unsubscribe();
-            }
         }
     }
 }

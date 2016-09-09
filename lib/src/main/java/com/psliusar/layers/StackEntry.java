@@ -21,8 +21,6 @@ class StackEntry implements Parcelable {
     private static final String STATE_LAYER = "STATE_LAYER";
     private static final String STATE_VIEW = "STATE_VIEW";
 
-    int state = LAYER_STATE_EMPTY;
-
     final String className;
     final String name;
     Bundle arguments;
@@ -31,6 +29,7 @@ class StackEntry implements Parcelable {
 
     Class<? extends Layer<?>> layerClass;
     Layer<?> layerInstance;
+    int state = LAYER_STATE_EMPTY;
 
     StackEntry(@NonNull Class<? extends Layer<?>> layerClass, @Nullable Bundle arguments, @Nullable String name, int type) {
         this.layerClass = layerClass;
@@ -40,16 +39,17 @@ class StackEntry implements Parcelable {
         this.type = type;
     }
 
+    @NonNull
     Class<? extends Layer<?>> getLayerClass() {
-        try {
-            if (layerClass == null) {
+        if (layerClass == null) {
+            try {
                 //noinspection unchecked
                 layerClass = (Class<? extends Layer<?>>) this.getClass().getClassLoader().loadClass(className);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Failed to load class " + className);
             }
-            return layerClass;
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed to load class " + className);
         }
+        return layerClass;
     }
 
     @Nullable
@@ -91,7 +91,7 @@ class StackEntry implements Parcelable {
         savedState.putSparseParcelableArray(STATE_VIEW, viewState);
     }
 
-    private StackEntry(Parcel in) {
+    StackEntry(Parcel in) {
         final ClassLoader classLoader = getClass().getClassLoader();
         className = in.readString();
         name = in.readString();

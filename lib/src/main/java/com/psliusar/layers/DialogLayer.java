@@ -1,6 +1,5 @@
 package com.psliusar.layers;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,7 +11,6 @@ import android.support.annotation.StyleRes;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -20,49 +18,44 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
         implements DialogInterface.OnCancelListener, DialogInterface.OnDismissListener {
 
     /**
-     * Style for {@link #setStyle(int, int)}: a basic,
-     * normal dialog.
+     * Simple, normal dialog.
      */
     public static final int STYLE_NORMAL = 0;
 
     /**
-     * Style for {@link #setStyle(int, int)}: don't include
-     * a title area.
+     * Dialog without title
      */
     public static final int STYLE_NO_TITLE = 1;
 
     /**
-     * Style for {@link #setStyle(int, int)}: don't draw
-     * any frame at all; the view hierarchy returned by {@link #onCreateView}
-     * is entirely responsible for drawing the dialog.
+     * Don't use dialog's frame
      */
     public static final int STYLE_NO_FRAME = 2;
 
     /**
-     * Style for {@link #setStyle(int, int)}: like
-     * {@link #STYLE_NO_FRAME}, but also disables all input to the dialog.
-     * The user can not touch it, and its window will not receive input focus.
+     * Same as {@link DialogLayer#STYLE_NO_FRAME} but without any user interaction available
      */
     public static final int STYLE_NO_INPUT = 3;
 
-    private static final String PRIVATE_DIALOG_STYLE = "PRIVATE_DIALOG_STYLE";
-    private static final String PRIVATE_DIALOG_THEME = "PRIVATE_DIALOG_THEME";
-    private static final String PRIVATE_DIALOG_CANCELABLE = "PRIVATE_DIALOG_CANCELABLE";
+    private static final String PRIVATE_ARGS_DIALOG_STYLE = "PRIVATE_DIALOG_STYLE";
+    private static final String PRIVATE_ARGS_DIALOG_THEME = "PRIVATE_DIALOG_THEME";
+    private static final String PRIVATE_ARGS_DIALOG_CANCELABLE = "PRIVATE_DIALOG_CANCELABLE";
 
     private Dialog dialog;
 
     private int style = STYLE_NORMAL;
     private int theme = 0;
     private boolean cancelable = true;
+    private boolean notifyOnDismiss = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedState) {
         super.onCreate(savedState);
 
         if (savedState != null) {
-            style = savedState.getInt(PRIVATE_DIALOG_STYLE, style);
-            theme = savedState.getInt(PRIVATE_DIALOG_THEME, theme);
-            cancelable = savedState.getBoolean(PRIVATE_DIALOG_CANCELABLE, cancelable);
+            style = savedState.getInt(PRIVATE_ARGS_DIALOG_STYLE, style);
+            theme = savedState.getInt(PRIVATE_ARGS_DIALOG_THEME, theme);
+            cancelable = savedState.getBoolean(PRIVATE_ARGS_DIALOG_CANCELABLE, cancelable);
         }
     }
 
@@ -103,22 +96,20 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
     @Override
     protected void onDestroyView() {
         super.onDestroyView();
-
+        dialog = null;
     }
 
     @Override
-    protected void onDestroy(@Nullable Bundle outState) {
-        super.onDestroy(outState);
-        if (outState != null) {
-            if (style != STYLE_NORMAL) {
-                outState.putInt(PRIVATE_DIALOG_STYLE, style);
-            }
-            if (theme != 0) {
-                outState.putInt(PRIVATE_DIALOG_THEME, theme);
-            }
-            if (!cancelable) {
-                outState.putBoolean(PRIVATE_DIALOG_CANCELABLE, cancelable);
-            }
+    void saveLayerState(@NonNull Bundle outState) {
+        super.saveLayerState(outState);
+        if (style != STYLE_NORMAL) {
+            outState.putInt(PRIVATE_ARGS_DIALOG_STYLE, style);
+        }
+        if (theme != 0) {
+            outState.putInt(PRIVATE_ARGS_DIALOG_THEME, theme);
+        }
+        if (!cancelable) {
+            outState.putBoolean(PRIVATE_ARGS_DIALOG_CANCELABLE, cancelable);
         }
     }
 
@@ -176,6 +167,7 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
     }
 
     private void showDialog() {
+        notifyOnDismiss = true;
         final View view = getView();
         if (view != null) {
             dialog.setContentView(view);
@@ -188,9 +180,9 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
     }
 
     private void hideDialog() {
+        notifyOnDismiss = false;
         if (dialog != null) {
             dialog.dismiss();
-            dialog = null;
         }
     }
 
@@ -201,26 +193,25 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        onDismiss();
+        if (notifyOnDismiss) {
+            final OnLayerDialogListener parent = getParent(OnLayerDialogListener.class);
+            if (parent != null) {
+                parent.onDialogCancel(this);
+            }
+        }
+        if (isAttached()) {
+            final LayersHost host = getParent(LayersHost.class);
+            if (host != null) {
+                host.getLayers().remove(this);
+            }
+        }
     }
 
-    public void dismiss() {
+    public void dismiss(boolean notify) {
+        notifyOnDismiss = notify;
         if (dialog != null && dialog.isShowing()) {
             dialog.dismiss();
-            onDismiss();
         }
-    }
-
-    private void onDismiss() {
-        final OnLayerDialogListener parent = getParent(OnLayerDialogListener.class);
-        if (parent != null) {
-            parent.onDialogCancel(this);
-        }
-        final LayersHost host = getParent(LayersHost.class);
-        if (host != null) {
-            host.getLayers().remove(this);
-        }
-        dialog = null;
     }
 
     public interface OnLayerDialogListener {

@@ -62,9 +62,7 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
 
     @Override
     public void onDialogCancel(@NonNull DialogLayer<?> dialog) {
-        if (DIALOG_SIMPLE.equals(dialog.getName())) {
-            Toast.makeText(getContext(), "Dialog was dismissed", Toast.LENGTH_SHORT).show();
-        }
+        Toast.makeText(getContext(), "Dialog " + DIALOG_SIMPLE + " was dismissed", Toast.LENGTH_SHORT).show();
     }
 
     void showSimpleDialog(String title, String message) {

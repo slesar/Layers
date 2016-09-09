@@ -2,6 +2,7 @@ package com.psliusar.layers.sample.screen.dialog;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -44,7 +45,12 @@ public class SimpleDialogLayer extends DialogLayer<Presenter<?, ?>> {
         return new AlertDialog.Builder(getActivity())
                 .setTitle(args.getString(ARGS_TITLE))
                 .setMessage(args.getString(ARGS_MESSAGE))
-                .setPositiveButton("Great!", null)
+                .setPositiveButton("Great!", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dismiss(false);
+                    }
+                })
                 .create();
     }
 }

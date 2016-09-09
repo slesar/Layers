@@ -13,6 +13,7 @@ public class WrapperLayout extends FrameLayout {
         final LayoutParams newParams = new LayoutParams(lp.width, lp.height);
         final WrapperLayout wrapper = new WrapperLayout(container.getContext());
         wrapper.setLayoutParams(newParams);
+        container.addView(wrapper);
         return wrapper;
     }
 
