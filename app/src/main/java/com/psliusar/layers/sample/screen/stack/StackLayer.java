@@ -40,7 +40,7 @@ public class StackLayer extends Layer<StackPresenter> implements View.OnClickLis
         nextOpaque = getView(R.id.stack_next_opaque);
         nextTitle = getView(R.id.stack_next_title);
 
-        onClick(this, R.id.stack_next);
+        bindClickListener(this, R.id.stack_next);
 
         getPresenter().initViews();
     }

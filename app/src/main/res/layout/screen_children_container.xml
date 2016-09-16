@@ -20,19 +20,19 @@
     <RelativeLayout
         android:id="@+id/children_container_top"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:background="#eee"/>
 
     <RelativeLayout
         android:id="@+id/children_container_middle"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:background="#ddd"/>
 
     <RelativeLayout
         android:id="@+id/children_container_bottom"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:background="#ccc"/>
 
 </LinearLayout>

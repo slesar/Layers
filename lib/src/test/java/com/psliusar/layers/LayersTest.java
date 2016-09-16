@@ -128,7 +128,7 @@ public class LayersTest {
     }
 
     @Test
-    public void testAdd() throws Exception {
+    public void testAddTransparent() throws Exception {
         MockedLayer layer1 = layers.add(MockedLayer.class, null, "Test Layer 1", false);
         MockedLayer layer2 = layers.add(MockedLayer.class, null, "Test Layer 2", false);
         MockedLayer layer3 = layers.add(MockedLayer.class, null, "Test Layer 3", false);
@@ -146,8 +146,17 @@ public class LayersTest {
         verify(container, times(1)).addView(layer3.getView());
         assertTrue(layer3.isAttached());
         assertNotNull(layer3.getView());
+    }
 
-        // TODO add opaque
+    @Test
+    public void testAddOpaque() throws Exception {
+        layers.add(MockedLayer.class, null, "Test Layer 1", true);
+        layers.add(MockedLayer.class, null, "Test Layer 2", false);
+        layers.add(MockedLayer.class, null, "Test Layer 3", true);
+        layers.add(MockedLayer.class, null, "Test Layer 4", false);
+
+        verify(container, times(2)).removeView(any(View.class));
+        verify(container, times(4)).addView(any(View.class));
     }
 
     @Test

@@ -22,7 +22,7 @@ public class ListenerLayer extends Layer<ListenerPresenter> implements View.OnCl
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
 
-        onClick(this, R.id.listener_pick_photo);
+        bindClickListener(this, R.id.listener_pick_photo);
 
         getPresenter().viewCreated();
     }

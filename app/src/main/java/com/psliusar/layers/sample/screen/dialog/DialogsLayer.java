@@ -26,7 +26,9 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
     @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-        onClick(this, R.id.dialogs_simple, R.id.dialogs_custom);
+        bindClickListener(this,
+                R.id.dialogs_simple,
+                R.id.dialogs_custom);
     }
 
     @Override

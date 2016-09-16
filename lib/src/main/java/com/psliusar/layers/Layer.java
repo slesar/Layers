@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
+    private static final String STATE_CHILD_LAYERS = "STATE_CHILD_LAYERS";
+
     LayersHost host;
     Layers layers;
     P presenter;
@@ -55,7 +57,8 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     protected void onCreate(@Nullable Bundle savedState) {
         fromSavedState = savedState != null;
-        layers = new Layers(this, savedState);
+        final Bundle layersState = savedState == null ? null : savedState.getBundle(STATE_CHILD_LAYERS);
+        layers = new Layers(this, layersState);
     }
 
     @Nullable
@@ -66,6 +69,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     void restoreViewState(@NonNull SparseArray<Parcelable> inState) {
+        // FIXME for child layers at
         view.restoreHierarchyState(inState);
         getLayers().resumeView();
     }
@@ -89,7 +93,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     void saveLayerState(@NonNull Bundle outState) {
-        layers.saveState(outState);
+        final Bundle layersState = new Bundle();
+        layers.saveState(layersState);
+        outState.putBundle(STATE_CHILD_LAYERS, layersState);
     }
 
     protected void onDestroyView() {
@@ -204,15 +210,14 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         }
     }
 
-    // TODO rename?
-    protected void onClick(@NonNull View.OnClickListener listener, View... views) {
+    protected void bindClickListener(@NonNull View.OnClickListener listener, View... views) {
         final int size = views.length;
         for (int i = 0; i < size; i++) {
             views[i].setOnClickListener(listener);
         }
     }
 
-    protected void onClick(@NonNull View.OnClickListener listener, @IdRes int... ids) {
+    protected void bindClickListener(@NonNull View.OnClickListener listener, @IdRes int... ids) {
         final int size = ids.length;
         for (int i = 0; i < size; i++) {
             getView(ids[i]).setOnClickListener(listener);

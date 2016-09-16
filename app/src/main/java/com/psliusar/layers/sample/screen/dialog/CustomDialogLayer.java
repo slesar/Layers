@@ -36,7 +36,9 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
         ((TextView) getView(R.id.dialog_title)).setText(getArguments().getString(ARGS_TITLE));
-        onClick(this, R.id.dialog_action1, R.id.dialog_action2);
+        bindClickListener(this,
+                R.id.dialog_action1,
+                R.id.dialog_action2);
     }
 
     @Override

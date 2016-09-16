@@ -19,7 +19,11 @@ public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListe
     @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-        onClick(this, R.id.home_stack, R.id.home_children, R.id.home_dialog, R.id.home_activity_listener);
+        bindClickListener(this,
+                R.id.home_stack,
+                R.id.home_children,
+                R.id.home_dialog,
+                R.id.home_activity_listener);
     }
 
     @Override

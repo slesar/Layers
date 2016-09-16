@@ -39,7 +39,7 @@ public class Layers {
             if (layerStack != null) {
                 for (int i = 0, size = layerStack.size(); i < size; i++) {
                     final StackEntry entry = layerStack.get(i);
-                    // TODO honor existing state
+                    // TODO honor existing state ?
                     entry.layerInstance = null;
                     entry.state = StackEntry.LAYER_STATE_EMPTY;
                     moveToState(entry, StackEntry.LAYER_STATE_CREATED, false);
@@ -298,7 +298,6 @@ public class Layers {
     }
 
     private void ensureViews() {
-        // FIXME broken
         final int size;
         if (viewPaused || (size = layerStack.size()) == 0) {
             return;
