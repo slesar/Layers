@@ -43,6 +43,7 @@ class StackEntry implements Parcelable {
     Class<? extends Layer<?>> getLayerClass() {
         if (layerClass == null) {
             try {
+                // TODO classLoader from context
                 //noinspection unchecked
                 layerClass = (Class<? extends Layer<?>>) this.getClass().getClassLoader().loadClass(className);
             } catch (ClassNotFoundException e) {

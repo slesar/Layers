@@ -342,6 +342,16 @@ public class Layers {
         return viewPaused;
     }
 
+    @NonNull
+    public <L extends Layer<?>> Operation<L> add(@NonNull Class<L> layerClass) {
+        return new Operation<>(this, layerClass, Operation.ACTION_ADD);
+    }
+
+    @NonNull
+    public <L extends Layer<?>> Operation<L> replace(@NonNull Class<L> layerClass) {
+        return new Operation<>(this, layerClass, Operation.ACTION_REPLACE);
+    }
+
     /**
      * Add layer and add View
      *
@@ -575,6 +585,52 @@ public class Layers {
 
         RevLink(T current) {
             this.current = current;
+        }
+    }
+
+    public static class Operation<LAYER extends Layer<?>> {
+
+        static final int ACTION_ADD = 1;
+        static final int ACTION_REPLACE = 2;
+
+        private final Layers layers;
+        private final Class<LAYER> layerClass;
+        private final int action;
+        private Bundle arguments;
+        private String name;
+        private boolean opaque = true;
+
+        Operation(@NonNull Layers layers, @NonNull Class<LAYER> layerClass, int action) {
+            this.layers = layers;
+            this.layerClass = layerClass;
+            this.action = action;
+        }
+
+        public Operation<LAYER> setArguments(@NonNull Bundle arguments) {
+            this.arguments = arguments;
+            return this;
+        }
+
+        public Operation<LAYER> setName(@NonNull String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Operation<LAYER> setOpaque(boolean opaque) {
+            this.opaque = opaque;
+            return this;
+        }
+
+        public LAYER commit() {
+            switch (action) {
+            case ACTION_ADD:
+                return layers.add(layerClass, arguments, name, opaque);
+            case ACTION_REPLACE:
+                return layers.replace(layerClass, arguments, name, opaque);
+            default:
+                // TODO
+                throw new IllegalArgumentException("");
+            }
         }
     }
 }

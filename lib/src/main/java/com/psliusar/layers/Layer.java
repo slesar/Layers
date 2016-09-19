@@ -71,7 +71,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     void restoreViewState(@NonNull SparseArray<Parcelable> inState) {
         // FIXME for child layers at
         view.restoreHierarchyState(inState);
-        getLayers().resumeView();
+        layers.resumeView();
     }
 
     /**
