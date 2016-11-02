@@ -35,7 +35,8 @@ public class MockedLayer extends Layer<MockedPresenter> {
     private int onDestroyCalled = 0;
     private int destroyCalled = 0;
 
-    private boolean valueRestored = false;
+    private boolean stateRestored = false;
+    private boolean viewStateRestored = false;
     private boolean argumentsPassed = false;
 
     public int getCreateCalled() {
@@ -86,8 +87,12 @@ public class MockedLayer extends Layer<MockedPresenter> {
         return destroyCalled;
     }
 
-    public boolean isValueRestored() {
-        return valueRestored;
+    public boolean isStateRestored() {
+        return stateRestored;
+    }
+
+    public boolean isViewStateRestored() {
+        return viewStateRestored;
     }
 
     public boolean isArgumentsPassed() {
@@ -104,7 +109,7 @@ public class MockedLayer extends Layer<MockedPresenter> {
     protected void onCreate(@Nullable Bundle savedState) {
         super.onCreate(savedState);
         onCreateCalled++;
-        valueRestored = savedState != null && STATE_STRING_VALUE.equals(savedState.getString(STATE_STRING_VALUE));
+        stateRestored = savedState != null && STATE_STRING_VALUE.equals(savedState.getString(STATE_STRING_KEY));
         argumentsPassed = getArguments() != null && ARGS_VALUE.equals(getArguments().getString(ARGS_KEY));
     }
 
@@ -122,9 +127,10 @@ public class MockedLayer extends Layer<MockedPresenter> {
     }
 
     @Override
-    void restoreViewState(@NonNull SparseArray<Parcelable> inState) {
+    void restoreViewState(@Nullable SparseArray<Parcelable> inState) {
         super.restoreViewState(inState);
         restoreViewStateCalled++;
+        viewStateRestored = inState != null;
     }
 
     @Override

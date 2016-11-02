@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 
 public abstract class LayersActivity extends AppCompatActivity implements LayersHost {
 
+    private static final String SAVED_STATE_LAYERS = "SAVED_STATE_LAYERS";
+
     private ActivityCallbacks activityCallbacks;
     private Layers layers;
     private boolean layersStateRestored = false;
@@ -22,7 +24,7 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
         super.onCreate(state);
         activityCallbacks = new ActivityCallbacks();
         layersStateRestored = state != null;
-        layers = new Layers(this, state);
+        layers = new Layers(this, state != null ? state.getBundle(SAVED_STATE_LAYERS) : null);
         activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_CREATE, state);
     }
 
@@ -66,8 +68,11 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (layers != null) {
-            layers.saveState(isFinishing() ? null : outState);
+        if (!isFinishing()) {
+            final Bundle layersState = layers.saveState();
+            if (layersState != null) {
+                outState.putBundle(SAVED_STATE_LAYERS, layersState);
+            }
         }
         activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_SAVE_STATE, outState);
     }
@@ -87,7 +92,7 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        layers.destroyViews();
+        layers.destroy();
         activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_DESTROY);
     }
 
@@ -129,7 +134,7 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
 
     @Override
     public void onBackPressed() {
-        if (layers != null && layers.getStackSize() > 1) {
+        if (layers.getStackSize() > 1) {
             final Layer<?> topLayer = layers.peek();
             if (topLayer != null && !topLayer.onBackPressed()) {
                 layers.pop();

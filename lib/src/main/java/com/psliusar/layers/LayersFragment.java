@@ -47,7 +47,7 @@ public abstract class LayersFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle state) {
         super.onViewCreated(view, state);
-        layers.resumeView();
+        //layers.resumeView();
     }
 
     protected abstract int getDefaultContainerId();
@@ -55,6 +55,6 @@ public abstract class LayersFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        layers.saveState(outState);
+        //layers.saveState(outState);
     }
 }

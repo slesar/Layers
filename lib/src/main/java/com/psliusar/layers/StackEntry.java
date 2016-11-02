@@ -18,13 +18,13 @@ class StackEntry implements Parcelable {
     static final int TYPE_TRANSPARENT = 0;
     static final int TYPE_OPAQUE = 1;
 
-    private static final String STATE_LAYER = "STATE_LAYER";
-    private static final String STATE_VIEW = "STATE_VIEW";
+    private static final String VIEW_STATE = "VIEW_STATE";
 
     final String className;
     final String name;
     Bundle arguments;
-    Bundle savedState;
+    Bundle layerState;
+    SparseArray<Parcelable> viewState;
     int type;
 
     Class<? extends Layer<?>> layerClass;
@@ -55,49 +55,36 @@ class StackEntry implements Parcelable {
 
     @Nullable
     Bundle pickLayerSavedState() {
-        if (savedState == null) {
-            return null;
-        }
-        final Bundle bundle = savedState.getBundle(STATE_LAYER);
-        savedState.remove(STATE_LAYER);
-        if (savedState.size() == 0) {
-            savedState = null;
-        }
+        final Bundle bundle = layerState;
+        layerState = null;
         return bundle;
     }
 
-    void setLayerSavedState(Bundle state) {
-        if (savedState == null) {
-            savedState = new Bundle();
-        }
-        savedState.putBundle(STATE_LAYER, state);
+    void setLayerSavedState(@Nullable Bundle state) {
+        layerState = state;
     }
 
+    @Nullable
     SparseArray<Parcelable> pickViewSavedState() {
-        if (savedState == null) {
-            return null;
-        }
-        final SparseArray<Parcelable> array = savedState.getSparseParcelableArray(STATE_VIEW);
-        savedState.remove(STATE_VIEW);
-        if (savedState.size() == 0) {
-            savedState = null;
-        }
+        final SparseArray<Parcelable> array = viewState;
+        viewState = null;
         return array;
     }
 
-    void setViewSavedState(SparseArray<Parcelable> viewState) {
-        if (savedState == null) {
-            savedState = new Bundle();
-        }
-        savedState.putSparseParcelableArray(STATE_VIEW, viewState);
+    void setViewSavedState(@Nullable SparseArray<Parcelable> state) {
+        viewState = state;
     }
 
     StackEntry(Parcel in) {
-        final ClassLoader classLoader = getClass().getClassLoader();
+        final ClassLoader classLoader = Layers.class.getClassLoader();
         className = in.readString();
         name = in.readString();
         arguments = in.readBundle(classLoader);
-        savedState = in.readBundle(classLoader);
+        layerState = in.readBundle(classLoader);
+        final Bundle viewBundle = in.readBundle(classLoader);
+        if (viewBundle != null) {
+            viewState = viewBundle.getSparseParcelableArray(VIEW_STATE);
+        }
         type = in.readInt();
     }
 
@@ -111,7 +98,10 @@ class StackEntry implements Parcelable {
         dest.writeString(className);
         dest.writeString(name);
         dest.writeBundle(arguments);
-        dest.writeBundle(savedState);
+        dest.writeBundle(layerState);
+        final Bundle viewBundle = new Bundle();
+        viewBundle.putSparseParcelableArray(VIEW_STATE, viewState);
+        dest.writeBundle(viewBundle);
         dest.writeInt(type);
     }
 

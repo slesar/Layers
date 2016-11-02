@@ -1,9 +1,11 @@
 package com.psliusar.layers;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,6 +26,10 @@ import static org.mockito.Mockito.when;
 
 public class LayersTest {
 
+    private static final int CHILD_VIEW_1 = 1;
+    private static final int CHILD_VIEW_2 = 2;
+
+    private LayersHost host;
     private Layers layers;
     private ViewGroup container;
 
@@ -31,10 +38,13 @@ public class LayersTest {
         container = mock(ViewGroup.class);
 
         LayoutInflater inflater = mock(LayoutInflater.class);
-        when(inflater.inflate(0, container, false)).thenAnswer(new Answer<View>() {
+        when(inflater.inflate(eq(0), (ViewGroup) any(), eq(false))).thenAnswer(new Answer<View>() {
             @Override
             public View answer(InvocationOnMock invocation) throws Throwable {
-                return mock(View.class);
+                final FrameLayout mockedView = mock(FrameLayout.class);
+                when(mockedView.findViewById(CHILD_VIEW_1)).thenReturn(mock(FrameLayout.class));
+                when(mockedView.findViewById(CHILD_VIEW_2)).thenReturn(mock(FrameLayout.class));
+                return mockedView;
             }
         });
 
@@ -42,7 +52,7 @@ public class LayersTest {
         //when(activity.getApplicationContext()).thenReturn(context);
         when(activity.getLayoutInflater()).thenReturn(inflater);
 
-        LayersHost host = mock(LayersHost.class);
+        host = mock(LayersHost.class);
         when(host.getView(0)).thenReturn(container);
         when(host.getActivity()).thenReturn(activity);
 
@@ -57,11 +67,38 @@ public class LayersTest {
         // TODO
     }
 
+    @Test
     public void testSaveState() throws Exception {
         // TODO
         // create new instance of Layers
         // restore stack
         // compare old and new instances of same layer - shouldn't be equal
+
+
+        MockedLayer layer1 = layers.add(MockedLayer.class, null, "Test Layer 1", true);
+        MockedLayer layer2 = layers.add(MockedLayer.class, null, "Test Layer 2", true);
+        layer2.getLayers().at(CHILD_VIEW_1).add(MockedLayer.class, null, "Child Layer 3", true);
+
+        Bundle state = layers.saveState();
+
+        layers.destroy();
+
+        layers = new Layers(host, 0, state);
+        layers.resumeView();
+
+        assertEquals(2, layers.getStackSize());
+
+        assertTrue(((MockedLayer) layers.get(0)).isStateRestored());
+
+        assertTrue(((MockedLayer) layers.get(1)).isStateRestored());
+        assertNotNull(layers.get(1).getView());
+
+        assertEquals(1, layers.get(1).getLayers().at(CHILD_VIEW_1).getStackSize());
+
+        assertTrue(((MockedLayer) layers.get(1).getLayers().at(CHILD_VIEW_1).get(0)).isStateRestored());
+        layers.get(1).getLayers().at(CHILD_VIEW_1).resumeView();
+        assertNotNull(layers.get(1).getLayers().at(CHILD_VIEW_1).get(0).getView());
+
     }
 
     @Test
@@ -87,7 +124,7 @@ public class LayersTest {
         assertEquals(1, layer.getOnCreateViewCalled());
         assertEquals(1, layer.getOnAttachCalled());
         assertEquals(1, layer.getOnBindViewCalled());
-        assertEquals(0, layer.getRestoreViewStateCalled());
+        assertFalse(layer.isViewStateRestored());
         assertTrue(layer.isAttached());
 
         verify(container, times(1)).addView(layer.getView());
@@ -219,6 +256,10 @@ public class LayersTest {
         Layer<?> pickedLayer = layers.peek();
         assertNotNull(pickedLayer);
         assertEquals("Test Layer 2", pickedLayer.getName());
+    }
+
+    public void testGet() {
+        // TODO
     }
 
     @Test

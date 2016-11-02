@@ -36,6 +36,6 @@ public class ChildLayer extends Layer<Presenter<?, ?>> {
     @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-        ((TextView) getView(R.id.child_title)).setText(getArguments().getString(ARGS_TITLE));
+        this.<TextView>getView(R.id.child_title).setText(getArguments().getString(ARGS_TITLE));
     }
 }

@@ -29,7 +29,7 @@ public class Layers {
         this(host, View.NO_ID, savedState);
     }
 
-    public Layers(@NonNull LayersHost host, @IdRes int containerId, @Nullable Bundle savedState) {
+    Layers(@NonNull LayersHost host, @IdRes int containerId, @Nullable Bundle savedState) {
         this.host = host;
         this.containerId = containerId;
 
@@ -78,13 +78,6 @@ public class Layers {
     }
 
     /**
-     * Set View creation to pause. Views will not be created until {@link Layers#resumeView} is called.
-     */
-    public void pauseView() {
-        viewPaused = true;
-    }
-
-    /**
      * Un-pause View creation. View on the top of the stack will be created if wasn't created already.
      */
     public void resumeView() {
@@ -103,29 +96,16 @@ public class Layers {
         }
     }
 
-    public void destroyViews() {
-        final int size = layerStack.size();
-        if (size != 0) {
-            for (int i = size - 1; i >= 0; i--) {
-                final StackEntry entry = layerStack.get(i);
-                moveToState(entry, StackEntry.LAYER_STATE_VIEW_DESTROYED, false);
-            }
-        }
-
-        // Layers at other containers
-        final int layersCount = (layerGroup == null ? 0 : layerGroup.size());
-        if (layersCount > 0) {
-            for (int i = 0; i < layersCount; i++) {
-                layerGroup.get(layerGroup.keyAt(i)).destroyViews();
-            }
-        }
+    /**
+     * Set View creation to pause. Views will not be created until {@link Layers#resumeView} is called.
+     */
+    public void pauseView() {
+        viewPaused = true;
     }
 
-    void saveState(@Nullable Bundle outState) {
-        if (outState == null) {
-            return;
-        }
-
+    @Nullable
+    Bundle saveState() {
+        final Bundle outState = new Bundle();
         final int size = layerStack.size();
         if (size != 0) {
             for (int i = size - 1; i >= 0; i--) {
@@ -144,11 +124,31 @@ public class Layers {
             final SparseArray<Bundle> layersArray = new SparseArray<>();
             for (int i = 0; i < layersCount; i++) {
                 final int key = layerGroup.keyAt(i);
-                final Bundle state = new Bundle();
-                layerGroup.get(key).saveState(state);
-                layersArray.put(key, state);
+                final Bundle state = layerGroup.get(key).saveState();
+                if (state != null) {
+                    layersArray.put(key, state);
+                }
             }
             outState.putSparseParcelableArray(STATE_LAYERS, layersArray);
+        }
+        return outState.size() > 0 ? outState : null;
+    }
+
+    public void destroy() {
+        final int size = layerStack.size();
+        if (size != 0) {
+            for (int i = size - 1; i >= 0; i--) {
+                final StackEntry entry = layerStack.get(i);
+                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
+            }
+        }
+
+        // Layers at other containers
+        final int layersCount = (layerGroup == null ? 0 : layerGroup.size());
+        if (layersCount > 0) {
+            for (int i = 0; i < layersCount; i++) {
+                layerGroup.get(layerGroup.keyAt(i)).destroy();
+            }
         }
     }
 
@@ -196,10 +196,8 @@ public class Layers {
     }
 
     private void restoreViewState(StackEntry entry) {
-        SparseArray<Parcelable> savedState = entry.pickViewSavedState();
-        if (savedState != null) {
-            entry.layerInstance.restoreViewState(savedState);
-        }
+        final SparseArray<Parcelable> savedState = entry.pickViewSavedState();
+        entry.layerInstance.restoreViewState(savedState);
     }
 
     private void saveViewState(StackEntry entry) {
@@ -496,6 +494,17 @@ public class Layers {
 
         //noinspection unchecked
         return (L) layerStack.get(size - 1).layerInstance;
+    }
+
+    @Nullable
+    public <L extends Layer<?>> L get(int index) {
+        final int size = layerStack.size();
+        if (size == 0 || size <= index) {
+            return null;
+        }
+
+        //noinspection unchecked
+        return (L) layerStack.get(index).layerInstance;
     }
 
     @Nullable

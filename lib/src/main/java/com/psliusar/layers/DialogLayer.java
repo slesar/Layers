@@ -69,9 +69,9 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
     }
 
     @Override
-    void restoreViewState(@NonNull SparseArray<Parcelable> inState) {
+    void restoreViewState(@Nullable SparseArray<Parcelable> inState) {
         super.restoreViewState(inState);
-        if (dialog != null) {
+        if (dialog != null && inState != null) {
             dialog.onRestoreInstanceState((Bundle) inState.get(0));
         }
     }
@@ -81,7 +81,7 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
         super.saveViewState(outState);
         if (dialog != null) {
             final Bundle bundle = dialog.onSaveInstanceState();
-            if (bundle != null) {
+            if (bundle != null && bundle.size() > 0) {
                 outState.put(0, bundle);
             }
         }

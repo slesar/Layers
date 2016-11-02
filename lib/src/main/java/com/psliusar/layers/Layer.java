@@ -15,10 +15,11 @@ import android.view.ViewGroup;
 
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
-    private static final String STATE_CHILD_LAYERS = "STATE_CHILD_LAYERS";
+    private static final String SAVED_STATE_CHILD_LAYERS = "SAVED_STATE_CHILD_LAYERS";
 
     LayersHost host;
-    Layers layers;
+    @Nullable
+    private Layers layers;
     P presenter;
     View view;
     String name;
@@ -57,8 +58,12 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     protected void onCreate(@Nullable Bundle savedState) {
         fromSavedState = savedState != null;
-        final Bundle layersState = savedState == null ? null : savedState.getBundle(STATE_CHILD_LAYERS);
-        layers = new Layers(this, layersState);
+        if (savedState != null) {
+            final Bundle layersState = savedState.getBundle(SAVED_STATE_CHILD_LAYERS);
+            if (layersState != null) {
+                layers = new Layers(this, layersState);
+            }
+        }
     }
 
     @Nullable
@@ -68,10 +73,13 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     }
 
-    void restoreViewState(@NonNull SparseArray<Parcelable> inState) {
-        // FIXME for child layers at
-        view.restoreHierarchyState(inState);
-        layers.resumeView();
+    void restoreViewState(@Nullable SparseArray<Parcelable> inState) {
+        if (inState != null) {
+            view.restoreHierarchyState(inState);
+        }
+        if (layers != null) {
+            layers.resumeView();
+        }
     }
 
     /**
@@ -93,13 +101,22 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     void saveLayerState(@NonNull Bundle outState) {
-        final Bundle layersState = new Bundle();
-        layers.saveState(layersState);
-        outState.putBundle(STATE_CHILD_LAYERS, layersState);
+        if (layers != null) {
+            final Bundle layersState = layers.saveState();
+            if (layersState != null) {
+                outState.putBundle(SAVED_STATE_CHILD_LAYERS, layersState);
+            }
+        }
+    }
+
+    protected void onSaveLayerState() {
+
     }
 
     protected void onDestroyView() {
-        layers.destroyViews();
+        if (layers != null) {
+            layers.destroy();
+        }
     }
 
     protected void onDestroy() {
@@ -183,6 +200,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     @NonNull
     public Layers getLayers() {
+        if (layers == null) {
+            layers = new Layers(this, null);
+        }
         return layers;
     }
 
