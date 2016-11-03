@@ -18,7 +18,7 @@ public class MainActivity extends LayersActivity {
         super.onCreate(state);
         setContentView(R.layout.activity_main);
         if (state == null) {
-            getLayers().add(HomeLayer.class, null, null, true);
+            getLayers().add(HomeLayer.class).setName("Home").commit();
         }
     }
 
@@ -30,18 +30,28 @@ public class MainActivity extends LayersActivity {
 
     public void addToStack(CharSequence title, int level, boolean opaque) {
         final Bundle args = StackLayer.createArguments(title, level);
-        getLayers().add(StackLayer.class, args, "Stack" + level, opaque);
+        getLayers().add(StackLayer.class)
+                .setArguments(args)
+                .setName("Stack" + level)
+                .setOpaque(opaque)
+                .commit();
     }
 
     public void showChildrenLayers() {
-        getLayers().add(ChildrenContainerLayer.class, null, "Children", true);
+        getLayers().add(ChildrenContainerLayer.class)
+                .setName("Children")
+                .commit();
     }
 
     public void showDialogLayers() {
-        getLayers().add(DialogsLayer.class, null, "Dialogs", true);
+        getLayers().add(DialogsLayer.class)
+                .setName("Dialogs")
+                .commit();
     }
 
     public void showActivityListener() {
-        getLayers().add(ListenerLayer.class, null, "Listener", true);
+        getLayers().add(ListenerLayer.class)
+                .setName("Listener")
+                .commit();
     }
 }

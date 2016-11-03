@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
-    private static final String SAVED_STATE_CHILD_LAYERS = "SAVED_STATE_CHILD_LAYERS";
+    private static final String SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS";
 
     LayersHost host;
     @Nullable

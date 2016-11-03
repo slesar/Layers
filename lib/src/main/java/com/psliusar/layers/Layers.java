@@ -15,8 +15,8 @@ import java.util.ArrayList;
 
 public class Layers {
 
-    private static final String STATE_STACK = "STATE_STACK";
-    private static final String STATE_LAYERS = "STATE_LAYERS";
+    private static final String STATE_STACK = "LAYERS.STATE_STACK";
+    private static final String STATE_LAYERS = "LAYERS.STATE_LAYERS";
 
     private final LayersHost host;
     private final int containerId;
@@ -156,12 +156,12 @@ public class Layers {
         final L layer;
         try {
             //noinspection unchecked
-            layer = (L) entry.getLayerClass().newInstance();
+            layer = (L) entry.getLayerClass(host.getActivity().getApplicationContext()).newInstance();
         } catch (InstantiationException e) {
-            throw new RuntimeException("Unable to instantiate layer " + entry.getLayerClass()
+            throw new RuntimeException("Unable to instantiate layer " + entry.getLayerClassName()
                     + ": make sure class exists, is public, and has an empty constructor", e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("Unable to instantiate layer " + entry.getLayerClass()
+            throw new RuntimeException("Unable to instantiate layer " + entry.getLayerClassName()
                     + ": make sure class has an empty constructor that is public", e);
         }
 
@@ -341,13 +341,13 @@ public class Layers {
     }
 
     @NonNull
-    public <L extends Layer<?>> Operation<L> add(@NonNull Class<L> layerClass) {
-        return new Operation<>(this, layerClass, Operation.ACTION_ADD);
+    public <L extends Layer<?>> Transaction<L> add(@NonNull Class<L> layerClass) {
+        return new Transaction<>(this, layerClass, Transaction.ACTION_ADD);
     }
 
     @NonNull
-    public <L extends Layer<?>> Operation<L> replace(@NonNull Class<L> layerClass) {
-        return new Operation<>(this, layerClass, Operation.ACTION_REPLACE);
+    public <L extends Layer<?>> Transaction<L> replace(@NonNull Class<L> layerClass) {
+        return new Transaction<>(this, layerClass, Transaction.ACTION_REPLACE);
     }
 
     /**
@@ -594,52 +594,6 @@ public class Layers {
 
         RevLink(T current) {
             this.current = current;
-        }
-    }
-
-    public static class Operation<LAYER extends Layer<?>> {
-
-        static final int ACTION_ADD = 1;
-        static final int ACTION_REPLACE = 2;
-
-        private final Layers layers;
-        private final Class<LAYER> layerClass;
-        private final int action;
-        private Bundle arguments;
-        private String name;
-        private boolean opaque = true;
-
-        Operation(@NonNull Layers layers, @NonNull Class<LAYER> layerClass, int action) {
-            this.layers = layers;
-            this.layerClass = layerClass;
-            this.action = action;
-        }
-
-        public Operation<LAYER> setArguments(@NonNull Bundle arguments) {
-            this.arguments = arguments;
-            return this;
-        }
-
-        public Operation<LAYER> setName(@NonNull String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Operation<LAYER> setOpaque(boolean opaque) {
-            this.opaque = opaque;
-            return this;
-        }
-
-        public LAYER commit() {
-            switch (action) {
-            case ACTION_ADD:
-                return layers.add(layerClass, arguments, name, opaque);
-            case ACTION_REPLACE:
-                return layers.replace(layerClass, arguments, name, opaque);
-            default:
-                // TODO
-                throw new IllegalArgumentException("");
-            }
         }
     }
 }

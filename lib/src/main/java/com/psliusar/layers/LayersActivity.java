@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 public abstract class LayersActivity extends AppCompatActivity implements LayersHost {
 
-    private static final String SAVED_STATE_LAYERS = "SAVED_STATE_LAYERS";
+    private static final String SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS";
 
     private ActivityCallbacks activityCallbacks;
     private Layers layers;

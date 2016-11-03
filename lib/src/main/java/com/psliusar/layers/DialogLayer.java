@@ -37,9 +37,9 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
      */
     public static final int STYLE_NO_INPUT = 3;
 
-    private static final String PRIVATE_ARGS_DIALOG_STYLE = "PRIVATE_DIALOG_STYLE";
-    private static final String PRIVATE_ARGS_DIALOG_THEME = "PRIVATE_DIALOG_THEME";
-    private static final String PRIVATE_ARGS_DIALOG_CANCELABLE = "PRIVATE_DIALOG_CANCELABLE";
+    private static final String PRIVATE_ARGS_DIALOG_STYLE = "DIALOG_LAYER.PRIVATE_DIALOG_STYLE";
+    private static final String PRIVATE_ARGS_DIALOG_THEME = "DIALOG_LAYER.PRIVATE_DIALOG_THEME";
+    private static final String PRIVATE_ARGS_DIALOG_CANCELABLE = "DIALOG_LAYER.PRIVATE_DIALOG_CANCELABLE";
 
     private Dialog dialog;
 

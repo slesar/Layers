@@ -1,5 +1,6 @@
 package com.psliusar.layers;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -18,7 +19,7 @@ class StackEntry implements Parcelable {
     static final int TYPE_TRANSPARENT = 0;
     static final int TYPE_OPAQUE = 1;
 
-    private static final String VIEW_STATE = "VIEW_STATE";
+    private static final String VIEW_STATE = "STACK_ENTRY.VIEW_STATE";
 
     final String className;
     final String name;
@@ -40,17 +41,21 @@ class StackEntry implements Parcelable {
     }
 
     @NonNull
-    Class<? extends Layer<?>> getLayerClass() {
+    Class<? extends Layer<?>> getLayerClass(@NonNull Context context) {
         if (layerClass == null) {
             try {
-                // TODO classLoader from context
                 //noinspection unchecked
-                layerClass = (Class<? extends Layer<?>>) this.getClass().getClassLoader().loadClass(className);
+                layerClass = (Class<? extends Layer<?>>) context.getClassLoader().loadClass(className);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException("Failed to load class " + className);
             }
         }
         return layerClass;
+    }
+
+    @NonNull
+    String getLayerClassName() {
+        return className;
     }
 
     @Nullable
