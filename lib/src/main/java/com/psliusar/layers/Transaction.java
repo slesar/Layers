@@ -1,6 +1,7 @@
 package com.psliusar.layers;
 
 import android.os.Bundle;
+import android.support.annotation.AnimRes;
 import android.support.annotation.NonNull;
 
 public class Transaction<LAYER extends Layer<?>> {
@@ -36,15 +37,42 @@ public class Transaction<LAYER extends Layer<?>> {
         return this;
     }
 
+    /**
+     * Direct animation
+     *
+     * @param outAnimId layer(s) that comes out
+     * @param inAnimId layer that comes in
+     * @return this transaction
+     */
+    public Transaction<LAYER> setInAnimations(@AnimRes int outAnimId, @AnimRes int inAnimId) {
+        //
+        return this;
+    }
+
+    /**
+     * Reverse animation
+     *
+     * @param inAnimId layer(s) that returns back from the stack
+     * @param outAnimId layer that pops out from the top of the stack
+     * @return this transaction
+     */
+    public Transaction<LAYER> setOutAnimations(@AnimRes int inAnimId, @AnimRes int outAnimId) {
+        //
+        return this;
+    }
+
     public LAYER commit() {
+        final LAYER layer;
         switch (action) {
             case ACTION_ADD:
-                return layers.add(layerClass, arguments, name, opaque);
+                layer = layers.add(layerClass, arguments, name, opaque);
+                break;
             case ACTION_REPLACE:
-                return layers.replace(layerClass, arguments, name, opaque);
+                layer = layers.replace(layerClass, arguments, name, opaque);
+                break;
             default:
-                // TODO
-                throw new IllegalArgumentException("");
+                throw new IllegalArgumentException("Invalid action ID: " + action);
         }
+        return layer;
     }
 }
