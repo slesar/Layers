@@ -24,6 +24,7 @@ public class Layers {
     private SparseArray<Layers> layerGroup;
     private ArrayList<StackEntry> layerStack;
     private boolean viewPaused = false;
+    private boolean stateSaved = false;
 
     public Layers(@NonNull LayersHost host, @Nullable Bundle savedState) {
         this(host, View.NO_ID, savedState);
@@ -75,6 +76,21 @@ public class Layers {
             getLayerGroup().put(containerId, layers);
         }
         return layers;
+    }
+
+    void restoreState() {
+        stateSaved = false;
+        final int size = layerStack.size();
+        for (int i = size - 1; i >= 0; i--) {
+            layerStack.get(i).layerInstance.restoreLayerState();
+        }
+
+        // Restore state of layers which are at other containers
+        final int layersCount = layerGroup == null ? 0 : layerGroup.size();
+        for (int i = 0; i < layersCount; i++) {
+            final int key = layerGroup.keyAt(i);
+            layerGroup.get(key).restoreState();
+        }
     }
 
     /**
@@ -131,6 +147,7 @@ public class Layers {
             }
             outState.putSparseParcelableArray(STATE_LAYERS, layersArray);
         }
+        stateSaved = true;
         return outState.size() > 0 ? outState : null;
     }
 
@@ -152,7 +169,7 @@ public class Layers {
         }
     }
 
-    private <L extends Layer<?>> L createLayer(StackEntry entry) {
+    private <L extends Layer<?>> L createLayer(@NonNull StackEntry entry) {
         final L layer;
         try {
             //noinspection unchecked
@@ -177,7 +194,7 @@ public class Layers {
         return layer;
     }
 
-    private void createView(StackEntry entry) {
+    private void createView(@NonNull StackEntry entry) {
         final Layer<?> layer = entry.layerInstance;
         final View layerView = layer.onCreateView(layer.isViewInLayout() ? getContainer() : null);
         layer.view = layerView;
@@ -195,12 +212,16 @@ public class Layers {
         }
     }
 
-    private void restoreViewState(StackEntry entry) {
+    private void restoreLayerState(@NonNull StackEntry entry) {
+
+    }
+
+    private void restoreViewState(@NonNull StackEntry entry) {
         final SparseArray<Parcelable> savedState = entry.pickViewSavedState();
         entry.layerInstance.restoreViewState(savedState);
     }
 
-    private void saveViewState(StackEntry entry) {
+    private void saveViewState(@NonNull StackEntry entry) {
         SparseArray<Parcelable> viewState = new SparseArray<>();
         entry.layerInstance.saveViewState(viewState);
         if (viewState.size() > 0) {
@@ -208,7 +229,7 @@ public class Layers {
         }
     }
 
-    private void saveLayerState(StackEntry entry) {
+    private void saveLayerState(@NonNull StackEntry entry) {
         final Bundle bundle = new Bundle();
         entry.layerInstance.saveLayerState(bundle);
         if (bundle.size() > 0) {
@@ -216,7 +237,7 @@ public class Layers {
         }
     }
 
-    private void destroyView(StackEntry entry, boolean saveState) {
+    private void destroyView(@NonNull StackEntry entry, boolean saveState) {
         final Layer<?> layer = entry.layerInstance;
 
         if (saveState && layer.view != null) {
@@ -338,6 +359,10 @@ public class Layers {
 
     public boolean isViewPaused() {
         return viewPaused;
+    }
+
+    public boolean isInSavedState() {
+        return stateSaved;
     }
 
     @NonNull
