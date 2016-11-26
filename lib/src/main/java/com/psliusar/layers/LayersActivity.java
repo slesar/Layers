@@ -31,6 +31,9 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
     @Override
     protected void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);
+        if (!isFinishing()) {
+            layers.restoreState();
+        }
         activityCallbacks.fireEvent(ActivityCallbacks.EVENT_ON_RESTORE_STATE, state);
     }
 

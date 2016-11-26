@@ -160,6 +160,11 @@ public class MockedLayer extends Layer<MockedPresenter> {
     @Override
     void saveLayerState(@NonNull Bundle outState) {
         super.saveLayerState(outState);
+    }
+
+    @Override
+    protected void onSaveLayerState(@NonNull Bundle outState) {
+        super.onSaveLayerState(outState);
         // TODO counter
         outState.putString(STATE_STRING_KEY, STATE_STRING_VALUE);
     }

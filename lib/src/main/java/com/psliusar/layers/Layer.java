@@ -73,6 +73,12 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     }
 
+    void restoreLayerState() {
+        if (layers != null) {
+            layers.restoreState();
+        }
+    }
+
     void restoreViewState(@Nullable SparseArray<Parcelable> inState) {
         if (inState != null) {
             view.restoreHierarchyState(inState);
@@ -107,9 +113,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
                 outState.putBundle(SAVED_STATE_CHILD_LAYERS, layersState);
             }
         }
+        onSaveLayerState(outState);
     }
 
-    protected void onSaveLayerState() {
+    protected void onSaveLayerState(@NonNull Bundle outState) {
 
     }
 
