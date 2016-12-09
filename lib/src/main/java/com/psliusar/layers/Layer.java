@@ -13,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.psliusar.layers.animation.LayerAnimation;
+
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
     private static final String SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS";
@@ -249,5 +251,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         for (int i = 0; i < size; i++) {
             getView(ids[i]).setOnClickListener(listener);
         }
+    }
+
+    @Nullable
+    public LayerAnimation getAnimation(@Transition.AnimationType int animationType) {
+        return null;
     }
 }
