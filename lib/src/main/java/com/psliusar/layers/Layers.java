@@ -5,15 +5,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.IdRes;
-import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.psliusar.layers.animation.LayerAnimation;
 
 import java.util.ArrayList;
 
@@ -75,10 +72,13 @@ public class Layers {
     }
 
     private Layers at(int containerId, @Nullable Bundle state) {
-        Layers layers = getLayerGroup().get(containerId);
+        if (layerGroup == null) {
+            layerGroup = new SparseArray<>();
+        }
+        Layers layers = layerGroup.get(containerId);
         if (layers == null) {
             layers = new Layers(host, containerId, state);
-            getLayerGroup().put(containerId, layers);
+            layerGroup.put(containerId, layers);
         }
         return layers;
     }
@@ -133,13 +133,15 @@ public class Layers {
         if (viewPaused) {
             return;
         }
-        // Prepare for animations
+        // Prepare for transition
         final int size = layerStack.size();
-        if (size <= 0) {
+        if (size == 0) {
             return;
         }
+        // Reset state
         for (int i = 0; i < size; i++) {
-            layerStack.get(i).layerTypeAnimated = layerStack.get(i).layerType;
+            final StackEntry entry = layerStack.get(i);
+            entry.layerTypeAnimated = entry.layerType;
         }
         // TODO lowest with transition not taken into account
         int lowest = getLowestVisibleEntry(size - 1 - d);
@@ -204,19 +206,15 @@ public class Layers {
 
     public void destroy() {
         final int size = layerStack.size();
-        if (size != 0) {
-            for (int i = size - 1; i >= 0; i--) {
-                final StackEntry entry = layerStack.get(i);
-                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
-            }
+        for (int i = size - 1; i >= 0; i--) {
+            final StackEntry entry = layerStack.get(i);
+            moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
         }
 
         // Layers at other containers
         final int layersCount = (layerGroup == null ? 0 : layerGroup.size());
-        if (layersCount > 0) {
-            for (int i = 0; i < layersCount; i++) {
-                layerGroup.get(layerGroup.keyAt(i)).destroy();
-            }
+        for (int i = 0; i < layersCount; i++) {
+            layerGroup.get(layerGroup.keyAt(i)).destroy();
         }
     }
 
@@ -273,7 +271,7 @@ public class Layers {
     }
 
     private void saveViewState(@NonNull StackEntry entry) {
-        SparseArray<Parcelable> viewState = new SparseArray<>();
+        final SparseArray<Parcelable> viewState = new SparseArray<>();
         entry.layerInstance.saveViewState(viewState);
         if (viewState.size() > 0) {
             entry.setViewSavedState(viewState);
@@ -306,14 +304,14 @@ public class Layers {
         layer.view = null;
     }
 
-    private void destroyLayer(StackEntry entry, boolean saveState) {
+    private void destroyLayer(@NonNull StackEntry entry, boolean saveState) {
         if (saveState) {
             saveLayerState(entry);
         }
         entry.layerInstance.onDestroy();
     }
 
-    private void moveToState(StackEntry entry, int targetState, boolean saveState) {
+    private void moveToState(@NonNull StackEntry entry, int targetState, boolean saveState) {
         if (targetState <= StackEntry.LAYER_STATE_VIEW_CREATED) {
             int state = entry.state;
             while (state < targetState) {
@@ -383,10 +381,11 @@ public class Layers {
             return -1;
         }
         int lower = upper;
+        final boolean inTransition = hasRunningTransition();
         // from end to beginning, search for opaque layer
         for (int i = upper; i >= 0; i--) {
             final StackEntry entry = layerStack.get(i);
-            final int layerType = hasRunningTransition() ? entry.layerTypeAnimated : entry.layerType;
+            final int layerType = inTransition ? entry.layerTypeAnimated : entry.layerType;
             if (layerType == StackEntry.TYPE_TRANSPARENT
                     || layerType == StackEntry.TYPE_OPAQUE
                     || i == 0) {
@@ -493,14 +492,13 @@ public class Layers {
     @Nullable
     public <L extends Layer<?>> L removeLayerAt(int index) {
         final int size = layerStack.size();
-        if (size == 0 || size <= index) {
+        if (index < 0 || index >= size) {
             return null;
         }
         final StackEntry entry = layerStack.get(index);
         moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
-        layerStack.remove(index);
 
-        return (L) entry.layerInstance;
+        return (L) layerStack.remove(index).layerInstance;
     }
 
     /**
@@ -525,12 +523,9 @@ public class Layers {
             return null;
         }
         final StackEntry entry = layerStack.get(size - 1);
-        Transition<Layer<?>> transition = new Transition<>(this, null, Transition.ACTION_POP);
+        final Transition<Layer<?>> transition = new Transition<>(this, null, Transition.ACTION_POP);
         if (entry.animations != null) {
-            transition
-                    .setInAnimation(entry.animations[Transition.ANIMATION_LOWER_OUT], entry.animations[Transition.ANIMATION_UPPER_IN])
-                    .setOutAnimation(entry.animations[Transition.ANIMATION_UPPER_OUT], entry.animations[Transition.ANIMATION_LOWER_IN]);
-
+            transition.setAnimations(entry.animations);
         }
         return (L) transition.commit();
     }
@@ -620,7 +615,7 @@ public class Layers {
     @Nullable
     public <L extends Layer<?>> L get(int index) {
         final int size = layerStack.size();
-        if (size == 0 || size <= index) {
+        if (index < 0 || index >= size) {
             return null;
         }
 
@@ -637,7 +632,8 @@ public class Layers {
 
         for (int i = size - 1; i >= 0; i--) {
             final StackEntry entry = layerStack.get(i);
-            if ((name == null && entry.name == null) || (name != null && name.equals(entry.name))) {
+            if (name == entry.name // == is the same object or nulls
+                    || (name != null && name.equals(entry.name))) {
                 //noinspection unchecked
                 return (L) entry.layerInstance;
             }
@@ -650,12 +646,8 @@ public class Layers {
         return layerStack.size();
     }
 
-    @Nullable
+    @NonNull
     StackEntry getStackEntryAt(int index) {
-        final int size = layerStack.size();
-        if (size == 0 || size <= index) {
-            return null;
-        }
         return layerStack.get(index);
     }
 
@@ -678,19 +670,12 @@ public class Layers {
         return size;
     }
 
+    @NonNull
     private StackEntry removeLast() {
         final int index = layerStack.size() - 1;
         StackEntry entry = layerStack.get(index);
         layerStack.remove(index);
         return entry;
-    }
-
-    @NonNull
-    private SparseArray<Layers> getLayerGroup() {
-        if (layerGroup == null) {
-            layerGroup = new SparseArray<>();
-        }
-        return layerGroup;
     }
 
     private ViewGroup getContainer() {

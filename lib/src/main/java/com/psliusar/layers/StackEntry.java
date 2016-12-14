@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.AnimRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
@@ -31,6 +30,7 @@ class StackEntry implements Parcelable {
     int layerTypeAnimated;
     boolean valid = true;
 
+    @Nullable
     int[] animations;
 
     Class<? extends Layer<?>> layerClass;
@@ -85,12 +85,9 @@ class StackEntry implements Parcelable {
         viewState = state;
     }
 
-    void setAnimations(@AnimRes int lowerOut, @AnimRes int upperIn, @AnimRes int upperOut, @AnimRes int lowerIn) {
+    void setAnimations(@NonNull int[] src) {
         animations = new int[4];
-        animations[Transition.ANIMATION_LOWER_OUT] = lowerOut;
-        animations[Transition.ANIMATION_UPPER_IN] = upperIn;
-        animations[Transition.ANIMATION_UPPER_OUT] = upperOut;
-        animations[Transition.ANIMATION_LOWER_IN] = lowerIn;
+        System.arraycopy(src, 0, animations, 0, src.length);
     }
 
     StackEntry(Parcel in) {

@@ -64,7 +64,8 @@ public class Transition<LAYER extends Layer<?>> {
     private Bundle arguments;
     private String name;
     private boolean opaque = true;
-    private final int[] animations = new int[4];
+    @Nullable
+    private int[] animations;
 
     private int stackSize;
     private boolean committed = false;
@@ -80,7 +81,7 @@ public class Transition<LAYER extends Layer<?>> {
         }
     };
 
-    Transition(@NonNull Layers layers, @Nullable Class<LAYER> layerClass, @ActionType int action) {
+    Transition(@NonNull Layers layers, @NonNull Class<LAYER> layerClass, @ActionType int action) {
         this.layers = layers;
         this.layerClass = layerClass;
         this.action = action;
@@ -109,6 +110,9 @@ public class Transition<LAYER extends Layer<?>> {
      * @return this transaction
      */
     public Transition<LAYER> setInAnimation(@AnimRes int outAnimId, @AnimRes int inAnimId) {
+        if (animations == null) {
+            animations = new int[4];
+        }
         animations[ANIMATION_LOWER_OUT] = outAnimId;
         animations[ANIMATION_UPPER_IN] = inAnimId;
         return this;
@@ -117,26 +121,34 @@ public class Transition<LAYER extends Layer<?>> {
     /**
      * Reverse animation
      *
-     * @param inAnimId layer(s) that returns back from the stack
      * @param outAnimId layer that pops out from the top of the stack
+     * @param inAnimId layer(s) that returns back from the stack
      * @return this transaction
      */
-    public Transition<LAYER> setOutAnimation(@AnimRes int inAnimId, @AnimRes int outAnimId) {
-        animations[ANIMATION_LOWER_IN] = inAnimId;
+    public Transition<LAYER> setOutAnimation(@AnimRes int outAnimId, @AnimRes int inAnimId) {
+        if (animations == null) {
+            animations = new int[4];
+        }
         animations[ANIMATION_UPPER_OUT] = outAnimId;
+        animations[ANIMATION_LOWER_IN] = inAnimId;
         return this;
+    }
+
+    void setAnimations(@NonNull int[] src) {
+        if (animations == null) {
+            animations = new int[4];
+        }
+        System.arraycopy(src, 0, animations, 0, src.length);
     }
 
     public boolean isFinished() {
         return animationSet.isEmpty();
     }
 
-    private boolean hasInAnimations() {
-        return animations[ANIMATION_LOWER_OUT] != 0 || animations[ANIMATION_UPPER_IN] != 0;
-    }
-
-    private boolean hasOutAnimations() {
-        return animations[ANIMATION_LOWER_IN] != 0 || animations[ANIMATION_UPPER_OUT] != 0;
+    private boolean hasAnimations() {
+        return animations != null
+                && (animations[ANIMATION_LOWER_OUT] != 0 || animations[ANIMATION_UPPER_IN] != 0
+                || animations[ANIMATION_LOWER_IN] != 0 || animations[ANIMATION_UPPER_OUT] != 0);
     }
 
     private void cancelAnimations() {
@@ -169,7 +181,7 @@ public class Transition<LAYER extends Layer<?>> {
                 animateLayer(layer, ANIMATION_LOWER_OUT);
                 break;
             case ACTION_POP:
-                animateLayer(layer, index < stackSize - 1 ? ANIMATION_UPPER_OUT : ANIMATION_LOWER_IN);
+                animateLayer(layer, index < stackSize - 1 ? ANIMATION_LOWER_IN : ANIMATION_UPPER_OUT);
                 break;
         }
     }
@@ -179,6 +191,7 @@ public class Transition<LAYER extends Layer<?>> {
         if (committed) {
             throw new IllegalStateException("!!");
         }
+        // TODO cancel current animation if any
         /*final Transition<?> currentTransition = layers.getCurrentTransition();
         if (layers.hasRunningTransition() && currentTransition != null) {
             currentTransition.cancelAnimations();
@@ -203,8 +216,9 @@ public class Transition<LAYER extends Layer<?>> {
         final LAYER layer = layers.add(layerClass, arguments, name, opaque);
         animateLayer(layer, ANIMATION_UPPER_IN);
 
-        final StackEntry entry = layers.getStackEntryAt(stackSize);
-        entry.setAnimations(animations[0], animations[1], animations[2], animations[3]);
+        setEntryAnimations(stackSize);
+        //final StackEntry entry = layers.getStackEntryAt(stackSize);
+        //entry.setAnimations(animations[0], animations[1], animations[2], animations[3]);
 
         if (animationSet.size() == 0) {
             finish();
@@ -239,11 +253,12 @@ public class Transition<LAYER extends Layer<?>> {
             if (stackSize > 0) {
                 layers.getStackEntryAt(stackSize - 1).valid = false;
             }
+            setEntryAnimations(stackSize);
         }
         animateLayer(layer, ANIMATION_UPPER_IN);
 
-        final StackEntry entry = layers.getStackEntryAt(stackSize);
-        entry.setAnimations(animations[0], animations[1], animations[2], animations[3]);
+        //final StackEntry entry = layers.getStackEntryAt(stackSize);
+        //entry.setAnimations(animations[0], animations[1], animations[2], animations[3]);
 
         if (animationSet.size() == 0) {
             finish();
@@ -252,8 +267,6 @@ public class Transition<LAYER extends Layer<?>> {
     }
 
     private LAYER commitPop() {
-        // TODO index bounds check
-
         layers.startTransition(this, 1);
 
         final LAYER layer = layers.peek();
@@ -266,11 +279,13 @@ public class Transition<LAYER extends Layer<?>> {
 
     @Nullable
     private LayerAnimation animateLayer(@NonNull Layer<?> layer, @AnimationType int animationType) {
-        if (layers.isViewPaused() || !layer.isViewInLayout() || layer.getView() == null) {
+        if (layers.isViewPaused()
+                || !layer.isViewInLayout()
+                || layer.getView() == null) {
             return null;
         }
         LayerAnimation animation = layer.getAnimation(animationType);
-        if (animation == null && animations[animationType] != 0) {
+        if (animation == null && animations != null && animations[animationType] != 0) {
             animation = new SimpleAnimation(layers, animations[animationType]);
         }
         if (animation != null) {
@@ -280,5 +295,18 @@ public class Transition<LAYER extends Layer<?>> {
             animationSet.add(animation);
         }
         return animation;
+    }
+
+    private void setEntryAnimations(int index) {
+        if (index < layers.getStackSize()
+                && animations != null
+                && (animations[ANIMATION_LOWER_OUT] != 0
+                || animations[ANIMATION_UPPER_IN] != 0
+                || animations[ANIMATION_LOWER_IN] != 0
+                || animations[ANIMATION_UPPER_OUT] != 0
+        )) {
+            final StackEntry entry = layers.getStackEntryAt(index);
+            entry.setAnimations(animations);
+        }
     }
 }
