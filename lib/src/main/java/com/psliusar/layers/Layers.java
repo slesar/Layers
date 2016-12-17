@@ -5,7 +5,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.IdRes;
-import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
@@ -128,30 +127,24 @@ public class Layers {
         return transition != null/* && !transition.isFinished()*/;
     }
 
-    void startTransition(@NonNull Transition<?> transition, int d) {
+    int startTransition(@NonNull Transition<?> transition, int skip) {
+        // TODO finish current transition
+
         this.transition = transition;
         if (viewPaused) {
-            return;
+            return 0;
         }
         // Prepare for transition
         final int size = layerStack.size();
         if (size == 0) {
-            return;
+            return 0;
         }
         // Reset state
         for (int i = 0; i < size; i++) {
             final StackEntry entry = layerStack.get(i);
-            entry.layerTypeAnimated = entry.layerType;
+            entry.layerTypeAnimated = i < size - skip ? entry.layerType : StackEntry.TYPE_TRANSPARENT;
         }
-        // TODO lowest with transition not taken into account
-        int lowest = getLowestVisibleEntry(size - 1 - d);
-        for (int i = 0; i < size; i++) {
-            layerStack.get(i).layerTypeAnimated = i > lowest ? StackEntry.TYPE_TRANSPARENT : StackEntry.TYPE_OPAQUE;
-        }
-        ensureViews();
-        for (int i = lowest; i < size; i++) {
-            transition.onPrepareLayer(layerStack.get(i).layerInstance, i);
-        }
+        return ensureViews();
     }
 
     void finishTransition() {
@@ -370,15 +363,10 @@ public class Layers {
      *
      * @return the lowest visible layer index
      */
-    @IntRange(from = -1)
     int getLowestVisibleEntry() {
-        return getLowestVisibleEntry(layerStack.size() - 1);
-    }
-
-    @IntRange(from = -1)
-    int getLowestVisibleEntry(int upper) {
+        final int upper = layerStack.size() - 1;
         if (upper < 0) {
-            return -1;
+            return 0;
         }
         int lower = upper;
         final boolean inTransition = hasRunningTransition();
@@ -398,10 +386,10 @@ public class Layers {
         return lower;
     }
 
-    private void ensureViews() {
+    private int ensureViews() {
         final int size;
         if (viewPaused || (size = layerStack.size()) == 0) {
-            return;
+            return 0;
         }
 
         final int lowest = getLowestVisibleEntry();
@@ -413,6 +401,7 @@ public class Layers {
                 moveToState(entry, StackEntry.LAYER_STATE_VIEW_CREATED, false);
             }
         }
+        return lowest;
     }
 
     public boolean isViewPaused() {
@@ -523,11 +512,7 @@ public class Layers {
             return null;
         }
         final StackEntry entry = layerStack.get(size - 1);
-        final Transition<Layer<?>> transition = new Transition<>(this, null, Transition.ACTION_POP);
-        if (entry.animations != null) {
-            transition.setAnimations(entry.animations);
-        }
-        return (L) transition.commit();
+        return (L) new Transition<>(this, entry.layerInstance.getClass(), Transition.ACTION_POP).commit();
     }
 
     @Nullable
