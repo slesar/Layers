@@ -38,6 +38,9 @@ public class Transition<LAYER extends Layer<?>> {
      */
     public static final int ANIMATION_LOWER_IN = 3;
 
+    /**
+     * All possible values of animation type
+     */
     @IntDef({ANIMATION_LOWER_OUT, ANIMATION_UPPER_IN, ANIMATION_UPPER_OUT, ANIMATION_LOWER_IN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AnimationType {}
@@ -57,6 +60,9 @@ public class Transition<LAYER extends Layer<?>> {
      */
     static final int ACTION_POP = 3;
 
+    /**
+     * All possible values of action type
+     */
     @IntDef({ACTION_ADD, ACTION_REPLACE, ACTION_POP})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {}
@@ -162,13 +168,9 @@ public class Transition<LAYER extends Layer<?>> {
     }
 
     private void cancelAnimations() {
-        /*for (LayerAnimation animation : animationSet) {
-            animation.stop();
-        }*/
         if (animatorSet != null) {
             animatorSet.end();
         }
-        //finish();
     }
 
     void start(int skip) {
