@@ -1,5 +1,6 @@
 package com.psliusar.layers;
 
+import android.animation.Animator;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -249,5 +250,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         for (int i = 0; i < size; i++) {
             getView(ids[i]).setOnClickListener(listener);
         }
+    }
+
+    @Nullable
+    public Animator getAnimation(@Transition.AnimationType int animationType) {
+        return null;
     }
 }

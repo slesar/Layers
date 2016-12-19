@@ -291,7 +291,7 @@ public class LayersTest {
         layers.add(MockedLayer.class, null, "Test Layer 3", false);
         layers.add(MockedLayer.class, null, "Test Layer 4", false);
 
-        Layer<?> popped2 = layers.popTo("Test Layer 2", true);
+        Layer<?> popped2 = layers.popLayersTo("Test Layer 2", true);
         assertEquals(1, layers.getStackSize());
         assertTrue(popped2 == layer2);
         assertTrue(layer1 == layers.peek());
@@ -302,7 +302,7 @@ public class LayersTest {
         MockedLayer layer7 = layers.add(MockedLayer.class, null, "Test Layer 7", false);
         assertEquals(4, layers.getStackSize());
 
-        Layer<?> popped7 = layers.popTo("Test Layer 6", false);
+        Layer<?> popped7 = layers.popLayersTo("Test Layer 6", false);
         assertEquals(3, layers.getStackSize());
         assertTrue(popped7 == layer7);
         assertTrue(layer6 == layers.peek());
@@ -312,7 +312,7 @@ public class LayersTest {
         layers.add(MockedLayer.class, null, "Test Layer 9", false);
         assertEquals(5, layers.getStackSize());
 
-        Layer<?> popped5 = layers.popTo(null, false);
+        Layer<?> popped5 = layers.popLayersTo(null, false);
         assertEquals(1, layers.getStackSize());
         assertTrue(popped5 == layer5);
         assertTrue(layer1 == layers.peek());
@@ -322,7 +322,7 @@ public class LayersTest {
         layers.add(MockedLayer.class, null, "Test Layer 11", false);
         assertEquals(3, layers.getStackSize());
 
-        Layer<?> popped1 = layers.popTo(null, true);
+        Layer<?> popped1 = layers.popLayersTo(null, true);
         assertEquals(0, layers.getStackSize());
         assertTrue(popped1 == layer1);
 

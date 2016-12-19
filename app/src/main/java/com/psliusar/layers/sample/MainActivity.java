@@ -34,6 +34,8 @@ public class MainActivity extends LayersActivity {
                 .setArguments(args)
                 .setName("Stack" + level)
                 .setOpaque(opaque)
+                .setInAnimation(R.anim.lower_out, R.anim.upper_in)
+                .setOutAnimation(R.anim.upper_out, R.anim.lower_in)
                 .commit();
     }
 

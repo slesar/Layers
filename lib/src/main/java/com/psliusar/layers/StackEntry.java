@@ -26,18 +26,23 @@ class StackEntry implements Parcelable {
     Bundle arguments;
     Bundle layerState;
     SparseArray<Parcelable> viewState;
-    int type;
+    int layerType;
+    int layerTypeAnimated;
+    boolean valid = true;
+
+    @Nullable
+    int[] animations;
 
     Class<? extends Layer<?>> layerClass;
     Layer<?> layerInstance;
     int state = LAYER_STATE_EMPTY;
 
-    StackEntry(@NonNull Class<? extends Layer<?>> layerClass, @Nullable Bundle arguments, @Nullable String name, int type) {
+    StackEntry(@NonNull Class<? extends Layer<?>> layerClass, @Nullable Bundle arguments, @Nullable String name, int layerType) {
         this.layerClass = layerClass;
         this.className = layerClass.getName();
         this.arguments = arguments;
         this.name = name;
-        this.type = type;
+        this.layerType = layerType;
     }
 
     @NonNull
@@ -80,6 +85,11 @@ class StackEntry implements Parcelable {
         viewState = state;
     }
 
+    void setAnimations(@NonNull int[] src) {
+        animations = new int[4];
+        System.arraycopy(src, 0, animations, 0, src.length);
+    }
+
     StackEntry(Parcel in) {
         final ClassLoader classLoader = Layers.class.getClassLoader();
         className = in.readString();
@@ -90,7 +100,11 @@ class StackEntry implements Parcelable {
         if (viewBundle != null) {
             viewState = viewBundle.getSparseParcelableArray(VIEW_STATE);
         }
-        type = in.readInt();
+        layerType = in.readInt();
+        if (in.readInt() > 0) {
+            animations = new int[4];
+            in.readIntArray(animations);
+        }
     }
 
     @Override
@@ -107,7 +121,11 @@ class StackEntry implements Parcelable {
         final Bundle viewBundle = new Bundle();
         viewBundle.putSparseParcelableArray(VIEW_STATE, viewState);
         dest.writeBundle(viewBundle);
-        dest.writeInt(type);
+        dest.writeInt(layerType);
+        if (animations != null) {
+            dest.writeInt(1);
+            dest.writeIntArray(animations);
+        }
     }
 
     public static final Creator<StackEntry> CREATOR = new Creator<StackEntry>() {
