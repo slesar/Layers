@@ -1,5 +1,6 @@
 package com.psliusar.layers;
 
+import android.animation.Animator;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -12,8 +13,6 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.psliusar.layers.animation.LayerAnimation;
 
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
@@ -254,7 +253,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     }
 
     @Nullable
-    public LayerAnimation getAnimation(@Transition.AnimationType int animationType) {
+    public Animator getAnimation(@Transition.AnimationType int animationType) {
         return null;
     }
 }

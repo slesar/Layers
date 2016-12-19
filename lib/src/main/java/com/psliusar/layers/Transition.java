@@ -1,12 +1,15 @@
 package com.psliusar.layers;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.os.Bundle;
 import android.support.annotation.AnimRes;
+import android.support.annotation.AnimatorRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.psliusar.layers.animation.LayerAnimation;
 import com.psliusar.layers.animation.SimpleAnimation;
 
 import java.lang.annotation.Retention;
@@ -70,15 +73,14 @@ public class Transition<LAYER extends Layer<?>> {
     private int initialStackSize;
     private int lowestVisibleLayer;
     private boolean committed = false;
-    final HashSet<LayerAnimation> animationSet = new HashSet<>();
+    private final HashSet<Animator> toAnimate = new HashSet<>();
+    @Nullable
+    private AnimatorSet animatorSet;
 
-    private LayerAnimation.OnLayerAnimationListener animationListener = new LayerAnimation.OnLayerAnimationListener() {
+    private final Animator.AnimatorListener animationListener = new AnimatorListenerAdapter() {
         @Override
-        public void onAnimationEnd(@NonNull LayerAnimation animation) {
-            animationSet.remove(animation);
-            if (animationSet.size()== 0) {
-                finish();
-            }
+        public void onAnimationEnd(Animator animation) {
+            finish();
         }
     };
 
@@ -143,7 +145,7 @@ public class Transition<LAYER extends Layer<?>> {
     }
 
     public boolean isFinished() {
-        return animationSet.isEmpty();
+        return committed && animatorSet == null;
     }
 
     private void setAnimations(@NonNull int[] src) {
@@ -160,10 +162,13 @@ public class Transition<LAYER extends Layer<?>> {
     }
 
     private void cancelAnimations() {
-        for (LayerAnimation animation : animationSet) {
+        /*for (LayerAnimation animation : animationSet) {
             animation.stop();
+        }*/
+        if (animatorSet != null) {
+            animatorSet.end();
         }
-        finish();
+        //finish();
     }
 
     void start(int skip) {
@@ -183,6 +188,7 @@ public class Transition<LAYER extends Layer<?>> {
                 break;
         }
         layers.finishTransition();
+        animatorSet = null;
     }
 
     @Nullable
@@ -206,8 +212,13 @@ public class Transition<LAYER extends Layer<?>> {
             default:
                 throw new IllegalArgumentException("Invalid action ID: " + action);
         }
-        if (animationSet.size() == 0) {
+        if (toAnimate.size() == 0) {
             finish();
+        } else {
+            animatorSet = new AnimatorSet();
+            animatorSet.addListener(animationListener);
+            animatorSet.playTogether(toAnimate);
+            animatorSet.start();
         }
         return layer;
     }
@@ -232,7 +243,7 @@ public class Transition<LAYER extends Layer<?>> {
 
         final LAYER layer;
 
-        if (animationSet.size() == 0) {
+        if (toAnimate.size() == 0) {
             // TODO detect ALL animations
             // No animation, just replace
             layer = layers.replace(layerClass, arguments, name, opaque);
@@ -263,21 +274,19 @@ public class Transition<LAYER extends Layer<?>> {
     }
 
     @Nullable
-    private LayerAnimation animateLayer(@NonNull Layer<?> layer, @AnimationType int animationType) {
+    private Animator animateLayer(@NonNull Layer<?> layer, @AnimationType int animationType) {
         if (layers.isViewPaused()
                 || !layer.isViewInLayout()
                 || layer.getView() == null) {
             return null;
         }
-        LayerAnimation animation = layer.getAnimation(animationType);
+        Animator animation = layer.getAnimation(animationType);
         if (animation == null && animations != null && animations[animationType] != 0) {
-            animation = new SimpleAnimation(layers, animations[animationType]);
+            animation = new SimpleAnimation(layer.getView(), animations[animationType]);
+            animation.setTarget(layer.getView());
         }
         if (animation != null) {
-            animation.start(layer);
-            animation.setOnAnimationListener(animationListener);
-
-            animationSet.add(animation);
+            toAnimate.add(animation);
         }
         return animation;
     }
