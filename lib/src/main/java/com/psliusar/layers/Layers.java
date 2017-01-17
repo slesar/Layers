@@ -224,14 +224,7 @@ public class Layers {
                     + ": make sure class has an empty constructor that is public", e);
         }
 
-        layer.create(host, entry.arguments, entry.name);
-        final Presenter presenter = layer.getPresenter();
-        if (presenter != null) {
-            //noinspection unchecked
-            presenter.create(host, layer);
-        }
-
-        layer.onCreate(entry.pickLayerSavedState());
+        layer.create(host, entry.arguments, entry.name, entry.pickLayerSavedState());
 
         return layer;
     }

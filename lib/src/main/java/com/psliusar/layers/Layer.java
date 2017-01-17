@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
     private static final String SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS";
+    private static final String SAVED_STATE_CUSTOM = "LAYER.SAVED_STATE_CUSTOM";
 
     LayersHost host;
     @Nullable
@@ -51,20 +52,30 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         return false;
     }
 
-    void create(@NonNull LayersHost host, @Nullable Bundle arguments, @Nullable String name) {
+    void create(@NonNull LayersHost host, @Nullable Bundle arguments, @Nullable String name, @Nullable Bundle savedState) {
         this.host = host;
         this.arguments = arguments;
         this.name = name;
-    }
-
-    protected void onCreate(@Nullable Bundle savedState) {
         fromSavedState = savedState != null;
+
+        final P presenter = getPresenter();
+        if (presenter != null) {
+            //noinspection unchecked
+            presenter.create(host, this);
+        }
+
         if (savedState != null) {
             final Bundle layersState = savedState.getBundle(SAVED_STATE_CHILD_LAYERS);
             if (layersState != null) {
                 layers = new Layers(this, layersState);
             }
+
         }
+        onCreate(savedState == null ? null : savedState.getBundle(SAVED_STATE_CUSTOM));
+    }
+
+    protected void onCreate(@Nullable Bundle savedState) {
+
     }
 
     @Nullable
@@ -114,7 +125,11 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
                 outState.putBundle(SAVED_STATE_CHILD_LAYERS, layersState);
             }
         }
-        onSaveLayerState(outState);
+        final Bundle customState = new Bundle();
+        onSaveLayerState(customState);
+        if (customState.size() > 0) {
+            outState.putBundle(SAVED_STATE_CUSTOM, customState);
+        }
     }
 
     protected void onSaveLayerState(@NonNull Bundle outState) {

@@ -100,8 +100,8 @@ public class MockedLayer extends Layer<MockedPresenter> {
     }
 
     @Override
-    void create(@NonNull LayersHost host, @Nullable Bundle arguments, @Nullable String name) {
-        super.create(host, arguments, name);
+    void create(@NonNull LayersHost host, @Nullable Bundle arguments, @Nullable String name, @Nullable Bundle savedState) {
+        super.create(host, arguments, name, savedState);
         createCalled++;
     }
 
