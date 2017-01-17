@@ -216,6 +216,12 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
 
     @NonNull
     @Override
+    public Layers getLayers(@IdRes int viewId) {
+        return getLayers().at(viewId);
+    }
+
+    @NonNull
+    @Override
     public Activity getActivity() {
         return host.getActivity();
     }

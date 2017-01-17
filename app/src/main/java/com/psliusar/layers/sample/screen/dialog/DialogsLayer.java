@@ -69,11 +69,17 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
 
     void showSimpleDialog(String title, String message) {
         Bundle args = SimpleDialogLayer.createArguments(title, message);
-        getLayers().add(SimpleDialogLayer.class, args, DIALOG_SIMPLE, false);
+        getLayers().add(SimpleDialogLayer.class)
+                .setArguments(args)
+                .setName(DIALOG_SIMPLE)
+                .commit();
     }
 
     void showCustomDialog(String title) {
         Bundle args = CustomDialogLayer.createArguments(title);
-        getLayers().add(CustomDialogLayer.class, args, DIALOG_CUSTOM, false);
+        getLayers().add(CustomDialogLayer.class)
+                .setArguments(args)
+                .setName(DIALOG_CUSTOM)
+                .commit();
     }
 }

@@ -440,6 +440,18 @@ public class Layers {
         return (L) entry.layerInstance;
     }
 
+    @NonNull
+    StackEntry createStackEntry(@NonNull Class<? extends Layer<?>> layerClass) {
+        return new StackEntry(layerClass, null, null, StackEntry.TYPE_OPAQUE);
+    }
+
+    Layer<?> commitStackEntry(@NonNull StackEntry entry) {
+        layerStack.add(entry);
+        ensureViews();
+
+        return entry.layerInstance;
+    }
+
     /**
      * Remove layer and View
      *
@@ -512,7 +524,7 @@ public class Layers {
             return null;
         }
         final StackEntry entry = layerStack.get(size - 1);
-        return (L) new Transition<>(this, entry.layerInstance.getClass(), Transition.ACTION_POP).commit();
+        return (L) new Transition<>(this, entry, Transition.ACTION_POP).commit();
     }
 
     @Nullable

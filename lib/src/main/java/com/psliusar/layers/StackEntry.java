@@ -22,7 +22,7 @@ class StackEntry implements Parcelable {
     private static final String VIEW_STATE = "STACK_ENTRY.VIEW_STATE";
 
     final String className;
-    final String name;
+    String name;
     Bundle arguments;
     Bundle layerState;
     SparseArray<Parcelable> viewState;
@@ -83,11 +83,6 @@ class StackEntry implements Parcelable {
 
     void setViewSavedState(@Nullable SparseArray<Parcelable> state) {
         viewState = state;
-    }
-
-    void setAnimations(@NonNull int[] src) {
-        animations = new int[4];
-        System.arraycopy(src, 0, animations, 0, src.length);
     }
 
     StackEntry(Parcel in) {

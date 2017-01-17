@@ -23,13 +23,25 @@ public class ChildrenContainerLayer extends Layer<Presenter<?, ?>> {
         super.onBindView(view);
         if (!isFromSavedState()) {
             final Bundle argsTop = ChildLayer.createArguments("Top layer");
-            getLayers().at(R.id.children_container_top).add(ChildLayer.class, argsTop, "Top", true);
+            getLayers().at(R.id.children_container_top)
+                    .add(ChildLayer.class)
+                    .setArguments(argsTop)
+                    .setName("Top")
+                    .commit();
 
             final Bundle argsMiddle = ChildLayer.createArguments("Middle layer");
-            getLayers().at(R.id.children_container_middle).add(ChildLayer.class, argsMiddle, "Middle", true);
+            getLayers().at(R.id.children_container_middle)
+                    .add(ChildLayer.class)
+                    .setArguments(argsMiddle)
+                    .setName("Middle")
+                    .commit();
 
             final Bundle argsBottom = ChildLayer.createArguments("Bottom layer");
-            getLayers().at(R.id.children_container_bottom).add(ChildLayer.class, argsBottom, "Bottom", true);
+            getLayers().at(R.id.children_container_bottom)
+                    .add(ChildLayer.class)
+                    .setArguments(argsBottom)
+                    .setName("Bottom")
+                    .commit();
         }
     }
 
