@@ -18,10 +18,10 @@ public class ListenerModel implements Model {
         this.presenter = p;
 
         final MainActivity activity = (MainActivity) presenter.getHost().getActivity();
-        activity.getActivityCallbacks().add(new ActivityCallbacks.BaseActivityListener(ActivityCallbacks.EVENT_ON_ACTIVITY_RESULT) {
+        activity.getActivityCallbacks().add(new ActivityCallbacks.BaseActivityListener() {
             @Override
             public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                presenter.setPhotoUri(intent.getData());
+                presenter.setPhotoUri(intent != null ? intent.getData() : null);
             }
         }).manageWith(subscriptions);
     }

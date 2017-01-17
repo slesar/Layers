@@ -21,7 +21,7 @@ import java.util.ArrayList;
  *
  * <p>
  *     When cancel is called, listeners will get both calls -
- *     {@link AnimatorListener#onAnimationCancel(android.animation.Animator) and
+ *     {@link AnimatorListener#onAnimationCancel(android.animation.Animator)} and
  *     {@link AnimatorListener#onAnimationEnd(android.animation.Animator)}
  * </p>
  */

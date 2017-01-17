@@ -122,7 +122,9 @@ class StackEntry implements Parcelable {
         viewBundle.putSparseParcelableArray(VIEW_STATE, viewState);
         dest.writeBundle(viewBundle);
         dest.writeInt(layerType);
-        if (animations != null) {
+        if (animations == null) {
+            dest.writeInt(0);
+        } else {
             dest.writeInt(1);
             dest.writeIntArray(animations);
         }
