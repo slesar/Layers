@@ -14,20 +14,41 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Layer<P extends Presenter> implements LayersHost {
 
     private static final String SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS";
     private static final String SAVED_STATE_CUSTOM = "LAYER.SAVED_STATE_CUSTOM";
 
-    LayersHost host;
+    private LayersHost host;
+
     @Nullable
     private Layers layers;
-    P presenter;
+
+    @Nullable
+    private P presenter;
+
     View view;
-    String name;
-    Bundle arguments;
+
+    @Nullable
+    private String name;
+
+    @Nullable
+    private Bundle arguments;
+
     boolean attached;
-    boolean fromSavedState;
+
+    private boolean fromSavedState;
+
+    @Nullable
+    private Binder viewBinder;
 
     public Layer() {
         // Default constructor
@@ -82,7 +103,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     protected abstract View onCreateView(@Nullable ViewGroup parent);
 
     protected void onBindView(@NonNull View view) {
-
+        if (viewBinder == null) {
+            viewBinder = new Binder();
+        }
+        viewBinder.bindViews(this, view);
     }
 
     void restoreLayerState() {
@@ -139,6 +163,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     protected void onDestroyView() {
         if (layers != null) {
             layers.destroy();
+        }
+        if (viewBinder != null) {
+            viewBinder.unbindViews(this);
         }
     }
 
@@ -202,7 +229,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     public <T extends View> T getView(@IdRes int id) {
         final T view = findView(id);
         if (view == null) {
-            throw new IllegalArgumentException("Failed to find View with ID: " + id);
+            throw new IllegalArgumentException("Failed to find View with ID 0x" + Integer.toHexString(id));
         }
         return view;
     }
@@ -276,5 +303,74 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     @Nullable
     public Animator getAnimation(@Transition.AnimationType int animationType) {
         return null;
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ ElementType.FIELD })
+    public @interface Bind {
+        @IdRes
+        int value();
+    }
+
+    private class Binder {
+
+        private List<Field> boundFields;
+
+        Binder() {
+
+        }
+
+        @Nullable
+        List<Field> bindViews(@NonNull Object holder, @NonNull View view) {
+            final ArrayList<Field> fieldsList = new ArrayList<>();
+            for (Field field : holder.getClass().getDeclaredFields()) {
+                // TODO check for synthetic, static, final - skip if any
+
+                final Bind annotation = field.getAnnotation(Bind.class);
+                if (annotation == null) {
+                    continue;
+                }
+
+                try {
+                    if (!field.isAccessible()) {
+                        field.setAccessible(true);
+                    }
+                    final Class<?> type = field.getType();
+                    if (View.class.isAssignableFrom(type)) {
+                        @IdRes final int viewResId = annotation.value();
+                        final View foundView = view.findViewById(viewResId);
+                        if (foundView == null) {
+                            throw new IllegalArgumentException("View with ID 0x" + Integer.toHexString(viewResId) + " not found!");
+                        }
+                        field.set(holder, type.cast(foundView));
+                    } else {
+                        throw new IllegalArgumentException("Could not bind field not of type View");
+                    }
+                    fieldsList.add(field);
+                } catch (SecurityException ex) {
+                    throw new IllegalArgumentException("Failed to bind view", ex);
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalArgumentException("Could not set field value", ex);
+                } catch (ClassCastException ex) {
+                    throw new IllegalArgumentException("Cannot assign value to a field", ex);
+                }
+            }
+            boundFields = fieldsList.size() > 0 ? fieldsList : null;
+            return boundFields;
+        }
+
+        void unbindViews(@NonNull Object holder) {
+            if (boundFields == null) {
+                return;
+            }
+            try {
+                for (Field field : boundFields) {
+                    field.set(holder, null);
+                }
+            } catch (IllegalAccessException ex) {
+                throw new IllegalArgumentException("Could not reset field value", ex);
+            }
+            boundFields = null;
+        }
     }
 }

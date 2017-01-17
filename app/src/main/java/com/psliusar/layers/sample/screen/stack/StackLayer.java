@@ -23,8 +23,13 @@ public class StackLayer extends Layer<StackPresenter> implements View.OnClickLis
         return bundle;
     }
 
+    @Bind(R.id.stack_level)
     private TextView stackLevel;
-    private CheckBox nextOpaque;
+
+    @Bind(R.id.stack_next_opaque)
+    private CheckBox nextOpaque = null;
+
+    @Bind(R.id.stack_next_title)
     private TextView nextTitle;
 
     @Nullable
@@ -36,21 +41,10 @@ public class StackLayer extends Layer<StackPresenter> implements View.OnClickLis
     @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-        stackLevel = getView(R.id.stack_level);
-        nextOpaque = getView(R.id.stack_next_opaque);
-        nextTitle = getView(R.id.stack_next_title);
 
         bindClickListener(this, R.id.stack_next);
 
         getPresenter().initViews();
-    }
-
-    @Override
-    protected void onDestroyView() {
-        super.onDestroyView();
-        stackLevel = null;
-        nextOpaque = null;
-        nextTitle = null;
     }
 
     @Override
