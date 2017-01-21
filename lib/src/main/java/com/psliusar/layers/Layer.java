@@ -22,7 +22,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Layer<P extends Presenter> implements LayersHost {
+public abstract class Layer<P extends Presenter> implements LayersHost, View.OnClickListener {
 
     private static final String SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS";
     private static final String SAVED_STATE_CUSTOM = "LAYER.SAVED_STATE_CUSTOM";
@@ -300,6 +300,11 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         }
     }
 
+    @Override
+    public void onClick(View v) {
+        
+    }
+
     @Nullable
     public Animator getAnimation(@Transition.AnimationType int animationType) {
         return null;
@@ -310,9 +315,14 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
     public @interface Bind {
         @IdRes
         int value();
+
+        @IdRes
+        int parent() default View.NO_ID;
+
+        boolean clicks() default false;
     }
 
-    private class Binder {
+    private static class Binder {
 
         private List<Field> boundFields;
 
@@ -321,42 +331,63 @@ public abstract class Layer<P extends Presenter> implements LayersHost {
         }
 
         @Nullable
-        List<Field> bindViews(@NonNull Object holder, @NonNull View view) {
+        List<Field> bindViews(@NonNull Layer<?> layer, @NonNull View container) {
             final ArrayList<Field> fieldsList = new ArrayList<>();
-            for (Field field : holder.getClass().getDeclaredFields()) {
-                // TODO check for synthetic, static, final - skip if any
+            Class<?> targetClass = layer.getClass();
+            while (targetClass != null && targetClass != Object.class) {
+                for (Field field : targetClass.getDeclaredFields()) {
+                    // TODO check for synthetic, static, final - throw if any
 
-                final Bind annotation = field.getAnnotation(Bind.class);
-                if (annotation == null) {
-                    continue;
-                }
+                    final Bind bind = field.getAnnotation(Bind.class);
+                    if (bind == null) {
+                        continue;
+                    }
 
-                try {
-                    if (!field.isAccessible()) {
-                        field.setAccessible(true);
+                    final View view = bindViewToField(layer, container, field, bind.value(), bind.parent());
+                    if (bind.clicks()) {
+                        view.setOnClickListener(layer);
                     }
-                    final Class<?> type = field.getType();
-                    if (View.class.isAssignableFrom(type)) {
-                        @IdRes final int viewResId = annotation.value();
-                        final View foundView = view.findViewById(viewResId);
-                        if (foundView == null) {
-                            throw new IllegalArgumentException("View with ID 0x" + Integer.toHexString(viewResId) + " not found!");
-                        }
-                        field.set(holder, type.cast(foundView));
-                    } else {
-                        throw new IllegalArgumentException("Could not bind field not of type View");
-                    }
+
                     fieldsList.add(field);
-                } catch (SecurityException ex) {
-                    throw new IllegalArgumentException("Failed to bind view", ex);
-                } catch (IllegalAccessException ex) {
-                    throw new IllegalArgumentException("Could not set field value", ex);
-                } catch (ClassCastException ex) {
-                    throw new IllegalArgumentException("Cannot assign value to a field", ex);
                 }
+
+                targetClass = targetClass.getSuperclass();
             }
             boundFields = fieldsList.size() > 0 ? fieldsList : null;
             return boundFields;
+        }
+
+        @NonNull
+        private View bindViewToField(@NonNull Object target, @NonNull View container, @NonNull Field field, @IdRes int viewResId, @IdRes int parentResId) {
+            try {
+                if (!field.isAccessible()) {
+                    field.setAccessible(true);
+                }
+                final Class<?> type = field.getType();
+                if (View.class.isAssignableFrom(type)) {
+                    final View view;
+                    if (parentResId != View.NO_ID) {
+                        container = container.findViewById(parentResId);
+                        if (container == null) {
+                            throw new IllegalArgumentException("Parent view with ID 0x" + Integer.toHexString(parentResId) + " not found!");
+                        }
+                    }
+                    view = container.findViewById(viewResId);
+                    if (view == null) {
+                        throw new IllegalArgumentException("View with ID 0x" + Integer.toHexString(viewResId) + " not found!");
+                    }
+                    field.set(target, type.cast(view));
+                    return view;
+                } else {
+                    throw new IllegalArgumentException("Could not bind field not of type View");
+                }
+            } catch (SecurityException ex) {
+                throw new IllegalArgumentException("Failed to bind view", ex);
+            } catch (IllegalAccessException ex) {
+                throw new IllegalArgumentException("Could not set field value", ex);
+            } catch (ClassCastException ex) {
+                throw new IllegalArgumentException("Cannot assign value to a field", ex);
+            }
         }
 
         void unbindViews(@NonNull Object holder) {
