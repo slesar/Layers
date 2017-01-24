@@ -31,7 +31,10 @@ public class Binder {
                     continue;
                 }
 
-                final View view = bindViewToField(layer, container, field, bind.value(), bind.parent());
+                final Class<?> type = field.getType();
+                final View view = findViewOrThrow(type, container, bind.value(), bind.parent());
+
+                bindViewToField(layer, field, type, view);
                 if (bind.clicks()) {
                     view.setOnClickListener(layer);
                 }
@@ -45,24 +48,12 @@ public class Binder {
         return boundFields;
     }
 
-    @NonNull
-    private View bindViewToField(@NonNull Object target, @NonNull View container, @NonNull Field field, @IdRes int viewResId, @IdRes int parentResId) {
+    private void bindViewToField(@NonNull Object target, @NonNull Field field, @NonNull Class<?> type, @NonNull View value) {
         try {
             if (!field.isAccessible()) {
                 field.setAccessible(true);
             }
-            final Class<?> type = field.getType();
-            if (View.class.isAssignableFrom(type)) {
-                final View view;
-                if (parentResId != View.NO_ID) {
-                    container = findViewOrThrow(container, parentResId, "Parent view");
-                }
-                view = findViewOrThrow(container, viewResId, "View");
-                field.set(target, type.cast(view));
-                return view;
-            } else {
-                throw new IllegalArgumentException("Could not bind field not of type View");
-            }
+            field.set(target, type.cast(value));
         } catch (SecurityException ex) {
             throw new IllegalArgumentException("Failed to bind view", ex);
         } catch (IllegalAccessException ex) {
@@ -70,6 +61,19 @@ public class Binder {
         } catch (ClassCastException ex) {
             throw new IllegalArgumentException("Cannot assign value to a field", ex);
         }
+    }
+
+    @NonNull
+    private View findViewOrThrow(@NonNull Class<?> type, @NonNull View container, @IdRes int viewResId, @IdRes int parentResId) {
+        if (!View.class.isAssignableFrom(type)) {
+            throw new IllegalArgumentException("Could not bind field not of type View");
+        }
+
+        if (parentResId != View.NO_ID) {
+            container = findViewOrThrow(container, parentResId, "Parent view");
+        }
+
+        return findViewOrThrow(container, viewResId, "View");
     }
 
     private View findViewOrThrow(@NonNull View container, int viewResId, String messagePrefix) {
