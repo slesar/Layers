@@ -37,7 +37,7 @@ dependencies {
 uploadArchives {
     repositories {
         mavenDeployer {
-            repository(url: uri('../../maven'))
+            repository(url: uri('/home/slesar/Work/maven'))
             pom {
                 name = 'Layers name'
                 artifactId = 'layers'

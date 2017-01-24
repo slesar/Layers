@@ -27,19 +27,19 @@ public class StackLayer extends Layer<StackPresenter> {
 
     @Keep
     @Bind(R.id.stack_level)
-    private TextView stackLevel;
+    protected TextView stackLevel;
 
     @Keep
     @Bind(R.id.stack_next_opaque)
-    private CheckBox nextOpaque;
+    protected CheckBox nextOpaque;
 
     @Keep
     @Bind(R.id.stack_next_title)
-    private TextView nextTitle;
+    protected TextView nextTitle;
 
     @Keep
     @Bind(value = R.id.stack_next, clicks = true)
-    private View buttonNext;
+    protected View buttonNext;
 
     @Nullable
     @Override
