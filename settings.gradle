@@ -1,1 +1,1 @@
-include ':app', ':layers', ':processor'
+include ':app', ':layers', ':processor', ':binder'

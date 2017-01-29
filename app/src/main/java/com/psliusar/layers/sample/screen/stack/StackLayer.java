@@ -26,11 +26,11 @@ public class StackLayer extends Layer<StackPresenter> {
     }
 
     @Keep
-    @Bind(R.id.stack_level)
+    @Bind(value = R.id.stack_level, parent = R.id.stack_container)
     protected TextView stackLevel;
 
     @Keep
-    @Bind(R.id.stack_next_opaque)
+    @Bind(value = R.id.stack_next_opaque, parent = R.id.stack_container)
     protected CheckBox nextOpaque;
 
     @Keep

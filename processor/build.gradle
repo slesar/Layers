@@ -4,8 +4,15 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 dependencies {
+    compileOnly 'com.google.android:android:4.1.1.4'
     compile 'com.squareup:javapoet:1.2.0'
+    compile project(':binder')
+    //compile 'com.google.auto.service:auto-service:1.0-rc2'
+    //compile 'com.psliusar:layers:1.0-SNAPSHOT@jar'
 }
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
 
 uploadArchives {
     repositories {
@@ -14,7 +21,7 @@ uploadArchives {
             pom {
                 name = 'Layers binder processor'
                 artifactId = 'layers-binder-processor'
-                packaging = 'aar'
+                packaging = 'jar'
                 description = 'Description'
                 //groupId = 'com.psliusar'
                 //url = ''
