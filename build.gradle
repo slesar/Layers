@@ -16,10 +16,10 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-        maven { url '/home/slesar/bin/android-sdk/extras/android/m2repository' }
-        /*maven {
+        maven {
             url uri('/home/slesar/Work/maven')
-        }*/
+        }
+        maven { url '/home/slesar/bin/android-sdk/extras/android/m2repository' }
     }
 }
 

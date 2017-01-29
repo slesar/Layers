@@ -28,7 +28,7 @@ unMock {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:24.2.1'
-    compile project(':binder')
+    compile project(':annotations')
 
     // Test
     testCompile 'junit:junit:4.12'
@@ -46,7 +46,7 @@ uploadArchives {
                 description = 'Description'
                 //groupId = 'com.psliusar'
                 //url = ''
-                version = '1.0-SNAPSHOT'
+                version = '0.5-SNAPSHOT'
             }
         }
     }
