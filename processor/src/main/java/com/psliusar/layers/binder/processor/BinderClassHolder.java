@@ -1,13 +1,15 @@
 package com.psliusar.layers.binder.processor;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.psliusar.layers.binder.LayerBinder;
+import com.psliusar.layers.binder.processor.state.SaveField;
+import com.psliusar.layers.binder.processor.state.SaveFieldProcessor;
 import com.psliusar.layers.binder.processor.view.ViewField;
+import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
@@ -17,10 +19,11 @@ import javax.lang.model.element.Modifier;
 
 public class BinderClassHolder {
 
-
     private final String packageName;
     private final String className;
     private final String parentClassName;
+
+    private final List<SaveField> saveFields = new ArrayList<>();
 
     private final List<ViewField> viewFields = new ArrayList<>();
 
@@ -43,6 +46,10 @@ public class BinderClassHolder {
         return fileWritten;
     }
 
+    public void addSaveField(@NonNull String fieldName, @NonNull String fieldType, @Nullable String manager, @Nullable String customName) {
+
+    }
+
     public void addViewField(@NonNull String fieldName, @NonNull String fieldType, int resId, @NonNull Integer parentResId, boolean clickListener) {
         final ViewField desc = new ViewField(fieldName, fieldType, resId, parentResId, clickListener);
         viewFields.add(desc);
@@ -61,6 +68,11 @@ public class BinderClassHolder {
         // TODO parametrized class
         builder.superclass(ClassName.bestGuess(parentClassName));
 
+        if (!saveFields.isEmpty()) {
+            builder.addMethod(SaveFieldProcessor.getRestoreMethod());
+            builder.addMethod(SaveFieldProcessor.getSaveMethod());
+        }
+
         if (!viewFields.isEmpty()) {
             builder.addMethod(ViewFieldProcessor.getBindMethod(packageName, className, viewFields));
             builder.addMethod(ViewFieldProcessor.getUnbindMethod(packageName, className, viewFields));
@@ -68,5 +80,4 @@ public class BinderClassHolder {
 
         return builder.build();
     }
-
 }

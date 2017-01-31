@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.psliusar.layers.binder.LayerBinder;
+import com.psliusar.layers.binder.processor.state.SaveFieldProcessor;
 import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
 import com.squareup.javapoet.ClassName;
 
@@ -49,6 +50,7 @@ public class LayersAnnotationProcessor extends AbstractProcessor {
 
     public LayersAnnotationProcessor() {
         processors.add(new ViewFieldProcessor(this));
+        processors.add(new SaveFieldProcessor(this));
     }
 
     @Override

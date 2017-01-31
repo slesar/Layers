@@ -1,6 +1,5 @@
 package com.psliusar.layers.sample.screen.child;
 
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -8,6 +7,7 @@ import android.view.ViewGroup;
 
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.Presenter;
+import com.psliusar.layers.Transition;
 import com.psliusar.layers.sample.R;
 
 public class ChildrenContainerLayer extends Layer<Presenter<?, ?>> {
@@ -22,24 +22,36 @@ public class ChildrenContainerLayer extends Layer<Presenter<?, ?>> {
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
         if (!isFromSavedState()) {
-            final Bundle argsTop = ChildLayer.createArguments("Top layer");
             getLayers().at(R.id.children_container_top)
                     .add(ChildLayer.class)
-                    .setArguments(argsTop)
+                    .prepareLayer(new Transition.OnLayerTransition<ChildLayer>() {
+                        @Override
+                        public void onBeforeTransition(@NonNull ChildLayer layer) {
+                            layer.setParameters("Top layer");
+                        }
+                    })
                     .setName("Top")
                     .commit();
 
-            final Bundle argsMiddle = ChildLayer.createArguments("Middle layer");
             getLayers().at(R.id.children_container_middle)
                     .add(ChildLayer.class)
-                    .setArguments(argsMiddle)
+                    .prepareLayer(new Transition.OnLayerTransition<ChildLayer>() {
+                        @Override
+                        public void onBeforeTransition(@NonNull ChildLayer layer) {
+                            layer.setParameters("Middle layer");
+                        }
+                    })
                     .setName("Middle")
                     .commit();
 
-            final Bundle argsBottom = ChildLayer.createArguments("Bottom layer");
             getLayers().at(R.id.children_container_bottom)
                     .add(ChildLayer.class)
-                    .setArguments(argsBottom)
+                    .prepareLayer(new Transition.OnLayerTransition<ChildLayer>() {
+                        @Override
+                        public void onBeforeTransition(@NonNull ChildLayer layer) {
+                            layer.setParameters("Bottom layer");
+                        }
+                    })
                     .setName("Bottom")
                     .commit();
         }

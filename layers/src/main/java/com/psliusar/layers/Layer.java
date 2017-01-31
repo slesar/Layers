@@ -87,7 +87,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     protected void onCreate(@Nullable Bundle savedState) {
-
+        if (savedState != null) {
+            Binder.restore(this, savedState);
+        }
     }
 
     @Nullable
@@ -145,7 +147,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     protected void onSaveLayerState(@NonNull Bundle outState) {
-
+        Binder.save(this, outState);
     }
 
     protected void onDestroyView() {

@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.view.ViewGroup;
 
 import com.psliusar.layers.LayersActivity;
+import com.psliusar.layers.Transition;
 import com.psliusar.layers.sample.screen.child.ChildrenContainerLayer;
 import com.psliusar.layers.sample.screen.dialog.DialogsLayer;
 import com.psliusar.layers.sample.screen.home.HomeLayer;
@@ -28,10 +29,14 @@ public class MainActivity extends LayersActivity {
         return getView(R.id.container);
     }
 
-    public void addToStack(CharSequence title, int level, boolean opaque) {
-        final Bundle args = StackLayer.createArguments(title, level);
+    public void addToStack(final CharSequence title, final int level, boolean opaque) {
         getLayers().add(StackLayer.class)
-                .setArguments(args)
+                .prepareLayer(new Transition.OnLayerTransition<StackLayer>() {
+                    @Override
+                    public void onBeforeTransition(@NonNull StackLayer layer) {
+                        layer.setParameters(title, level);
+                    }
+                })
                 .setName("Stack" + level)
                 .setOpaque(opaque)
                 .setInAnimation(R.anim.lower_out, R.anim.upper_in)

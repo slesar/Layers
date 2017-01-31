@@ -1,6 +1,7 @@
 package com.psliusar.layers.binder;
 
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,6 +29,14 @@ public abstract class LayerBinder {
         } catch (Resources.NotFoundException ex) {
             return null;
         }
+    }
+
+    protected void restore(@NonNull Object target, @NonNull Bundle state) {
+
+    }
+
+    protected void save(@NonNull Object target, @NonNull Bundle state) {
+
     }
 
     protected void bind(@NonNull View.OnClickListener listener, @NonNull View view) {
