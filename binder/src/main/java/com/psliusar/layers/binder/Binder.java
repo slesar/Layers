@@ -11,16 +11,18 @@ public class Binder {
 
     private static final Map<Class<?>, LayerBinder> BINDERS = new ConcurrentHashMap<>();
 
+    private static final LayerBinder DEFAULT_BINDER = new LayerBinder() { };
+
     public static void bind(@NonNull View.OnClickListener target, @NonNull View view) {
         final LayerBinder binder = getBinder(target.getClass());
-        if (binder != null) {
+        if (binder != DEFAULT_BINDER) {
             binder.bind(target, view);
         }
     }
 
     public static void unbind(@NonNull View.OnClickListener target) {
         final LayerBinder binder = getBinder(target.getClass());
-        if (binder != null) {
+        if (binder != DEFAULT_BINDER) {
             binder.unbind(target);
         }
     }
@@ -35,7 +37,7 @@ public class Binder {
         return null;
     }
 
-    @Nullable
+    @NonNull
     private static LayerBinder getBinder(@NonNull Class<?> targetClass) {
         LayerBinder binder = BINDERS.get(targetClass);
         if (binder == null) {
@@ -45,7 +47,6 @@ public class Binder {
                     final Class<?> binderClass = getClass(cl.getCanonicalName() + LayerBinder.BINDER_SUFFIX);
                     if (binderClass != null) {
                         binder = (LayerBinder) binderClass.newInstance();
-                        BINDERS.put(targetClass, binder);
                         break;
                     }
                     cl = cl.getSuperclass();
@@ -54,6 +55,10 @@ public class Binder {
                 throw new IllegalArgumentException("Could not instantiate LayerBinder for class " + targetClass.getCanonicalName(), ex);
             }
         }
+        if (binder == null) {
+            binder = DEFAULT_BINDER;
+        }
+        BINDERS.put(targetClass, binder);
         return binder;
     }
 

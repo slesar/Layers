@@ -22,8 +22,8 @@ import javax.lang.model.util.Types;
 
 public abstract class FieldProcessor extends Processor {
 
-    public FieldProcessor(@NonNull LayersAnnotationProcessor annotationProcessor) {
-        super(annotationProcessor);
+    public FieldProcessor(@NonNull LayersAnnotationProcessor proc) {
+        super(proc);
     }
 
     @NonNull

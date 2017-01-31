@@ -88,8 +88,10 @@ public class BinderClassHolder {
         // TODO parametrized class
         builder.superclass(ClassName.bestGuess(parentClassName));
 
-        builder.addMethod(getBindMethod());
-        builder.addMethod(getUnbindMethod());
+        if (!viewFields.isEmpty()) {
+            builder.addMethod(getBindMethod());
+            builder.addMethod(getUnbindMethod());
+        }
 
         return builder.build();
     }
@@ -108,7 +110,7 @@ public class BinderClassHolder {
                         .build())
                 .addParameter(ParameterSpec
                         .builder(viewClass, METHOD_PARAM_VIEW)
-                        .addAnnotation(NonNull.class)
+                        .addAnnotation(ClassName.get(NonNull.class))
                         .build());
 
         builder.addStatement(
@@ -172,7 +174,7 @@ public class BinderClassHolder {
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(ParameterSpec
                         .builder(ClassName.get("android.view", "View", "OnClickListener"), METHOD_PARAM_LISTENER)
-                        .addAnnotation(NonNull.class)
+                        .addAnnotation(ClassName.get(NonNull.class))
                         .build());
 
         builder.addStatement(

@@ -35,8 +35,8 @@ public abstract class Processor {
 
     private final LayersAnnotationProcessor annotationProcessor;
 
-    public Processor(@NonNull LayersAnnotationProcessor annotationProcessor) {
-        this.annotationProcessor = annotationProcessor;
+    public Processor(@NonNull LayersAnnotationProcessor proc) {
+        annotationProcessor = proc;
     }
 
     @NonNull

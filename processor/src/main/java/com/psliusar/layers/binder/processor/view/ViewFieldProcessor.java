@@ -18,25 +18,8 @@ import javax.lang.model.util.Types;
 
 public class ViewFieldProcessor extends FieldProcessor {
 
-    public ViewFieldProcessor(@NonNull LayersAnnotationProcessor annotationProcessor) {
-        super(annotationProcessor);
-    }
-
-    @Override
-    protected void process(@NonNull RoundEnvironment env) {
-
-        for (Element element : env.getElementsAnnotatedWith(Bind.class)) {
-            try {
-                processField(element);
-            } catch (Exception e) {
-                getAnnotationProcessor()
-                        .logError("Unable to generate binder for %s.")
-                        .arguments(element.toString())
-                        .throwable(e)
-                        .element(element)
-                        .print();
-            }
-        }
+    public ViewFieldProcessor(@NonNull LayersAnnotationProcessor proc) {
+        super(proc);
     }
 
     @NonNull
@@ -51,8 +34,23 @@ public class ViewFieldProcessor extends FieldProcessor {
         return "android.view.View";
     }
 
-    private void processField(@NonNull Element element) {
+    @Override
+    protected void process(@NonNull RoundEnvironment env) {
+        for (Element element : env.getElementsAnnotatedWith(Bind.class)) {
+            try {
+                processField(element);
+            } catch (Exception e) {
+                getAnnotationProcessor()
+                        .logError("Unable to generate view binder for %s.")
+                        .arguments(element.toString())
+                        .throwable(e)
+                        .element(element)
+                        .print();
+            }
+        }
+    }
 
+    private void processField(@NonNull Element element) {
         final BinderClassHolder holder = getHolderForClass(element);
 
         final Bind annotation = element.getAnnotation(Bind.class);
