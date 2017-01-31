@@ -19,7 +19,12 @@ allprojects {
         maven {
             url uri('/home/slesar/Work/maven')
         }
-        maven { url '/home/slesar/bin/android-sdk/extras/android/m2repository' }
+        maven {
+            Properties properties = new Properties()
+            properties.load(project.rootProject.file('local.properties').newDataInputStream())
+            String sdkDir = properties.getProperty('sdk.dir')
+            url "${sdkDir}/extras/android/m2repository"
+        }
     }
 }
 
