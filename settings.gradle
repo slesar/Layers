@@ -1,1 +1,1 @@
-include ':app', ':layers', ':processor', ':annotations'
+include ':app', ':layers', ':processor', ':binder'

@@ -3,11 +3,19 @@ package com.psliusar.layers.binder.processor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.psliusar.layers.binder.LayerBinder;
+import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
+import com.squareup.javapoet.ClassName;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,7 +27,10 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
@@ -27,17 +38,18 @@ import javax.tools.JavaFileObject;
 import static javax.tools.Diagnostic.Kind;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
-public class BinderAnnotationProcessor extends AbstractProcessor {
-
-    private static final BinderProcessor[] PROCESSORS = {
-            new FieldProcessor()
-    };
+public class LayersAnnotationProcessor extends AbstractProcessor {
 
     private Elements elementUtils;
     private Types typeUtils;
     private Filer filer;
-
     private Map<String, BinderClassHolder> classHolders = new HashMap<>();
+    private final List<Processor> processors = new ArrayList<>();
+    private final Set<Class<? extends Annotation>> annotations = new HashSet<>();
+
+    public LayersAnnotationProcessor() {
+        processors.add(new ViewFieldProcessor(this));
+    }
 
     @Override
     public synchronized void init(ProcessingEnvironment env) {
@@ -51,8 +63,10 @@ public class BinderAnnotationProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> types = new LinkedHashSet<>();
-        for (BinderProcessor processor : PROCESSORS) {
-            types.add(processor.getAnnotation().getCanonicalName());
+        for (Processor processor : processors) {
+            final Class<? extends Annotation> ann = processor.getAnnotation();
+            annotations.add(ann);
+            types.add(ann.getCanonicalName());
         }
         return types;
     }
@@ -60,8 +74,8 @@ public class BinderAnnotationProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> elements, RoundEnvironment env) {
         try {
-            for (BinderProcessor processor : PROCESSORS) {
-                processor.process(this, env, elementUtils, typeUtils, classHolders);
+            for (Processor processor : processors) {
+                processor.process(env);
             }
 
             for (Map.Entry<String, BinderClassHolder> entry : classHolders.entrySet()) {
@@ -96,11 +110,70 @@ public class BinderAnnotationProcessor extends AbstractProcessor {
         return true;
     }
 
-    protected Logg logError(String message) {
+    @NonNull
+    public Elements getElementUtils() {
+        return elementUtils;
+    }
+
+    @NonNull
+    public Types getTypeUtils() {
+        return typeUtils;
+    }
+
+    @NonNull
+    public Map<String, BinderClassHolder> getClassHolders() {
+        return classHolders;
+    }
+
+    @NonNull
+    public String resolveParentClassName(@NonNull TypeElement source) {
+        if (source.getKind() == ElementKind.FIELD) {
+            source = (TypeElement) source.getEnclosingElement().asType();
+        }
+        if (source.getKind() != ElementKind.CLASS) {
+            throw new IllegalArgumentException("Only CLASS and FIELD elements are supported");
+        }
+        TypeMirror superclass = source.getSuperclass();
+        // TODO cache classes graph
+        while (superclass.getKind() != TypeKind.NONE) {
+            final TypeElement superclassElement = (TypeElement) typeUtils.asElement(superclass);
+            if (isAnnotated(superclassElement) || isAnnotated(elementUtils.getAllMembers(superclassElement))) {
+                final String superclassPackageName = elementUtils.getPackageOf(superclassElement)
+                        .getQualifiedName()
+                        .toString();
+                final String superclassClassName = Processor.getSimpleClassName(superclassElement, superclassPackageName);
+                return ClassName.get(superclassPackageName, superclassClassName).toString();
+            }
+
+            superclass = superclassElement.getSuperclass();
+        }
+
+        return (LayerBinder.class.getCanonicalName());
+    }
+
+    private boolean isAnnotated(@NonNull Element element) {
+        for (Class<? extends Annotation> ann : annotations) {
+            if (element.getAnnotation(ann) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isAnnotated(@NonNull List<? extends Element> elements) {
+        for (Element element : elements) {
+            if (isAnnotated(element)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Logg logError(String message) {
         return new Logg(processingEnv).kind(Kind.ERROR).message(message);
     }
 
-    protected Logg logWarning(String message) {
+    public Logg logWarning(String message) {
         return new Logg(processingEnv).kind(Kind.WARNING).message(message);
     }
 

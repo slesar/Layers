@@ -16,8 +16,8 @@ uploadArchives {
         mavenDeployer {
             repository(url: uri('/home/slesar/Work/maven'))
             pom {
-                name = 'Layers annotations'
-                artifactId = 'layers-annotations'
+                name = 'Layers binder'
+                artifactId = 'layers-binder'
                 packaging = 'jar'
                 description = 'Description'
                 //groupId = 'com.psliusar'

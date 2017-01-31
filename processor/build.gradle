@@ -9,7 +9,7 @@ targetCompatibility = JavaVersion.VERSION_1_7
 dependencies {
     compileOnly 'com.google.android:android:4.1.1.4'
     compile 'com.squareup:javapoet:1.2.0'
-    compile project(':annotations')
+    compile project(':binder')
     //compile 'com.google.auto.service:auto-service:1.0-rc2'
     //compile 'com.psliusar:layers:1.0-SNAPSHOT@jar'
 }

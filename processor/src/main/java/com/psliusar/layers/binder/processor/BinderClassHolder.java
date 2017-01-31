@@ -3,7 +3,9 @@ package com.psliusar.layers.binder.processor;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.psliusar.layers.binder.ViewBinder;
+import com.psliusar.layers.binder.LayerBinder;
+import com.psliusar.layers.binder.processor.view.ParentView;
+import com.psliusar.layers.binder.processor.view.ViewField;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -29,8 +31,8 @@ public class BinderClassHolder {
     private final String className;
     private final String parentClassName;
 
-    private final List<FieldDescription> fields = new ArrayList<>();
-    private final Map<Integer, ParentDescription> parents = new HashMap<>();
+    private final List<ViewField> viewFields = new ArrayList<>();
+    private final Map<Integer, ParentView> viewParents = new HashMap<>();
 
     private boolean fileWritten;
 
@@ -43,34 +45,34 @@ public class BinderClassHolder {
         this.parentClassName = parentClassName;
     }
 
-    public void addField(@NonNull String fieldName, @NonNull String fieldType, int resId, @NonNull Integer parentResId, boolean clickListener) {
-        final FieldDescription desc = new FieldDescription(fieldName, fieldType, resId, parentResId, clickListener);
-        getParentName(parentResId, METHOD_PARAM_VIEW);
-        fields.add(desc);
-    }
-
-    @NonNull
-    public String getParentName(@NonNull Integer resId, @NonNull String fallback) {
-        if (resId == View.NO_ID) {
-            return fallback;
-        }
-
-        ParentDescription parent = parents.get(resId);
-        if (parent == null) {
-            final String name = String.format(Locale.US, PARENT_NAME_FORMAT, parents.size() + 1);
-            parent = new ParentDescription(resId, name);
-            parents.put(resId, parent);
-        }
-
-        return parent.getVarName();
-    }
-
     public void setFileWritten() {
         fileWritten = true;
     }
 
     public boolean isFileWritten() {
         return fileWritten;
+    }
+
+    public void addViewField(@NonNull String fieldName, @NonNull String fieldType, int resId, @NonNull Integer parentResId, boolean clickListener) {
+        final ViewField desc = new ViewField(fieldName, fieldType, resId, parentResId, clickListener);
+        getViewParentName(parentResId, METHOD_PARAM_VIEW);
+        viewFields.add(desc);
+    }
+
+    @NonNull
+    private String getViewParentName(@NonNull Integer resId, @NonNull String fallback) {
+        if (resId == View.NO_ID) {
+            return fallback;
+        }
+
+        ParentView parent = viewParents.get(resId);
+        if (parent == null) {
+            final String name = String.format(Locale.US, PARENT_NAME_FORMAT, viewParents.size() + 1);
+            parent = new ParentView(resId, name);
+            viewParents.put(resId, parent);
+        }
+
+        return parent.getVarName();
     }
 
     @NonNull
@@ -80,7 +82,7 @@ public class BinderClassHolder {
 
     @NonNull
     private TypeSpec getTypeSpec() {
-        TypeSpec.Builder builder = TypeSpec.classBuilder(className + ViewBinder.BINDER_SUFFIX)
+        TypeSpec.Builder builder = TypeSpec.classBuilder(className + LayerBinder.BINDER_SUFFIX)
                 .addModifiers(Modifier.PUBLIC);
 
         // TODO parametrized class
@@ -124,7 +126,7 @@ public class BinderClassHolder {
                 METHOD_PARAM_LISTENER
         );
 
-        for (Map.Entry<Integer, ParentDescription> entry : parents.entrySet()) {
+        for (Map.Entry<Integer, ParentView> entry : viewParents.entrySet()) {
             // -> final View parent_001 = find(View.class, view, R.id.container);
             builder.addStatement(
                     "final $T $L = find($L, $L)",
@@ -135,9 +137,9 @@ public class BinderClassHolder {
             );
         }
 
-        for (FieldDescription field : fields) {
+        for (ViewField field : viewFields) {
             final ClassName fieldTypeClass = ClassName.bestGuess(field.getFieldType());
-            final String parent = getParentName(field.getParentContainer(), METHOD_PARAM_VIEW);
+            final String parent = getViewParentName(field.getParentContainer(), METHOD_PARAM_VIEW);
 
             // -> target.button = (Button) find(Button.class, parent_001, R.id.button);
             builder.addStatement(
@@ -188,7 +190,7 @@ public class BinderClassHolder {
                 METHOD_PARAM_LISTENER
         );
 
-        for (FieldDescription field : fields) {
+        for (ViewField field : viewFields) {
             // -> target.button = null;
             builder.addStatement(
                     "$L.$L = null",
@@ -198,67 +200,5 @@ public class BinderClassHolder {
         }
 
         return builder.build();
-    }
-
-    public static class FieldDescription {
-
-        private final String fieldName;
-        private final String fieldType;
-
-        private final int resId;
-        private final Integer parentContainer;
-        private final boolean clickListener;
-
-        public FieldDescription(@NonNull String fieldName, @NonNull String fieldType, int resId, @NonNull Integer parentContainer, boolean clickListener) {
-            this.fieldName = fieldName;
-            this.fieldType = fieldType;
-            this.resId = resId;
-            this.parentContainer = parentContainer;
-            this.clickListener = clickListener;
-        }
-
-        @NonNull
-        public String getFieldName() {
-            return fieldName;
-        }
-
-        @NonNull
-        public String getFieldType() {
-            return fieldType;
-        }
-
-        public int getResId() {
-            return resId;
-        }
-
-        @NonNull
-        public Integer getParentContainer() {
-            return parentContainer;
-        }
-
-        public boolean isClickListener() {
-            return clickListener;
-        }
-    }
-
-    private static class ParentDescription {
-
-        private final Integer resId;
-        private final String varName;
-
-        public ParentDescription(@NonNull Integer resId, @NonNull String varName) {
-            this.resId = resId;
-            this.varName = varName;
-        }
-
-        @NonNull
-        public Integer getResId() {
-            return resId;
-        }
-
-        @NonNull
-        public String getVarName() {
-            return varName;
-        }
     }
 }
