@@ -5,8 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.psliusar.layers.binder.LayerBinder;
-import com.psliusar.layers.binder.processor.state.SaveField;
-import com.psliusar.layers.binder.processor.state.SaveFieldProcessor;
+import com.psliusar.layers.binder.processor.save.SaveField;
+import com.psliusar.layers.binder.processor.save.SaveFieldProcessor;
 import com.psliusar.layers.binder.processor.view.ViewField;
 import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
 import com.squareup.javapoet.ClassName;
@@ -77,7 +77,7 @@ public class BinderClassHolder {
         TypeSpec.Builder builder = TypeSpec.classBuilder(className + LayerBinder.BINDER_SUFFIX)
                 .addModifiers(Modifier.PUBLIC)
                 // TODO Really need to @Keep here?
-                .addAnnotation(ClassName.get(Keep.class));
+                .addAnnotation(Keep.class);
 
         // TODO parametrized class
         builder.superclass(ClassName.bestGuess(parentClassName));

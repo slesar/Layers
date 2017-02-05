@@ -90,11 +90,11 @@ public class ViewFieldProcessor extends FieldProcessor {
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(ParameterSpec
                         .builder(viewClass.nestedClass("OnClickListener"), METHOD_PARAM_LISTENER)
-                        .addAnnotation(ClassName.get(NonNull.class))
+                        .addAnnotation(NonNull.class)
                         .build())
                 .addParameter(ParameterSpec
                         .builder(viewClass, METHOD_PARAM_VIEW)
-                        .addAnnotation(ClassName.get(NonNull.class))
+                        .addAnnotation(NonNull.class)
                         .build());
 
         builder.addStatement(
@@ -167,7 +167,7 @@ public class ViewFieldProcessor extends FieldProcessor {
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(ParameterSpec
                         .builder(ClassName.get("android.view", "View", "OnClickListener"), METHOD_PARAM_LISTENER)
-                        .addAnnotation(ClassName.get(NonNull.class))
+                        .addAnnotation(NonNull.class)
                         .build());
 
         builder.addStatement(

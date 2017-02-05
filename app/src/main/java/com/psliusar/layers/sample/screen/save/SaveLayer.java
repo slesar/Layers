@@ -1,7 +1,9 @@
 package com.psliusar.layers.sample.screen.save;
 
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -12,7 +14,6 @@ import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 public class SaveLayer extends Layer<SavePresenter> {
@@ -22,6 +23,9 @@ public class SaveLayer extends Layer<SavePresenter> {
 
     @Save
     protected ArrayList<String> stringList;
+
+    @Save
+    protected SparseArray<Parcelable> parcelables;
 
     @Override
     protected SavePresenter onCreatePresenter() {
