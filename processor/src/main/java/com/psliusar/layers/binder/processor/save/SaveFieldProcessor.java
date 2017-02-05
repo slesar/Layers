@@ -176,7 +176,8 @@ public class SaveFieldProcessor extends FieldProcessor {
         // Detect SparseArray<Parcelable>
         Matcher matcher = PATTERN_SPARSE_ARRAY.matcher(elementType);
         if (matcher.matches()) {
-            if (!types.isAssignable(elements.getTypeElement(matcher.group(1)).asType(), elements.getTypeElement(TYPE_PARCELABLE).asType())) {
+            final String typeArgument = matcher.group(1);
+            if (!types.isAssignable(elements.getTypeElement(typeArgument).asType(), elements.getTypeElement(TYPE_PARCELABLE).asType())) {
                 // TODO
                 throw new IllegalArgumentException("!!!");
             }
@@ -273,7 +274,7 @@ public class SaveFieldProcessor extends FieldProcessor {
                 METHOD_PARAM_OBJECT
         );
 
-        // TODO -> final String keyPrefix = "...";
+        // -> final String keyPrefix = "SUBCLASS_NAME$$";
         builder.addStatement(
                 "final String $L = $S",
                 METHOD_VAR_KEY_PREFIX,
@@ -330,7 +331,7 @@ public class SaveFieldProcessor extends FieldProcessor {
                 METHOD_PARAM_OBJECT
         );
 
-        // TODO -> final String keyPrefix = "...";
+        // -> final String keyPrefix = "SUBCLASS_NAME$$";
         builder.addStatement(
                 "final String $L = $S",
                 METHOD_VAR_KEY_PREFIX,
