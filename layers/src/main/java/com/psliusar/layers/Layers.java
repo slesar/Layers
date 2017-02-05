@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
+// TODO Remove generics as much as possible, because they make additional pressure on methods count
 public class Layers {
 
     private static final String STATE_STACK = "LAYERS.STATE_STACK";
@@ -211,22 +212,9 @@ public class Layers {
         }
     }
 
-    private <L extends Layer<?>> L createLayer(@NonNull StackEntry entry) {
-        final L layer;
-        try {
-            //noinspection unchecked
-            layer = (L) entry.getLayerClass(host.getActivity().getApplicationContext()).newInstance();
-        } catch (InstantiationException e) {
-            throw new RuntimeException("Unable to instantiate layer " + entry.getLayerClassName()
-                    + ": make sure class exists, is public, and has an empty constructor", e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Unable to instantiate layer " + entry.getLayerClassName()
-                    + ": make sure class has an empty constructor that is public", e);
-        }
-
+    private void createLayer(@NonNull StackEntry entry) {
+        final Layer<?> layer = entry.instantiateLayer(host.getActivity().getApplicationContext());
         layer.create(host, entry.arguments, entry.name, entry.pickLayerSavedState());
-
-        return layer;
     }
 
     private void createView(@NonNull StackEntry entry) {
@@ -245,10 +233,6 @@ public class Layers {
             layer.onBindView(layerView);
             restoreViewState(entry);
         }
-    }
-
-    private void restoreLayerState(@NonNull StackEntry entry) {
-
     }
 
     private void restoreViewState(@NonNull StackEntry entry) {
@@ -303,7 +287,7 @@ public class Layers {
             while (state < targetState) {
                 switch (state) {
                 case StackEntry.LAYER_STATE_EMPTY:
-                    entry.layerInstance = createLayer(entry);
+                    createLayer(entry);
                     entry.state = StackEntry.LAYER_STATE_CREATED;
                     break;
                 case StackEntry.LAYER_STATE_CREATED:
@@ -425,17 +409,15 @@ public class Layers {
      */
     @NonNull
     public <L extends Layer<?>> L add(@NonNull Class<L> layerClass, @Nullable Bundle arguments, @Nullable String name, boolean opaque) {
-        final StackEntry entry = new StackEntry(layerClass, arguments, name, opaque ? StackEntry.TYPE_OPAQUE : StackEntry.TYPE_TRANSPARENT);
+        final StackEntry entry = new StackEntry(layerClass);
+        entry.arguments = arguments;
+        entry.name = name;
+        entry.layerType = opaque ? StackEntry.TYPE_OPAQUE : StackEntry.TYPE_TRANSPARENT;
         layerStack.add(entry);
         ensureViews();
 
         //noinspection unchecked
         return (L) entry.layerInstance;
-    }
-
-    @NonNull
-    StackEntry createStackEntry(@NonNull Class<? extends Layer<?>> layerClass) {
-        return new StackEntry(layerClass, null, null, StackEntry.TYPE_OPAQUE);
     }
 
     Layer<?> commitStackEntry(@NonNull StackEntry entry) {

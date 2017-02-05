@@ -95,7 +95,8 @@ public class Transition<LAYER extends Layer<?>> {
     Transition(@NonNull Layers layers, @NonNull Class<LAYER> layerClass, @ActionType int action) {
         this.layers = layers;
         this.action = action;
-        this.stackEntry = layers.createStackEntry(layerClass);
+        stackEntry = new StackEntry(layerClass);
+        stackEntry.instantiateLayer(layers.getHost().getActivity().getApplicationContext());
     }
 
     Transition(@NonNull Layers layers, @NonNull StackEntry entry, @ActionType int action) {
