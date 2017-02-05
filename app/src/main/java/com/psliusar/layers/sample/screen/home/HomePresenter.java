@@ -9,7 +9,7 @@ import com.psliusar.layers.sample.MainActivity;
 public class HomePresenter extends Presenter<Model, HomeLayer> {
 
     @NonNull
-    private MainActivity getMainActivity() {
+    protected MainActivity getMainActivity() {
         return (MainActivity) getHost().getActivity();
     }
 
@@ -27,5 +27,9 @@ public class HomePresenter extends Presenter<Model, HomeLayer> {
 
     void listenerClick() {
         getMainActivity().showActivityListener();
+    }
+
+    void saveClick() {
+        getMainActivity().showSaveState();
     }
 }

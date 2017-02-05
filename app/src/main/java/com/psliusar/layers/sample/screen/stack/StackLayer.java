@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.Layer;
+import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
 

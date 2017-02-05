@@ -1,5 +1,6 @@
 package com.psliusar.layers.binder.processor;
 
+import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -46,13 +47,24 @@ public class BinderClassHolder {
         return fileWritten;
     }
 
-    public void addSaveField(@NonNull String fieldName, @NonNull String fieldType, @Nullable String manager, @Nullable String customName) {
-
+    public void addSaveField(
+            @NonNull String fieldName,
+            @NonNull String fieldType,
+            @Nullable String manager,
+            @NonNull String key,
+            @NonNull String methodSuffix) {
+        final SaveField field = new SaveField(fieldName, fieldType, manager, key, methodSuffix);
+        saveFields.add(field);
     }
 
-    public void addViewField(@NonNull String fieldName, @NonNull String fieldType, int resId, @NonNull Integer parentResId, boolean clickListener) {
-        final ViewField desc = new ViewField(fieldName, fieldType, resId, parentResId, clickListener);
-        viewFields.add(desc);
+    public void addViewField(
+            @NonNull String fieldName,
+            @NonNull String fieldType,
+            int resId,
+            @NonNull Integer parentResId,
+            boolean clickListener) {
+        final ViewField field = new ViewField(fieldName, fieldType, resId, parentResId, clickListener);
+        viewFields.add(field);
     }
 
     @NonNull
@@ -63,14 +75,16 @@ public class BinderClassHolder {
     @NonNull
     private TypeSpec getTypeSpec() {
         TypeSpec.Builder builder = TypeSpec.classBuilder(className + LayerBinder.BINDER_SUFFIX)
-                .addModifiers(Modifier.PUBLIC);
+                .addModifiers(Modifier.PUBLIC)
+                // TODO Really need to @Keep here?
+                .addAnnotation(ClassName.get(Keep.class));
 
         // TODO parametrized class
         builder.superclass(ClassName.bestGuess(parentClassName));
 
         if (!saveFields.isEmpty()) {
-            builder.addMethod(SaveFieldProcessor.getRestoreMethod());
-            builder.addMethod(SaveFieldProcessor.getSaveMethod());
+            builder.addMethod(SaveFieldProcessor.getRestoreMethod(packageName, className, saveFields));
+            builder.addMethod(SaveFieldProcessor.getSaveMethod(packageName, className, saveFields));
         }
 
         if (!viewFields.isEmpty()) {

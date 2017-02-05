@@ -14,36 +14,28 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="18dp"
         android:textSize="@dimen/text_medium"
-        android:text="Introduction"/>
+        android:textStyle="bold"
+        android:text="Save fields state demo"/>
 
-    <Button
-        android:id="@+id/home_stack"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Stack demo"/>
+        android:layout_marginBottom="6dp"
+        android:textSize="@dimen/text_medium"
+        android:text="Array list:"/>
 
-    <Button
-        android:id="@+id/home_children"
+    <TextView
+        android:id="@+id/save_string_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Children layers demo"/>
+        android:layout_marginBottom="18dp"
+        android:textSize="@dimen/text_medium"
+        android:text=""/>
 
-    <Button
-        android:id="@+id/home_dialog"
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Dialog layer demo"/>
-
-    <Button
-        android:id="@+id/home_activity_listener"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Activity lifecycle demo"/>
-
-    <Button
-        android:id="@+id/home_save_annotation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="State saving demo"/>
+        android:layout_height="1dp"
+        android:layout_marginBottom="18dp"
+        android:background="#999"/>
 
 </LinearLayout>

@@ -11,7 +11,12 @@ public class ViewField {
     private final Integer parentContainer;
     private final boolean clickListener;
 
-    public ViewField(@NonNull String fieldName, @NonNull String fieldType, int resId, @NonNull Integer parentContainer, boolean clickListener) {
+    public ViewField(
+            @NonNull String fieldName,
+            @NonNull String fieldType,
+            int resId,
+            @NonNull Integer parentContainer,
+            boolean clickListener) {
         this.fieldName = fieldName;
         this.fieldType = fieldType;
         this.resId = resId;

@@ -6,12 +6,10 @@ import android.support.annotation.Nullable;
 import com.psliusar.layers.binder.LayerBinder;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
 public abstract class Processor {
 
@@ -31,6 +29,10 @@ public abstract class Processor {
             @NonNull TypeElement type,
             @NonNull String packageName) {
         return type.getQualifiedName().toString().substring(packageName.length() + 1).replace('.', '$');
+    }
+
+    public static String elementNameToSnakeCase(@NonNull String elementName) {
+        return elementName.replaceAll("([a-z0-9])([A-Z0-9])", "$1_$2").toUpperCase();
     }
 
     private final LayersAnnotationProcessor annotationProcessor;
