@@ -5,8 +5,8 @@ apply plugin: 'de.mobilej.unmock'
 apply plugin: 'maven'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         minSdkVersion 14
@@ -27,8 +27,8 @@ unMock {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    provided project(':binder')
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile project(':binder')
 
     // Test
     testCompile 'junit:junit:4.12'

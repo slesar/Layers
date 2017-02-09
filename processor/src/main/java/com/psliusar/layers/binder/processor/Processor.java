@@ -3,7 +3,7 @@ package com.psliusar.layers.binder.processor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.psliusar.layers.binder.LayerBinder;
+import com.psliusar.layers.binder.BinderConstants;
 
 import java.lang.annotation.Annotation;
 
@@ -22,7 +22,7 @@ public abstract class Processor {
     public static String getBinderClassName(
             @NonNull String packageName,
             @NonNull String simpleClassName) {
-        return packageName + "." + simpleClassName + LayerBinder.BINDER_SUFFIX;
+        return packageName + "." + simpleClassName + BinderConstants.BINDER_SUFFIX;
     }
 
     public static String getSimpleClassName(
@@ -33,6 +33,16 @@ public abstract class Processor {
 
     public static String elementNameToSnakeCase(@NonNull String elementName) {
         return elementName.replaceAll("([a-z0-9])([A-Z0-9])", "$1_$2").toUpperCase();
+    }
+
+    @NonNull
+    public static String typeNameToFieldName(@NonNull String typeName) {
+        typeName = typeName.replaceAll("^.+\\.", "");
+        String result = String.valueOf(typeName.charAt(0)).toLowerCase();
+        if (typeName.length() > 1) {
+            result = result + typeName.substring(1);
+        }
+        return result;
     }
 
     private final LayersAnnotationProcessor annotationProcessor;

@@ -1,7 +1,6 @@
 package com.psliusar.layers.binder;
 
 import android.support.annotation.IdRes;
-import android.view.View;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,7 +14,7 @@ public @interface Bind {
     int value();
 
     @IdRes
-    int parent() default View.NO_ID;
+    int parent() default BinderConstants.NO_ID;
 
     boolean clicks() default false;
 }

@@ -47,7 +47,7 @@ public class Binder {
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            // TODO
         }
         return null;
     }
@@ -59,7 +59,7 @@ public class Binder {
             try {
                 Class<?> cl = targetClass;
                 while (cl != Object.class) {
-                    final Class<?> binderClass = getClass(cl.getCanonicalName() + LayerBinder.BINDER_SUFFIX);
+                    final Class<?> binderClass = getClass(cl.getCanonicalName() + BinderConstants.BINDER_SUFFIX);
                     if (binderClass != null) {
                         binder = (LayerBinder) binderClass.newInstance();
                         break;

@@ -3,7 +3,6 @@ package com.psliusar.layers.binder.processor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.psliusar.layers.binder.LayerBinder;
 import com.psliusar.layers.binder.processor.save.SaveFieldProcessor;
 import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
 import com.squareup.javapoet.ClassName;
@@ -150,7 +149,7 @@ public class LayersAnnotationProcessor extends AbstractProcessor {
             superclass = superclassElement.getSuperclass();
         }
 
-        return (LayerBinder.class.getCanonicalName());
+        return "com.psliusar.layers.binder.LayerBinder";
     }
 
     private boolean isAnnotated(@NonNull Element element) {

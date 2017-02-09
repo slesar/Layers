@@ -1,5 +1,6 @@
 package com.psliusar.layers.sample.screen.save;
 
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
+import com.psliusar.layers.binder.FieldStateManager;
 import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
 
@@ -26,6 +28,9 @@ public class SaveLayer extends Layer<SavePresenter> {
 
     @Save
     protected SparseArray<Parcelable> parcelables;
+
+    @Save(stateManager = CustomFieldStateManager.class)
+    protected String customManagerSample;
 
     @Override
     protected SavePresenter onCreatePresenter() {
@@ -55,5 +60,18 @@ public class SaveLayer extends Layer<SavePresenter> {
     public void setParameters(String... items) {
         stringList = new ArrayList<>();
         Collections.addAll(stringList, items);
+    }
+
+    protected static class CustomFieldStateManager implements FieldStateManager<String> {
+
+        @Override
+        public void put(@NonNull String key, String value, @NonNull Bundle state) {
+            state.putString(key, value);
+        }
+
+        @Override
+        public String get(@NonNull String key, @NonNull Bundle state) {
+            return state.getString(key);
+        }
     }
 }

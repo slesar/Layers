@@ -4,7 +4,7 @@ import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.psliusar.layers.binder.LayerBinder;
+import com.psliusar.layers.binder.BinderConstants;
 import com.psliusar.layers.binder.processor.save.SaveField;
 import com.psliusar.layers.binder.processor.save.SaveFieldProcessor;
 import com.psliusar.layers.binder.processor.view.ViewField;
@@ -52,8 +52,9 @@ public class BinderClassHolder {
             @NonNull String fieldType,
             @Nullable String manager,
             @NonNull String key,
-            @NonNull String methodSuffix) {
-        final SaveField field = new SaveField(fieldName, fieldType, manager, key, methodSuffix);
+            @NonNull String methodSuffix,
+            boolean needsClassLoader) {
+        final SaveField field = new SaveField(fieldName, fieldType, manager, key, methodSuffix, needsClassLoader);
         saveFields.add(field);
     }
 
@@ -74,7 +75,7 @@ public class BinderClassHolder {
 
     @NonNull
     private TypeSpec getTypeSpec() {
-        TypeSpec.Builder builder = TypeSpec.classBuilder(className + LayerBinder.BINDER_SUFFIX)
+        TypeSpec.Builder builder = TypeSpec.classBuilder(className + BinderConstants.BINDER_SUFFIX)
                 .addModifiers(Modifier.PUBLIC)
                 // TODO Really need to @Keep here?
                 .addAnnotation(Keep.class);
@@ -83,6 +84,7 @@ public class BinderClassHolder {
         builder.superclass(ClassName.bestGuess(parentClassName));
 
         if (!saveFields.isEmpty()) {
+            builder.addFields(SaveFieldProcessor.getFields(saveFields));
             builder.addMethod(SaveFieldProcessor.getRestoreMethod(packageName, className, saveFields));
             builder.addMethod(SaveFieldProcessor.getSaveMethod(packageName, className, saveFields));
         }

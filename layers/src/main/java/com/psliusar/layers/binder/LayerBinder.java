@@ -11,10 +11,9 @@ import android.view.View;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public abstract class LayerBinder {
-
-    public static final String BINDER_SUFFIX = "$$LayerBinder";
 
     @NonNull
     protected static View find(@NonNull View container, @IdRes int viewResId) {
@@ -54,6 +53,14 @@ public abstract class LayerBinder {
 
     protected static void initClassLoader(@NonNull Bundle state, @NonNull Object obj) {
         state.setClassLoader(obj.getClass().getClassLoader());
+    }
+
+    protected static Object[] copyParcelableArray(@Nullable Parcelable[] array, @NonNull Class<? extends Object[]> targetClass) {
+        return array == null ? null : Arrays.copyOf(array, array.length, targetClass);
+    }
+
+    protected static Object[] copySerializableArray(@Nullable Serializable[] array, @NonNull Class<? extends Object[]> targetClass) {
+        return array == null ? null : Arrays.copyOf(array, array.length, targetClass);
     }
 
     /* Put primitives and their boxed versions */
@@ -215,7 +222,6 @@ public abstract class LayerBinder {
     }
 
     // TODO arrays of boxed primitives
-    // TODO custom bundler
 
     /* Get primitives and their boxed versions */
 
@@ -405,6 +411,5 @@ public abstract class LayerBinder {
     }
 
     // TODO arrays of boxed primitives
-    // TODO custom unbundler
     //state.get(key);
 }
