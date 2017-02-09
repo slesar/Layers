@@ -62,7 +62,7 @@ public class ViewFieldProcessor extends FieldProcessor {
     }
 
     private void processField(@NonNull Element element) {
-        final BinderClassHolder holder = getHolderForClass(element);
+        final BinderClassHolder holder = getClassHolderForField(element);
 
         final Bind annotation = element.getAnnotation(Bind.class);
         final String fieldName = element.getSimpleName().toString();

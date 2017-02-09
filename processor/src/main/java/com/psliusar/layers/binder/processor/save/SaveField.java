@@ -10,26 +10,20 @@ public class SaveField {
     private final String fieldName;
     private final String fieldType;
 
-    private final String manager;
-    private final String key;
-    private final String methodSuffix;
-    private final boolean needsClassLoader;
+    private String manager;
+    private String key;
+    private String methodSuffix;
+    private boolean needsClassLoader;
+    private boolean needsParcelableWrapper;
+    private boolean needsSerializableWrapper;
 
     private FieldSpec managerField;
 
     public SaveField(
             @NonNull String fieldName,
-            @NonNull String fieldType,
-            @Nullable String manager,
-            @NonNull String key,
-            @NonNull String methodSuffix,
-            boolean needsClassLoader) {
+            @NonNull String fieldType) {
         this.fieldName = fieldName;
         this.fieldType = fieldType;
-        this.manager = manager;
-        this.key = key;
-        this.methodSuffix = methodSuffix;
-        this.needsClassLoader = needsClassLoader;
     }
 
     @NonNull
@@ -47,9 +41,17 @@ public class SaveField {
         return manager;
     }
 
+    public void setManager(@Nullable String managerClass) {
+        manager = managerClass;
+    }
+
     @NonNull
     public String getKey() {
         return key;
+    }
+
+    public void setKey(@NonNull String key) {
+        this.key = key;
     }
 
     @NonNull
@@ -57,16 +59,40 @@ public class SaveField {
         return methodSuffix;
     }
 
+    public void setMethodSuffix(@NonNull String suffix) {
+        methodSuffix = suffix;
+    }
+
     public boolean needsClassLoader() {
         return needsClassLoader;
     }
 
-    public void setManagerField(@Nullable FieldSpec fieldSpec) {
-        managerField = fieldSpec;
+    public void setNeedsClassLoader(boolean value) {
+        needsClassLoader = value;
+    }
+
+    public boolean needsParcelableWrapper() {
+        return needsParcelableWrapper;
+    }
+
+    public void setNeedsParcelableWrapper(boolean value) {
+        needsParcelableWrapper = value;
+    }
+
+    public boolean needsSerializableWrapper() {
+        return needsSerializableWrapper;
+    }
+
+    public void setNeedsSerializableWrapper(boolean value) {
+        needsSerializableWrapper = value;
     }
 
     @Nullable
     public FieldSpec getManagerField() {
         return managerField;
+    }
+
+    public void setManagerField(@Nullable FieldSpec fieldSpec) {
+        managerField = fieldSpec;
     }
 }

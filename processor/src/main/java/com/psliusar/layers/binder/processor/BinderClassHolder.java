@@ -47,18 +47,15 @@ public class BinderClassHolder {
         return fileWritten;
     }
 
-    public void addSaveField(
+    public SaveField addSaveField(
             @NonNull String fieldName,
-            @NonNull String fieldType,
-            @Nullable String manager,
-            @NonNull String key,
-            @NonNull String methodSuffix,
-            boolean needsClassLoader) {
-        final SaveField field = new SaveField(fieldName, fieldType, manager, key, methodSuffix, needsClassLoader);
+            @NonNull String fieldType) {
+        final SaveField field = new SaveField(fieldName, fieldType);
         saveFields.add(field);
+        return field;
     }
 
-    public void addViewField(
+    public ViewField addViewField(
             @NonNull String fieldName,
             @NonNull String fieldType,
             int resId,
@@ -66,6 +63,7 @@ public class BinderClassHolder {
             boolean clickListener) {
         final ViewField field = new ViewField(fieldName, fieldType, resId, parentResId, clickListener);
         viewFields.add(field);
+        return field;
     }
 
     @NonNull

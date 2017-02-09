@@ -21,7 +21,7 @@ public abstract class FieldProcessor extends Processor {
     }
 
     @NonNull
-    protected BinderClassHolder getHolderForClass(@NonNull Element element) {
+    protected BinderClassHolder getClassHolderForField(@NonNull Element element) {
         final LayersAnnotationProcessor ap = getAnnotationProcessor();
         final Elements elements = ap.getElementUtils();
         final Types types = ap.getTypeUtils();

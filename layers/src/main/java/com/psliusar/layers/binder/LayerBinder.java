@@ -44,7 +44,7 @@ public abstract class LayerBinder {
     }
 
     protected void bind(@NonNull View.OnClickListener listener, @NonNull View view) {
-
+        copyParcelableArray(new Parcelable[0], Bundle[].class);
     }
 
     protected void unbind(@NonNull View.OnClickListener listener) {
@@ -55,12 +55,12 @@ public abstract class LayerBinder {
         state.setClassLoader(obj.getClass().getClassLoader());
     }
 
-    protected static Object[] copyParcelableArray(@Nullable Parcelable[] array, @NonNull Class<? extends Object[]> targetClass) {
-        return array == null ? null : Arrays.copyOf(array, array.length, targetClass);
+    protected static Parcelable[] copyParcelableArray(@Nullable Parcelable[] array, @NonNull Class<? extends Object[]> targetClass) {
+        return array == null ? null : (Parcelable[]) Arrays.copyOf(array, array.length, targetClass);
     }
 
-    protected static Object[] copySerializableArray(@Nullable Serializable[] array, @NonNull Class<? extends Object[]> targetClass) {
-        return array == null ? null : Arrays.copyOf(array, array.length, targetClass);
+    protected static Serializable[] copySerializableArray(@Nullable Serializable[] array, @NonNull Class<? extends Object[]> targetClass) {
+        return array == null ? null : (Serializable[]) Arrays.copyOf(array, array.length, targetClass);
     }
 
     /* Put primitives and their boxed versions */

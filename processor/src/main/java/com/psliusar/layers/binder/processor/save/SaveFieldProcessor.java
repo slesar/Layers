@@ -21,15 +21,12 @@ import java.util.regex.Pattern;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
 public class SaveFieldProcessor extends FieldProcessor {
 
@@ -136,19 +133,27 @@ public class SaveFieldProcessor extends FieldProcessor {
     }
 
     private void processField(@NonNull Element element) {
-        final BinderClassHolder holder = getHolderForClass(element);
+        final BinderClassHolder holder = getClassHolderForField(element);
 
         final Save annotation = element.getAnnotation(Save.class);
         final String fieldName = element.getSimpleName().toString();
         final String fieldType = element.asType().toString();
 
+        final SaveField field = holder.addSaveField(fieldName, fieldType);
+
         final String manager = getManagerName(annotation);
+        field.setManager(manager);
+
         final String suffix;
         if (manager == null) {
-            suffix = getTypeSuffix(element);
+            final TypeDescription desc = getTypeSuffix(element);
+            suffix = desc.suffix;
+            field.setNeedsParcelableWrapper(desc.needsParcelableWrapper);
+            field.setNeedsSerializableWrapper(desc.needsSerializableWrapper);
         } else {
             suffix = "";
         }
+        field.setMethodSuffix(suffix);
 
         final String customName = annotation.name();
         final String key;
@@ -157,17 +162,10 @@ public class SaveFieldProcessor extends FieldProcessor {
         } else {
             key = customName;
         }
+        field.setKey(key);
 
         boolean needsClassLoader = checkFieldNeedsClassLoader(suffix);
-
-        holder.addSaveField(
-                fieldName,
-                fieldType,
-                manager,
-                key,
-                suffix,
-                needsClassLoader
-        );
+        field.setNeedsClassLoader(needsClassLoader);
     }
 
     @Nullable
@@ -185,62 +183,11 @@ public class SaveFieldProcessor extends FieldProcessor {
             return null;
         }
 
-        if (!isSubtypeOfType(elements, ap.getTypeUtils(), typeMirror, "com.psliusar.layers.binder.FieldStateManager")) {
+        if (!ensureSubtypeOfType(elements, ap.getTypeUtils(), typeMirror, "com.psliusar.layers.binder.FieldStateManager")) {
             throw new IllegalArgumentException("StateManager must implement interface FieldStateManager");
         }
 
         return typeMirror.toString();
-    }
-
-    private boolean isSubtypeOfType(
-            @NonNull Elements elements,
-            @NonNull Types types,
-            @NonNull TypeMirror elementType,
-            @NonNull String targetInterface) {
-        final TypeElement sourceElement = elements.getTypeElement(elementType.toString());
-
-        if (sourceElement == null) {
-            return false;
-        }
-
-        boolean isTargetType = false;
-        TypeElement element = sourceElement;
-
-        while (!isTargetType && element != null) {
-            for (TypeMirror mirror : element.getInterfaces()) {
-                if (types.erasure(mirror).toString().equals(targetInterface)) {
-                    isTargetType = true;
-                }
-            }
-
-            TypeMirror superClassMirror = element.getSuperclass();
-            if (superClassMirror != null) {
-                superClassMirror = types.erasure(superClassMirror);
-
-                element = elements.getTypeElement(superClassMirror.toString());
-            } else {
-                element = null;
-            }
-        }
-
-        if (!isTargetType) {
-            return false;
-        }
-
-        boolean hasConstructor = false;
-        for (Element enclosedElement : sourceElement.getEnclosedElements()) {
-            if (enclosedElement.getKind() == ElementKind.CONSTRUCTOR
-                    && !enclosedElement.getModifiers().contains(Modifier.PRIVATE)
-                    && ((ExecutableElement) enclosedElement).getParameters().size() == 0) {
-                hasConstructor = true;
-            }
-        }
-
-        if (!hasConstructor) {
-            throw new IllegalArgumentException(elementType + " must have non-private default constructor");
-        }
-
-        return true;
     }
 
     private boolean checkFieldNeedsClassLoader(@NonNull String typeSuffix) {
@@ -251,40 +198,27 @@ public class SaveFieldProcessor extends FieldProcessor {
                 || !PREDEFINED.containsValue(typeSuffix);
     }
 
-    private boolean isAssignable(@NonNull String type, @NonNull String target) {
-        final LayersAnnotationProcessor ap = getAnnotationProcessor();
-        final Elements elements = ap.getElementUtils();
-        return ap.getTypeUtils()
-                .isAssignable(
-                        elements.getTypeElement(type).asType(),
-                        elements.getTypeElement(target).asType()
-                );
-    }
-
-    private boolean isAssignable(@NonNull TypeMirror type, @NonNull String target) {
-        return isAssignable(type.toString(), target);
-    }
-
     @NonNull
-    private String getTypeSuffix(@NonNull Element element) {
-        final TypeMirror typeMirror = element.asType();
+    private TypeDescription getTypeSuffix(@NonNull Element element) {
+        final LayersAnnotationProcessor ap = getAnnotationProcessor();
+        TypeMirror typeMirror = element.asType();
         String elementType = typeMirror.toString();
-        boolean isArray = false;
-        boolean canBeArray = true;
+        final TypeDescription desc = new TypeDescription();
+        desc.canBeArray = true;
 
         // Detect Bundle
         if (elementType.equals(TYPE_BUNDLE)) {
-            canBeArray = false;
+            desc.canBeArray = false;
         }
 
         // Detect SparseArray<Parcelable>
         Matcher matcher = PATTERN_SPARSE_ARRAY.matcher(elementType);
         if (matcher.matches()) {
             final String typeArgument = matcher.group(1);
-            if (!isAssignable(typeArgument, TYPE_PARCELABLE)) {
+            if (!isAssignable(ap, typeArgument, TYPE_PARCELABLE)) {
                 throw new IllegalArgumentException("Type " + element + " must be a subclass of Parcelable. Or you can define custom FieldStateManager.");
             }
-            canBeArray = false;
+            desc.canBeArray = false;
         }
 
         // Detect ArrayList<String | Integer | CharSequence | Parcelable>
@@ -294,47 +228,51 @@ public class SaveFieldProcessor extends FieldProcessor {
             if (!TYPE_STRING.equals(typeArgument)
                     && !TYPE_INTEGER.equals(typeArgument)
                     && !TYPE_CHAR_SEQUENCE.equals(typeArgument)
-                    && !isAssignable(typeArgument, TYPE_PARCELABLE)) {
+                    && !isAssignable(ap, typeArgument, TYPE_PARCELABLE)) {
                 throw new IllegalArgumentException("Type " + element + " must be the String, Integer, CharSequence or subclass of Parcelable." +
                         " Or you can define custom FieldStateManager.");
             }
-            canBeArray = false;
+            desc.canBeArray = false;
         }
 
         // Detect arrays
         if (typeMirror.getKind() == TypeKind.ARRAY) {
             elementType += "[]";
-            isArray = true;
+            desc.isArray = true;
+            ArrayType arrayType = (ArrayType) typeMirror;
+            typeMirror = arrayType.getComponentType();
         }
 
         // Search for predefined type
-        String predefined = PREDEFINED.get(elementType);
+        desc.suffix = PREDEFINED.get(elementType);
 
-        if (predefined == null) {
+        if (desc.suffix == null) {
             // Detect Parcelable
-            if (isAssignable(typeMirror, TYPE_PARCELABLE)) {
+            if (isAssignable(ap, typeMirror.toString(), TYPE_PARCELABLE)) {
                 elementType = TYPE_PARCELABLE;
-                if (isArray) {
-                    // TODO wrapper method for copying target array
+                if (desc.isArray) {
+                    elementType += "[]";
+                    desc.needsParcelableWrapper = true;
                 }
-            } else if (isAssignable(typeMirror, TYPE_SERIALIZABLE)) {
+            } else if (isAssignable(ap, typeMirror.toString(), TYPE_SERIALIZABLE)) {
                 // Detect Serializable
                 elementType = TYPE_SERIALIZABLE;
-                if (isArray) {
-                    // TODO wrapper method for copying target array
+                if (desc.isArray) {
+                    elementType += "[]";
+                    desc.needsSerializableWrapper = true;
                 }
             }
 
             // Try again, we might find something new
-            predefined = PREDEFINED.get(elementType);
+            desc.suffix = PREDEFINED.get(elementType);
         }
 
-        if (predefined == null) {
+        if (desc.suffix == null) {
             throw new IllegalArgumentException("Can't determine the type of " + element + ". You have to define custom FieldStateManager.");
-        } else if (isArray && !canBeArray) {
+        } else if (desc.isArray && !desc.canBeArray) {
             throw new IllegalArgumentException("Type " + element + " can't be defined as array. You have to define custom FieldStateManager.");
         }
-        return predefined;
+        return desc;
     }
 
     @NonNull
@@ -423,16 +361,43 @@ public class SaveFieldProcessor extends FieldProcessor {
         for (SaveField field : fields) {
             final FieldSpec manager = field.getManagerField();
             if (manager == null) {
-                // -> target.field = getInt(key, state);
-                builder.addStatement(
-                        "$L.$L = get$L($L + $S, $L)",
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        field.getMethodSuffix(),
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_PARAM_STATE
-                );
+                if (field.needsParcelableWrapper()) {
+                    // -> target.field = copyParcelableArray(getParcelableArray(key, state), targetClass[].class);
+                    builder.addStatement(
+                            "$L.$L = copyParcelableArray(get$L($L + $S, $L), $L.class)",
+                            METHOD_VAR_TARGET,
+                            field.getFieldName(),
+                            field.getMethodSuffix(),
+                            METHOD_VAR_KEY_PREFIX,
+                            field.getKey(),
+                            METHOD_PARAM_STATE,
+                            field.getFieldType()
+                    );
+
+                } else if (field.needsSerializableWrapper()) {
+                    // -> target.field = copySerializableArray(getSerializableArray(key, state), targetClass[].class);
+                    builder.addStatement(
+                            "$L.$L = copySerializableArray(get$L($L + $S, $L), $L.class)",
+                            METHOD_VAR_TARGET,
+                            field.getFieldName(),
+                            field.getMethodSuffix(),
+                            METHOD_VAR_KEY_PREFIX,
+                            field.getKey(),
+                            METHOD_PARAM_STATE,
+                            field.getFieldType()
+                    );
+                } else {
+                    // -> target.field = getInt(key, state);
+                    builder.addStatement(
+                            "$L.$L = get$L($L + $S, $L)",
+                            METHOD_VAR_TARGET,
+                            field.getFieldName(),
+                            field.getMethodSuffix(),
+                            METHOD_VAR_KEY_PREFIX,
+                            field.getKey(),
+                            METHOD_PARAM_STATE
+                    );
+                }
             } else {
                 // -> target.field = managerField.get(key, state);
                 builder.addStatement(
@@ -525,5 +490,18 @@ public class SaveFieldProcessor extends FieldProcessor {
     @NonNull
     private static String getKeyPrefix(@NonNull String className) {
         return elementNameToSnakeCase(className) + "$$";
+    }
+
+    private static class TypeDescription {
+
+        String suffix;
+        boolean isArray;
+        boolean canBeArray;
+        boolean needsParcelableWrapper;
+        boolean needsSerializableWrapper;
+
+        TypeDescription() {
+
+        }
     }
 }

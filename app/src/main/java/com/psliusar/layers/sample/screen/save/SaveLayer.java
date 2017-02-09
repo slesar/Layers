@@ -29,6 +29,9 @@ public class SaveLayer extends Layer<SavePresenter> {
     @Save
     protected SparseArray<Parcelable> parcelables;
 
+    @Save
+    protected Parcelable[] parcelablesArray;
+
     @Save(stateManager = CustomFieldStateManager.class)
     protected String customManagerSample;
 
