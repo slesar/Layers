@@ -1,6 +1,5 @@
 package com.psliusar.layers.sample.screen.stack;
 
-import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,37 +8,34 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.Layer;
+import com.psliusar.layers.binder.Bind;
+import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
 
 public class StackLayer extends Layer<StackPresenter> {
 
-    static final String ARGS_TITLE = "ARGS_TITLE";
-    static final String ARGS_LEVEL = "ARGS_LEVEL";
-
-    public static Bundle createArguments(CharSequence title, int level) {
-        final Bundle bundle = new Bundle();
-        bundle.putCharSequence(ARGS_TITLE, title);
-        bundle.putInt(ARGS_LEVEL, level);
-        return bundle;
-    }
+    @Keep
+    @Bind(value = R.id.stack_level, parent = R.id.stack_container)
+    protected TextView stackLevel;
 
     @Keep
-    @Bind(R.id.stack_level)
-    private TextView stackLevel;
-
-    @Keep
-    @Bind(R.id.stack_next_opaque)
-    private CheckBox nextOpaque;
+    @Bind(value = R.id.stack_next_opaque, parent = R.id.stack_container)
+    protected CheckBox nextOpaque;
 
     @Keep
     @Bind(R.id.stack_next_title)
-    private TextView nextTitle;
+    protected TextView nextTitle;
 
     @Keep
     @Bind(value = R.id.stack_next, clicks = true)
-    private View buttonNext;
+    protected View buttonNext;
+
+    @Save
+    protected CharSequence title;
+
+    @Save
+    protected int level;
 
     @Nullable
     @Override
@@ -68,14 +64,17 @@ public class StackLayer extends Layer<StackPresenter> {
         }
     }
 
-    @NonNull
-    @Override
-    public Bundle getArguments() {
-        final Bundle args = super.getArguments();
-        if (args == null) {
-            throw new IllegalArgumentException("StackLayer must have arguments");
-        }
-        return args;
+    public void setParameters(CharSequence title, int level) {
+        this.title = title;
+        this.level = level;
+    }
+
+    public CharSequence getTitle() {
+        return title;
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     void setStackLevelText(@Nullable CharSequence text) {

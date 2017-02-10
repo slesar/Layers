@@ -26,7 +26,7 @@ class StackEntry implements Parcelable {
     Bundle arguments;
     Bundle layerState;
     SparseArray<Parcelable> viewState;
-    int layerType;
+    int layerType = TYPE_OPAQUE;
     int layerTypeAnimated;
     boolean valid = true;
 
@@ -37,16 +37,13 @@ class StackEntry implements Parcelable {
     Layer<?> layerInstance;
     int state = LAYER_STATE_EMPTY;
 
-    StackEntry(@NonNull Class<? extends Layer<?>> layerClass, @Nullable Bundle arguments, @Nullable String name, int layerType) {
+    StackEntry(@NonNull Class<? extends Layer<?>> layerClass) {
         this.layerClass = layerClass;
         this.className = layerClass.getName();
-        this.arguments = arguments;
-        this.name = name;
-        this.layerType = layerType;
     }
 
     @NonNull
-    Class<? extends Layer<?>> getLayerClass(@NonNull Context context) {
+    private Class<? extends Layer<?>> getLayerClass(@NonNull Context context) {
         if (layerClass == null) {
             try {
                 //noinspection unchecked
@@ -56,6 +53,23 @@ class StackEntry implements Parcelable {
             }
         }
         return layerClass;
+    }
+
+    @NonNull
+    Layer<?> instantiateLayer(@NonNull Context context) {
+        if (layerInstance != null) {
+            return layerInstance;
+        }
+        try {
+            layerInstance = getLayerClass(context).newInstance();
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Unable to instantiate layer " + className
+                    + ": make sure class exists, is public, and has an empty constructor", e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Unable to instantiate layer " + className
+                    + ": make sure class has an empty constructor that is public", e);
+        }
+        return layerInstance;
     }
 
     @NonNull

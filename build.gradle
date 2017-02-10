@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.1'
+        classpath 'com.android.tools.build:gradle:2.2.2'
         classpath 'de.mobilej.unmock:UnMockPlugin:0.5.0'
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -16,6 +16,15 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven {
+            url uri('/home/slesar/Work/maven')
+        }
+        maven {
+            Properties properties = new Properties()
+            properties.load(project.rootProject.file('local.properties').newDataInputStream())
+            String sdkDir = properties.getProperty('sdk.dir')
+            url "${sdkDir}/extras/android/m2repository"
+        }
     }
 }
 

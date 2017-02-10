@@ -5,10 +5,12 @@ import android.support.annotation.NonNull;
 import android.view.ViewGroup;
 
 import com.psliusar.layers.LayersActivity;
+import com.psliusar.layers.Transition;
 import com.psliusar.layers.sample.screen.child.ChildrenContainerLayer;
 import com.psliusar.layers.sample.screen.dialog.DialogsLayer;
 import com.psliusar.layers.sample.screen.home.HomeLayer;
 import com.psliusar.layers.sample.screen.listener.ListenerLayer;
+import com.psliusar.layers.sample.screen.save.SaveLayer;
 import com.psliusar.layers.sample.screen.stack.StackLayer;
 
 public class MainActivity extends LayersActivity {
@@ -28,10 +30,14 @@ public class MainActivity extends LayersActivity {
         return getView(R.id.container);
     }
 
-    public void addToStack(CharSequence title, int level, boolean opaque) {
-        final Bundle args = StackLayer.createArguments(title, level);
+    public void addToStack(final CharSequence title, final int level, boolean opaque) {
         getLayers().add(StackLayer.class)
-                .setArguments(args)
+                .prepareLayer(new Transition.OnLayerTransition<StackLayer>() {
+                    @Override
+                    public void onBeforeTransition(@NonNull StackLayer layer) {
+                        layer.setParameters(title, level);
+                    }
+                })
                 .setName("Stack" + level)
                 .setOpaque(opaque)
                 .setInAnimation(R.anim.lower_out, R.anim.upper_in)
@@ -54,6 +60,18 @@ public class MainActivity extends LayersActivity {
     public void showActivityListener() {
         getLayers().add(ListenerLayer.class)
                 .setName("Listener")
+                .commit();
+    }
+
+    public void showSaveState() {
+        getLayers().add(SaveLayer.class)
+                .prepareLayer(new Transition.OnLayerTransition<SaveLayer>() {
+                    @Override
+                    public void onBeforeTransition(@NonNull SaveLayer layer) {
+                        layer.setParameters("First", "Second", "Third");
+                    }
+                })
+                .setName("Save")
                 .commit();
     }
 }

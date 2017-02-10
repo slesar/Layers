@@ -1,111 +1,83 @@
 package com.psliusar.layers.binder;
 
-import android.content.res.Resources;
-import android.support.annotation.IdRes;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Binder {
 
-    private List<Field> boundFields;
+    private static final Map<Class<?>, LayerBinder> BINDERS = new ConcurrentHashMap<>();
 
-    public Binder() {
+    private static final LayerBinder DEFAULT_BINDER = new LayerBinder() { };
 
+    public static void restore(@NonNull Object target, @NonNull Bundle state) {
+        final LayerBinder binder = getBinder(target.getClass());
+        if (binder != DEFAULT_BINDER) {
+            binder.restore(target, state);
+        }
+    }
+
+    public static void save(@NonNull Object target, @NonNull Bundle state) {
+        final LayerBinder binder = getBinder(target.getClass());
+        if (binder != DEFAULT_BINDER) {
+            binder.save(target, state);
+        }
+    }
+
+    public static void bind(@NonNull View.OnClickListener target, @NonNull View view) {
+        final LayerBinder binder = getBinder(target.getClass());
+        if (binder != DEFAULT_BINDER) {
+            binder.bind(target, view);
+        }
+    }
+
+    public static void unbind(@NonNull View.OnClickListener target) {
+        final LayerBinder binder = getBinder(target.getClass());
+        if (binder != DEFAULT_BINDER) {
+            binder.unbind(target);
+        }
     }
 
     @Nullable
-    public List<Field> bindViews(@NonNull View.OnClickListener layer, @NonNull View container) {
-        final ArrayList<Field> fieldsList = new ArrayList<>();
-        Class<?> targetClass = layer.getClass();
-        while (targetClass != null && targetClass != Object.class) {
-            for (Field field : targetClass.getDeclaredFields()) {
-                // TODO check for synthetic, static, final - throw if any
-
-                final Bind bind = field.getAnnotation(Bind.class);
-                if (bind == null) {
-                    continue;
-                }
-
-                final Class<?> type = field.getType();
-                final View view = findViewOrThrow(type, container, bind.value(), bind.parent());
-
-                bindViewToField(layer, field, type, view);
-                if (bind.clicks()) {
-                    view.setOnClickListener(layer);
-                }
-
-                fieldsList.add(field);
-            }
-
-            targetClass = targetClass.getSuperclass();
-        }
-        boundFields = fieldsList.size() > 0 ? fieldsList : null;
-        return boundFields;
-    }
-
-    private void bindViewToField(@NonNull Object target, @NonNull Field field, @NonNull Class<?> type, @NonNull View value) {
+    private static Class<?> getClass(@NonNull String className) {
         try {
-            if (!field.isAccessible()) {
-                field.setAccessible(true);
-            }
-            field.set(target, type.cast(value));
-        } catch (SecurityException ex) {
-            throw new IllegalArgumentException("Failed to bind view", ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalArgumentException("Could not set field value", ex);
-        } catch (ClassCastException ex) {
-            throw new IllegalArgumentException("Cannot assign value to a field", ex);
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            // TODO
         }
+        return null;
     }
 
     @NonNull
-    private View findViewOrThrow(@NonNull Class<?> type, @NonNull View container, @IdRes int viewResId, @IdRes int parentResId) {
-        if (!View.class.isAssignableFrom(type)) {
-            throw new IllegalArgumentException("Could not bind field not of type View");
-        }
-
-        if (parentResId != View.NO_ID) {
-            container = findViewOrThrow(container, parentResId, "Parent view");
-        }
-
-        return findViewOrThrow(container, viewResId, "View");
-    }
-
-    private View findViewOrThrow(@NonNull View container, int viewResId, String messagePrefix) {
-        final View view = container.findViewById(viewResId);
-        if (view == null) {
-            final String viewResName = resolveResourceName(container.getResources(), viewResId);
-            throw new IllegalArgumentException(messagePrefix + " with ID 0x" + Integer.toHexString(viewResId)
-                    + (viewResName != null ? " (" + viewResName + ")" : "") + " not found!");
-        }
-        return view;
-    }
-
-    @Nullable
-    private String resolveResourceName(@NonNull Resources res, int resId) {
-        try {
-            return res.getResourceEntryName(resId);
-        } catch (Resources.NotFoundException ex) {
-            return null;
-        }
-    }
-
-    public void unbindViews(@NonNull Object holder) {
-        if (boundFields == null) {
-            return;
-        }
-        try {
-            for (Field field : boundFields) {
-                field.set(holder, null);
+    private static LayerBinder getBinder(@NonNull Class<?> targetClass) {
+        LayerBinder binder = BINDERS.get(targetClass);
+        if (binder == null) {
+            try {
+                Class<?> cl = targetClass;
+                while (cl != Object.class) {
+                    final Class<?> binderClass = getClass(cl.getCanonicalName() + BinderConstants.BINDER_SUFFIX);
+                    if (binderClass != null) {
+                        binder = (LayerBinder) binderClass.newInstance();
+                        break;
+                    }
+                    cl = cl.getSuperclass();
+                }
+            } catch (Exception ex) {
+                throw new IllegalArgumentException("Could not instantiate LayerBinder for class " + targetClass.getCanonicalName(), ex);
             }
-        } catch (IllegalAccessException ex) {
-            throw new IllegalArgumentException("Could not reset field value", ex);
         }
-        boundFields = null;
+        if (binder == null) {
+            binder = DEFAULT_BINDER;
+        }
+        BINDERS.put(targetClass, binder);
+        return binder;
+    }
+
+    private Binder() {
+
     }
 }

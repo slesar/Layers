@@ -41,9 +41,6 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     private boolean fromSavedState;
 
-    @Nullable
-    private Binder viewBinder;
-
     public Layer() {
         // Default constructor
     }
@@ -90,17 +87,16 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     protected void onCreate(@Nullable Bundle savedState) {
-
+        if (savedState != null) {
+            Binder.restore(this, savedState);
+        }
     }
 
     @Nullable
     protected abstract View onCreateView(@Nullable ViewGroup parent);
 
     protected void onBindView(@NonNull View view) {
-        if (viewBinder == null) {
-            viewBinder = new Binder();
-        }
-        viewBinder.bindViews(this, view);
+        Binder.bind(this, view);
     }
 
     void restoreLayerState() {
@@ -151,16 +147,14 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     protected void onSaveLayerState(@NonNull Bundle outState) {
-
+        Binder.save(this, outState);
     }
 
     protected void onDestroyView() {
         if (layers != null) {
             layers.destroy();
         }
-        if (viewBinder != null) {
-            viewBinder.unbindViews(this);
-        }
+        Binder.unbind(this);
     }
 
     protected void onDestroy() {
