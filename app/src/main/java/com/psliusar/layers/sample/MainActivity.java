@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import com.psliusar.layers.LayersActivity;
 import com.psliusar.layers.Transition;
+import com.psliusar.layers.sample.screen.track.TracksLayer;
 import com.psliusar.layers.sample.screen.child.ChildrenContainerLayer;
 import com.psliusar.layers.sample.screen.dialog.DialogsLayer;
 import com.psliusar.layers.sample.screen.home.HomeLayer;
@@ -72,6 +73,12 @@ public class MainActivity extends LayersActivity {
                     }
                 })
                 .setName("Save")
+                .commit();
+    }
+
+    public void showTracks() {
+        getLayers().add(TracksLayer.class)
+                .setName("Tracks")
                 .commit();
     }
 }

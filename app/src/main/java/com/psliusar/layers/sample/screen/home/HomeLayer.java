@@ -24,7 +24,8 @@ public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListe
                 R.id.home_children,
                 R.id.home_dialog,
                 R.id.home_activity_listener,
-                R.id.home_save_annotation);
+                R.id.home_save_annotation,
+                R.id.home_tasks);
     }
 
     @Override
@@ -49,6 +50,9 @@ public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListe
             break;
         case R.id.home_save_annotation:
             getPresenter().saveClick();
+            break;
+        case R.id.home_tasks:
+            getPresenter().tasksClick();
             break;
         }
     }

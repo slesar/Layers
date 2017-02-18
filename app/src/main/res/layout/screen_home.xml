@@ -46,4 +46,10 @@
         android:layout_height="wrap_content"
         android:text="State saving demo"/>
 
+    <Button
+        android:id="@+id/home_tasks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tasks demo"/>
+
 </LinearLayout>
