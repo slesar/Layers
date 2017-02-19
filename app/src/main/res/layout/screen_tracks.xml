@@ -15,17 +15,48 @@
         android:layout_marginBottom="18dp"
         android:textSize="@dimen/text_medium"
         android:textStyle="bold"
-        android:text="Save fields state demo"/>
+        android:text="Tasks demo. We call them Tracks"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="6dp"
         android:textSize="@dimen/text_medium"
-        android:text="Array list:"/>
+        android:text="Synchronous track:"/>
 
     <TextView
-        android:id="@+id/save_string_list"
+        android:id="@+id/track_sync_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:textSize="@dimen/text_medium"
+        android:text=""/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="18dp"
+        android:background="#999"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:textSize="@dimen/text_medium"
+        android:text="Asynchronous track:"/>
+
+    <ProgressBar
+        android:id="@+id/track_async_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginBottom="15dp"
+        android:background="#eee"
+        android:max="100"
+        android:progress="0" />
+
+    <TextView
+        android:id="@+id/track_async_result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="18dp"

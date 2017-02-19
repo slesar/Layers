@@ -4,59 +4,82 @@ import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-public abstract class Track<V> {
+public abstract class Track<V, P> {
 
-    public static final int POLICY_KEEP = 1;
-    public static final int POLICY_RESTART = 2;
+    protected OnTrackListener<V, P> listener;
 
-    protected int policy = POLICY_KEEP;
+    /**
+     * Value that was achieved during work
+     */
+    private V value;
 
-    protected OnTrackListener<V> listener;
-
+    /**
+     * When true, track will not be automatically saved. This flag means client doesn't need this track any more.
+     */
     private boolean disposed = false;
 
-    private V value;
+    /**
+     * Indicates that work reached its end
+     */
+    private boolean finished;
+
+    /**
+     * Indicates that work is started
+     */
+    private boolean started;
 
     public Track() {
 
     }
 
-    public void setPolicy(int value) {
-        policy = value;
-    }
-
-    public int getPolicy() {
-        return policy;
-    }
-
-    public void subscribe(@Nullable OnTrackListener<V> listener) {
+    public void subscribe(@Nullable OnTrackListener<V, P> listener) {
         this.listener = listener;
     }
 
     public void unsubscribe() {
-
+        listener = null;
     }
 
     public void start() {
-
+        if (finished) {
+            done(value);
+        } else if (!started) {
+            restart();
+        }
     }
 
     public void restart() {
-
+        value = null;
+        callOnRestart();
+        disposed = false;
+        finished = false;
+        started = true;
+        try {
+            doBlocking();
+        } catch (Throwable t) {
+            value = null;
+            disposed = false;
+            finished = false;
+            started = false;
+            callOnError(t);
+        }
     }
 
     public void cancel() {
-
+        disposed = true;
+        started = false;
     }
 
     public void stop() {
-
+        cancel();
+        callOnFinished();
     }
 
     /**
      * Calling this method means you've got what you wanted. This method will mark object as "disposed" and will prevent saving its state.
      */
     public void dispose() {
+        value = null;
         disposed = true;
         unsubscribe();
     }
@@ -65,9 +88,26 @@ public abstract class Track<V> {
         return disposed;
     }
 
+    protected void postProgress(@Nullable P progress) {
+        callOnProgress(progress);
+    }
+
+    protected void done(@Nullable V result) {
+        value = result;
+        finished = true;
+        started = false;
+        callOnFinished();
+    }
+
     protected void callOnFinished() {
         if (listener != null) {
             listener.onTrackFinished(this, value);
+        }
+    }
+
+    protected void callOnError(@NonNull Throwable t) {
+        if (listener != null) {
+            listener.onTrackError(this, t);
         }
     }
 
@@ -77,13 +117,23 @@ public abstract class Track<V> {
         }
     }
 
+    protected void callOnProgress(@Nullable P progress) {
+        if (listener != null) {
+            listener.onTrackProgress(this, progress);
+        }
+    }
+
     @MainThread
     protected abstract void doBlocking();
 
-    public interface OnTrackListener<V> {
+    public interface OnTrackListener<V, P> {
 
-        void onTrackFinished(@NonNull Track<V> track, @Nullable V value);
+        void onTrackFinished(@NonNull Track<V, P> track, @Nullable V value);
 
-        void onTrackRestart(@NonNull Track<V> track);
+        void onTrackError(@NonNull Track<V, P> track, @NonNull Throwable throwable);
+
+        void onTrackRestart(@NonNull Track<V, P> track);
+
+        void onTrackProgress(@NonNull Track<V, P> track, @Nullable P progress);
     }
 }
