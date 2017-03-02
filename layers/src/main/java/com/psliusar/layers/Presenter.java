@@ -12,11 +12,21 @@ public abstract class Presenter<M extends Model, L extends Layer> {
     void create(@NonNull LayersHost host, @NonNull L layer) {
         this.host = host;
         this.layer = layer;
+        onCreate();
+    }
+
+    protected void onCreate() {
+
     }
 
     void destroy() {
+        onDestroy();
         model = null;
         layer = null;
+    }
+
+    protected void onDestroy() {
+
     }
 
     public LayersHost getHost() {

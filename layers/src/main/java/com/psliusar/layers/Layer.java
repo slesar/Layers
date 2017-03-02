@@ -48,6 +48,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     public final P getPresenter() {
         if (presenter == null) {
             presenter = onCreatePresenter();
+            if (presenter != null) {
+                //noinspection unchecked
+                presenter.create(host, this);
+            }
         }
         return presenter;
     }
@@ -70,18 +74,11 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         this.name = name;
         fromSavedState = savedState != null;
 
-        final P presenter = getPresenter();
-        if (presenter != null) {
-            //noinspection unchecked
-            presenter.create(host, this);
-        }
-
         if (savedState != null) {
             final Bundle layersState = savedState.getBundle(SAVED_STATE_CHILD_LAYERS);
             if (layersState != null) {
                 layers = new Layers(this, layersState);
             }
-
         }
         onCreate(savedState == null ? null : savedState.getBundle(SAVED_STATE_CUSTOM));
     }
@@ -158,7 +155,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     protected void onDestroy() {
-
+        if (presenter != null) {
+            presenter.destroy();
+        }
     }
 
     void destroy() {

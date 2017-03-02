@@ -57,52 +57,24 @@ public class TracksLayer extends Layer<TracksPresenter> {
     @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-        syncTrack.subscribe(new Track.OnTrackListener<Integer, Integer>() {
-            @Override
-            public void onTrackFinished(@NonNull Track<Integer, Integer> track, @Nullable Integer value) {
-                syncResult.setText(value == null ? null : value.toString());
-            }
-
-            @Override
-            public void onTrackError(@NonNull Track<Integer, Integer> track, @NonNull Throwable throwable) {
-
-            }
-
-            @Override
-            public void onTrackRestart(@NonNull Track<Integer, Integer> track) {
-                syncResult.setText(null);
-            }
-
-            @Override
-            public void onTrackProgress(@NonNull Track<Integer, Integer> track, @Nullable Integer progress) {
-
-            }
-        });
+        final TracksPresenter presenter = getPresenter();
+        syncTrack.subscribe(presenter.getSyncTrackListener());
         syncTrack.start();
 
-        asyncTrack.subscribe(new Track.OnTrackListener<Integer, Integer>() {
-            @Override
-            public void onTrackFinished(@NonNull Track<Integer, Integer> track, @Nullable Integer value) {
-                asyncResult.setText(value == null ? null : value.toString());
-                asyncProgressBar.setProgress(100);
-            }
-
-            @Override
-            public void onTrackError(@NonNull Track<Integer, Integer> track, @NonNull Throwable throwable) {
-
-            }
-
-            @Override
-            public void onTrackRestart(@NonNull Track<Integer, Integer> track) {
-                asyncResult.setText(null);
-            }
-
-            @Override
-            public void onTrackProgress(@NonNull Track<Integer, Integer> track, @Nullable Integer progress) {
-                asyncProgressBar.setProgress(progress == null ? 0 : progress);
-            }
-        });
+        asyncTrack.subscribe(presenter.getAsyncTrackListener());
         asyncTrack.start();
+    }
+
+    void setSyncResult(@Nullable CharSequence text) {
+        syncResult.setText(text);
+    }
+
+    void setAsyncResult(@Nullable CharSequence text) {
+        asyncResult.setText(text);
+    }
+
+    void setAsyncProgress(int progress) {
+        asyncProgressBar.setProgress(progress);
     }
 
     protected static class SampleSyncTrack extends Track<Integer, Integer> {
