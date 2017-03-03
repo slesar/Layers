@@ -65,6 +65,13 @@ public class TracksLayer extends Layer<TracksPresenter> {
         asyncTrack.start();
     }
 
+    @Override
+    protected void onDestroyView() {
+        super.onDestroyView();
+        syncTrack.unsubscribe();
+        asyncTrack.unsubscribe();
+    }
+
     void setSyncResult(@Nullable CharSequence text) {
         syncResult.setText(text);
     }

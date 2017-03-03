@@ -176,8 +176,8 @@ public class MockedLayer extends Layer<MockedPresenter> {
     }
 
     @Override
-    void destroy() {
-        super.destroy();
+    void destroy(boolean finish) {
+        super.destroy(finish);
         destroyCalled++;
     }
 

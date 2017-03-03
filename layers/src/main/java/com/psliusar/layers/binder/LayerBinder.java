@@ -234,7 +234,6 @@ public abstract class LayerBinder {
         if (value == null || value.isDisposed()) {
             return;
         }
-        value.unsubscribe();
         final TrackWrapper wrapper = new TrackWrapper(value);
         state.putParcelable(key, wrapper);
     }

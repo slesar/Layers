@@ -41,6 +41,8 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     private boolean fromSavedState;
 
+    private boolean finishing;
+
     public Layer() {
         // Default constructor
     }
@@ -147,21 +149,29 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         Binder.save(this, outState);
     }
 
-    protected void onDestroyView() {
+    void destroyView() {
         if (layers != null) {
             layers.destroy();
         }
+        onDestroyView();
         Binder.unbind(this);
     }
 
-    protected void onDestroy() {
+    protected void onDestroyView() {
+
+    }
+
+    void destroy(boolean finish) {
+        finishing = finish;
+        onDestroy();
         if (presenter != null) {
             presenter.destroy();
+            presenter = null;
         }
     }
 
-    void destroy() {
-        presenter = null;
+    protected void onDestroy() {
+
     }
 
     public boolean isAttached() {
@@ -174,6 +184,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     public boolean isFromSavedState() {
         return fromSavedState;
+    }
+
+    public boolean isFinishing() {
+        return finishing;
     }
 
     @Nullable
