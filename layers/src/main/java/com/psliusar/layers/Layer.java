@@ -41,6 +41,8 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     private boolean fromSavedState;
 
+    private boolean finishing;
+
     public Layer() {
         // Default constructor
     }
@@ -48,6 +50,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     public final P getPresenter() {
         if (presenter == null) {
             presenter = onCreatePresenter();
+            if (presenter != null) {
+                //noinspection unchecked
+                presenter.create(host, this);
+            }
         }
         return presenter;
     }
@@ -70,18 +76,11 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         this.name = name;
         fromSavedState = savedState != null;
 
-        final P presenter = getPresenter();
-        if (presenter != null) {
-            //noinspection unchecked
-            presenter.create(host, this);
-        }
-
         if (savedState != null) {
             final Bundle layersState = savedState.getBundle(SAVED_STATE_CHILD_LAYERS);
             if (layersState != null) {
                 layers = new Layers(this, layersState);
             }
-
         }
         onCreate(savedState == null ? null : savedState.getBundle(SAVED_STATE_CUSTOM));
     }
@@ -150,19 +149,29 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         Binder.save(this, outState);
     }
 
-    protected void onDestroyView() {
+    void destroyView() {
         if (layers != null) {
             layers.destroy();
         }
+        onDestroyView();
         Binder.unbind(this);
+    }
+
+    protected void onDestroyView() {
+
+    }
+
+    void destroy(boolean finish) {
+        finishing = finish;
+        onDestroy();
+        if (presenter != null) {
+            presenter.destroy();
+            presenter = null;
+        }
     }
 
     protected void onDestroy() {
 
-    }
-
-    void destroy() {
-        presenter = null;
     }
 
     public boolean isAttached() {
@@ -175,6 +184,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     public boolean isFromSavedState() {
         return fromSavedState;
+    }
+
+    public boolean isFinishing() {
+        return finishing;
     }
 
     @Nullable

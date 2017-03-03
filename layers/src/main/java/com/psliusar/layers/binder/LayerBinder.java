@@ -9,6 +9,9 @@ import android.support.annotation.Nullable;
 import android.util.SparseArray;
 import android.view.View;
 
+import com.psliusar.layers.track.Track;
+import com.psliusar.layers.track.TrackWrapper;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -221,6 +224,20 @@ public abstract class LayerBinder {
         if (value != null) state.putSerializable(key, value);
     }
 
+    protected static void putSerializableArray(@NonNull String key, @Nullable Serializable[] value, @NonNull Bundle state) {
+        if (value != null) state.putSerializable(key, value);
+    }
+
+    /* Tracks */
+
+    protected static void putTrack(@NonNull String key, @Nullable Track value, @NonNull Bundle state) {
+        if (value == null || value.isDisposed()) {
+            return;
+        }
+        final TrackWrapper wrapper = new TrackWrapper(value);
+        state.putParcelable(key, wrapper);
+    }
+
     // TODO arrays of boxed primitives
 
     /* Get primitives and their boxed versions */
@@ -408,6 +425,19 @@ public abstract class LayerBinder {
     @Nullable
     protected static Serializable getSerializable(@NonNull String key, @NonNull Bundle state) {
         return state.getSerializable(key);
+    }
+
+    @Nullable
+    protected static Serializable[] getSerializableArray(@NonNull String key, @NonNull Bundle state) {
+        return (Serializable[]) state.getSerializable(key);
+    }
+
+    /* Tracks */
+
+    @Nullable
+    protected Track getTrack(@NonNull String key, @NonNull Bundle state) {
+        final TrackWrapper wrapper = state.getParcelable(key);
+        return wrapper == null ? null : wrapper.getTrack();
     }
 
     // TODO arrays of boxed primitives

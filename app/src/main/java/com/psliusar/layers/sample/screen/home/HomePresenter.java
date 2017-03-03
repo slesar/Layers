@@ -32,4 +32,8 @@ public class HomePresenter extends Presenter<Model, HomeLayer> {
     void saveClick() {
         getMainActivity().showSaveState();
     }
+
+    void tasksClick() {
+        getMainActivity().showTracks();
+    }
 }

@@ -267,7 +267,7 @@ public class Layers {
 
         layer.attached = false;
 
-        layer.onDestroyView();
+        layer.destroyView();
         if (layer.isViewInLayout() && layer.view != null) {
             getContainer().removeView(layer.view);
         }
@@ -278,7 +278,7 @@ public class Layers {
         if (saveState) {
             saveLayerState(entry);
         }
-        entry.layerInstance.onDestroy();
+        entry.layerInstance.destroy(!saveState);
     }
 
     private void moveToState(@NonNull StackEntry entry, int targetState, boolean saveState) {

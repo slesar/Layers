@@ -22,7 +22,9 @@ import java.util.regex.Pattern;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -41,6 +43,7 @@ public class SaveFieldProcessor extends FieldProcessor {
     private static final String TYPE_PARCELABLE = "android.os.Parcelable";
     private static final String TYPE_SERIALIZABLE = "java.io.Serializable";
     private static final String TYPE_BUNDLE = "android.os.Bundle";
+    private static final String TYPE_TRACK = "com.psliusar.layers.track.Track";
 
     private static final Pattern PATTERN_SPARSE_ARRAY = Pattern.compile("android\\.util\\.SparseArray<(.*?)>");
     private static final Pattern PATTERN_ARRAY_LIST = Pattern.compile("java\\.util\\.ArrayList<(.*?)>");
@@ -96,7 +99,9 @@ public class SaveFieldProcessor extends FieldProcessor {
 
             put("android.os.Bundle", "Bundle");
             put("java.io.Serializable", "Serializable");
-            put("java.io.Serializable[]", "Serializable");
+            put("java.io.Serializable[]", "SerializableArray");
+
+            put(TYPE_TRACK, "Track");
         }
     };
 
@@ -146,10 +151,11 @@ public class SaveFieldProcessor extends FieldProcessor {
 
         final String suffix;
         if (manager == null) {
-            final TypeDescription desc = getTypeSuffix(element);
+            final TypeDescription desc = getTypeDescription(element);
             suffix = desc.suffix;
             field.setNeedsParcelableWrapper(desc.needsParcelableWrapper);
             field.setNeedsSerializableWrapper(desc.needsSerializableWrapper);
+            field.setNeedsClassCast(desc.needsClassCast);
         } else {
             suffix = "";
         }
@@ -199,7 +205,7 @@ public class SaveFieldProcessor extends FieldProcessor {
     }
 
     @NonNull
-    private TypeDescription getTypeSuffix(@NonNull Element element) {
+    private TypeDescription getTypeDescription(@NonNull Element element) {
         final LayersAnnotationProcessor ap = getAnnotationProcessor();
         TypeMirror typeMirror = element.asType();
         String elementType = typeMirror.toString();
@@ -247,8 +253,20 @@ public class SaveFieldProcessor extends FieldProcessor {
         desc.suffix = PREDEFINED.get(elementType);
 
         if (desc.suffix == null) {
-            // Detect Parcelable
-            if (isAssignable(ap, typeMirror.toString(), TYPE_PARCELABLE)) {
+            // Detect Tracks
+            // XXX This code smells
+            if (findParentType((TypeElement) ap.getTypeUtils().asElement(typeMirror), ap.getElementUtils().getTypeElement(TYPE_TRACK))) {
+            //if (isAssignable(ap, typeMirror.toString(), TYPE_CHARGER)) {
+            //if (ap.getTypeUtils().isSubtype(ap.getElementUtils().getTypeElement(TYPE_CHARGER).asType(), typeMirror)) {
+                elementType = TYPE_TRACK;
+                desc.needsClassCast = true;
+                if (desc.isArray) {
+                    // XXX Can be array?
+                    //elementType += "[]";
+                    //desc.needsParcelableWrapper = true;
+                }
+            } else if (isAssignable(ap, typeMirror.toString(), TYPE_PARCELABLE)) {
+                // Detect Parcelable
                 elementType = TYPE_PARCELABLE;
                 if (desc.isArray) {
                     elementType += "[]";
@@ -273,6 +291,20 @@ public class SaveFieldProcessor extends FieldProcessor {
             throw new IllegalArgumentException("Type " + element + " can't be defined as array. You have to define custom FieldStateManager.");
         }
         return desc;
+    }
+
+    private boolean findParentType(@NonNull TypeElement typeElement, @NonNull TypeElement parent) {
+        TypeMirror type;
+        while (true) {
+            type = typeElement.getSuperclass();
+            if (type.getKind() == TypeKind.NONE) {
+                return false;
+            }
+            typeElement = (TypeElement) ((DeclaredType) type).asElement();
+            if (typeElement.equals(parent)) {
+                return true;
+            }
+        }
     }
 
     @NonNull
@@ -358,6 +390,7 @@ public class SaveFieldProcessor extends FieldProcessor {
                 getKeyPrefix(className)
         );
 
+        // TODO Needs optimization
         for (SaveField field : fields) {
             final FieldSpec manager = field.getManagerField();
             if (manager == null) {
@@ -387,16 +420,30 @@ public class SaveFieldProcessor extends FieldProcessor {
                             field.getFieldType()
                     );
                 } else {
-                    // -> target.field = getInt(key, state);
-                    builder.addStatement(
-                            "$L.$L = get$L($L + $S, $L)",
-                            METHOD_VAR_TARGET,
-                            field.getFieldName(),
-                            field.getMethodSuffix(),
-                            METHOD_VAR_KEY_PREFIX,
-                            field.getKey(),
-                            METHOD_PARAM_STATE
-                    );
+                    if (field.needsClassCast()) {
+                        // -> target.field = (FieldClass) getValue(key, state);
+                        builder.addStatement(
+                                "$L.$L = ($T) get$L($L + $S, $L)",
+                                METHOD_VAR_TARGET,
+                                field.getFieldName(),
+                                ClassName.bestGuess(field.getFieldType()),
+                                field.getMethodSuffix(),
+                                METHOD_VAR_KEY_PREFIX,
+                                field.getKey(),
+                                METHOD_PARAM_STATE
+                        );
+                    } else {
+                        // -> target.field = getInt(key, state);
+                        builder.addStatement(
+                                "$L.$L = get$L($L + $S, $L)",
+                                METHOD_VAR_TARGET,
+                                field.getFieldName(),
+                                field.getMethodSuffix(),
+                                METHOD_VAR_KEY_PREFIX,
+                                field.getKey(),
+                                METHOD_PARAM_STATE
+                        );
+                    }
                 }
             } else {
                 // -> target.field = managerField.get(key, state);
@@ -457,6 +504,7 @@ public class SaveFieldProcessor extends FieldProcessor {
                 getKeyPrefix(className)
         );
 
+        // TODO needs optimization
         for (SaveField field : fields) {
             final FieldSpec manager = field.getManagerField();
             if (manager == null) {
@@ -499,6 +547,7 @@ public class SaveFieldProcessor extends FieldProcessor {
         boolean canBeArray;
         boolean needsParcelableWrapper;
         boolean needsSerializableWrapper;
+        boolean needsClassCast;
 
         TypeDescription() {
 
