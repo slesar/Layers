@@ -194,7 +194,7 @@ public class Transition<LAYER extends Layer<?>> {
         switch (action) {
             case ACTION_REPLACE:
                 if (initialStackSize > 0) {
-                    layers.removeLayerAt(initialStackSize - 1);
+                    layers.remove(initialStackSize - 1);
                 }
                 break;
             case ACTION_POP:
@@ -205,7 +205,7 @@ public class Transition<LAYER extends Layer<?>> {
         animatorSet = null;
     }
 
-    @Nullable
+    @NonNull
     public LAYER commit() {
         if (committed) {
             throw new IllegalStateException("!!");

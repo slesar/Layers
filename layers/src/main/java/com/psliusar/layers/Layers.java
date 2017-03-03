@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
-// TODO Remove generics as much as possible, because they make additional pressure on methods count
 public class Layers {
 
     private static final String STATE_STACK = "LAYERS.STATE_STACK";
@@ -340,7 +339,7 @@ public class Layers {
      *
      * @return the lowest visible layer index
      */
-    int getLowestVisibleEntry() {
+    private int getLowestVisibleEntry() {
         final int upper = layerStack.size() - 1;
         if (upper < 0) {
             return 0;
@@ -399,27 +398,6 @@ public class Layers {
         return new Transition<>(this, layerClass, Transition.ACTION_REPLACE);
     }
 
-    /**
-     * Add layer and add View
-     *
-     * @param layerClass
-     * @param name
-     * @param <L>
-     * @return
-     */
-    @NonNull
-    public <L extends Layer<?>> L add(@NonNull Class<L> layerClass, @Nullable Bundle arguments, @Nullable String name, boolean opaque) {
-        final StackEntry entry = new StackEntry(layerClass);
-        entry.arguments = arguments;
-        entry.name = name;
-        entry.layerType = opaque ? StackEntry.TYPE_OPAQUE : StackEntry.TYPE_TRANSPARENT;
-        layerStack.add(entry);
-        ensureViews();
-
-        //noinspection unchecked
-        return (L) entry.layerInstance;
-    }
-
     Layer<?> commitStackEntry(@NonNull StackEntry entry) {
         layerStack.add(entry);
         ensureViews();
@@ -466,7 +444,7 @@ public class Layers {
      * @return
      */
     @Nullable
-    public <L extends Layer<?>> L removeLayerAt(int index) {
+    public <L extends Layer<?>> L remove(int index) {
         final int size = layerStack.size();
         if (index < 0 || index >= size) {
             return null;
@@ -474,22 +452,10 @@ public class Layers {
         final StackEntry entry = layerStack.get(index);
         moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
 
+        ensureViews();
+
+        //noinspection unchecked
         return (L) layerStack.remove(index).layerInstance;
-    }
-
-    /**
-     * Replace layer
-     *
-     * @return
-     */
-    @NonNull
-    public <L extends Layer<?>> L replace(@NonNull Class<L> layerClass, @Nullable Bundle arguments, @Nullable String name, boolean opaque) {
-        final int size = layerStack.size();
-        if (size > 0) {
-            moveToState(removeLast(), StackEntry.LAYER_STATE_DESTROYED, false);
-        }
-
-        return add(layerClass, arguments, name, opaque);
     }
 
     @Nullable
@@ -499,6 +465,8 @@ public class Layers {
             return null;
         }
         final StackEntry entry = layerStack.get(size - 1);
+
+        //noinspection unchecked
         return (L) new Transition<>(this, entry, Transition.ACTION_POP).commit();
     }
 
@@ -575,13 +543,7 @@ public class Layers {
 
     @Nullable
     public <L extends Layer<?>> L peek() {
-        final int size = layerStack.size();
-        if (size == 0) {
-            return null;
-        }
-
-        //noinspection unchecked
-        return (L) layerStack.get(size - 1).layerInstance;
+        return get(layerStack.size() - 1);
     }
 
     @Nullable
@@ -604,7 +566,7 @@ public class Layers {
 
         for (int i = size - 1; i >= 0; i--) {
             final StackEntry entry = layerStack.get(i);
-            if (name == entry.name // == is the same object or nulls
+            if (name == entry.name // == is the same object or nulls ("cheap" version of equals)
                     || (name != null && name.equals(entry.name))) {
                 //noinspection unchecked
                 return (L) entry.layerInstance;
@@ -644,10 +606,7 @@ public class Layers {
 
     @NonNull
     private StackEntry removeLast() {
-        final int index = layerStack.size() - 1;
-        StackEntry entry = layerStack.get(index);
-        layerStack.remove(index);
-        return entry;
+        return layerStack.remove(layerStack.size() - 1);
     }
 
     private ViewGroup getContainer() {
