@@ -58,12 +58,12 @@ public abstract class LayerBinder {
         state.setClassLoader(obj.getClass().getClassLoader());
     }
 
-    protected static Parcelable[] copyParcelableArray(@Nullable Parcelable[] array, @NonNull Class<? extends Object[]> targetClass) {
-        return array == null ? null : (Parcelable[]) Arrays.copyOf(array, array.length, targetClass);
+    protected static <T> T[] copyParcelableArray(@Nullable Parcelable[] array, @NonNull Class<? extends T[]> targetClass) {
+        return array == null ? null : Arrays.copyOf(array, array.length, targetClass);
     }
 
-    protected static Serializable[] copySerializableArray(@Nullable Serializable[] array, @NonNull Class<? extends Object[]> targetClass) {
-        return array == null ? null : (Serializable[]) Arrays.copyOf(array, array.length, targetClass);
+    protected static <T> T[] copySerializableArray(@Nullable Serializable[] array, @NonNull Class<? extends T[]> targetClass) {
+        return array == null ? null : Arrays.copyOf(array, array.length, targetClass);
     }
 
     /* Put primitives and their boxed versions */
@@ -435,7 +435,7 @@ public abstract class LayerBinder {
     /* Tracks */
 
     @Nullable
-    protected Track getTrack(@NonNull String key, @NonNull Bundle state) {
+    protected static Track getTrack(@NonNull String key, @NonNull Bundle state) {
         final TrackWrapper wrapper = state.getParcelable(key);
         return wrapper == null ? null : wrapper.getTrack();
     }
