@@ -18,7 +18,7 @@ import com.psliusar.layers.sample.R;
 public class TracksLayer extends Layer<TracksPresenter> {
 
     @Save
-    protected SampleSyncTrack syncTrack;
+    protected Track<Integer, Integer> syncTrack;
 
     @Bind(R.id.track_sync_result)
     protected TextView syncResult;

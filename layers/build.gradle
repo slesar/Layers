@@ -1,16 +1,14 @@
-group 'com.psliusar'
-
 apply plugin: 'com.android.library'
 apply plugin: 'de.mobilej.unmock'
-apply plugin: 'maven'
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 24
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
     }
     buildTypes {
         release {
@@ -27,32 +25,15 @@ unMock {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     compile project(':binder')
 
     // Test
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.0.98-beta'
+    testCompile "junit:junit:${rootProject.ext.junitVersion}"
+    testCompile "org.mockito:mockito-core:${rootProject.ext.mockitoVersion}"
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: uri('/home/slesar/Work/maven'))
-            pom {
-                name = 'Layers name'
-                artifactId = 'layers'
-                packaging = 'aar'
-                description = 'Description'
-                //groupId = 'com.psliusar'
-                //url = ''
-                version = '0.5-SNAPSHOT'
-            }
-        }
-    }
-}
-
-task androidJavadocs(type: Javadoc) {
+/*task androidJavadocs(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
@@ -74,4 +55,4 @@ artifacts {
 
 afterEvaluate {
     androidJavadocs.classpath += project.android.libraryVariants.toList().first().javaCompile.classpath
-}
+}*/

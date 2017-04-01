@@ -4,8 +4,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.psliusar.layers.binder.BinderConstants;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.WildcardTypeName;
 
 import java.lang.annotation.Annotation;
+import java.util.regex.Pattern;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
@@ -13,6 +17,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -109,6 +115,38 @@ public abstract class Processor {
                         elements.getTypeElement(type).asType(),
                         elements.getTypeElement(target).asType()
                 );
+    }
+
+    protected static boolean isAssignable(@NonNull LayersAnnotationProcessor ap, @NonNull TypeMirror typeMirror, @NonNull String target) {
+        TypeElement typeElement = (TypeElement) ap.getTypeUtils().asElement(typeMirror);
+        final TypeElement parent = ap.getElementUtils().getTypeElement(target);
+
+        if (ap.getTypeUtils().isAssignable(typeElement.asType(), parent.asType())) {
+            return true;
+        }
+
+        TypeMirror type;
+        while (true) {
+            type = typeElement.getSuperclass();
+            if (type.getKind() == TypeKind.NONE) {
+                return false;
+            }
+            typeElement = (TypeElement) ((DeclaredType) type).asElement();
+            if (typeElement.equals(parent)) {
+                return true;
+            }
+        }
+    }
+
+    @NonNull
+    protected static ClassName guessClassName(@NonNull String fieldType) {
+        final String type = Pattern.compile("<.+>$").matcher(fieldType).replaceAll("");
+        if (fieldType.length() == type.length()) {
+            // No generics
+            return ClassName.bestGuess(fieldType);
+        } else {
+            return ParameterizedTypeName.get(ClassName.bestGuess(type), WildcardTypeName.subtypeOf(Object.class)).rawType;
+        }
     }
 
     private final LayersAnnotationProcessor annotationProcessor;

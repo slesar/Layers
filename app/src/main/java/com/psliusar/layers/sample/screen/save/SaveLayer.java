@@ -1,5 +1,6 @@
 package com.psliusar.layers.sample.screen.save;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -30,7 +31,7 @@ public class SaveLayer extends Layer<SavePresenter> {
     protected SparseArray<Parcelable> parcelables;
 
     @Save
-    protected Parcelable[] parcelablesArray;
+    protected Rect[] parcelablesArray;
 
     @Save(stateManager = CustomFieldStateManager.class)
     protected String customManagerSample;

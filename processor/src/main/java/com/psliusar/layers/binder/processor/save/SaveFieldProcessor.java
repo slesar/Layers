@@ -22,9 +22,7 @@ import java.util.regex.Pattern;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -150,12 +148,14 @@ public class SaveFieldProcessor extends FieldProcessor {
         field.setManager(manager);
 
         final String suffix;
+        boolean needsClassLoader = false;
         if (manager == null) {
             final TypeDescription desc = getTypeDescription(element);
             suffix = desc.suffix;
             field.setNeedsParcelableWrapper(desc.needsParcelableWrapper);
             field.setNeedsSerializableWrapper(desc.needsSerializableWrapper);
             field.setNeedsClassCast(desc.needsClassCast);
+            needsClassLoader = desc.needsClassCast;
         } else {
             suffix = "";
         }
@@ -170,7 +170,7 @@ public class SaveFieldProcessor extends FieldProcessor {
         }
         field.setKey(key);
 
-        boolean needsClassLoader = checkFieldNeedsClassLoader(suffix);
+        needsClassLoader |= checkFieldNeedsClassLoader(suffix);
         field.setNeedsClassLoader(needsClassLoader);
     }
 
@@ -254,10 +254,7 @@ public class SaveFieldProcessor extends FieldProcessor {
 
         if (desc.suffix == null) {
             // Detect Tracks
-            // XXX This code smells
-            if (findParentType((TypeElement) ap.getTypeUtils().asElement(typeMirror), ap.getElementUtils().getTypeElement(TYPE_TRACK))) {
-            //if (isAssignable(ap, typeMirror.toString(), TYPE_CHARGER)) {
-            //if (ap.getTypeUtils().isSubtype(ap.getElementUtils().getTypeElement(TYPE_CHARGER).asType(), typeMirror)) {
+            if (isAssignable(ap, typeMirror, TYPE_TRACK)) {
                 elementType = TYPE_TRACK;
                 desc.needsClassCast = true;
                 if (desc.isArray) {
@@ -265,14 +262,14 @@ public class SaveFieldProcessor extends FieldProcessor {
                     //elementType += "[]";
                     //desc.needsParcelableWrapper = true;
                 }
-            } else if (isAssignable(ap, typeMirror.toString(), TYPE_PARCELABLE)) {
+            } else if (isAssignable(ap, typeMirror, TYPE_PARCELABLE)) {
                 // Detect Parcelable
                 elementType = TYPE_PARCELABLE;
                 if (desc.isArray) {
                     elementType += "[]";
                     desc.needsParcelableWrapper = true;
                 }
-            } else if (isAssignable(ap, typeMirror.toString(), TYPE_SERIALIZABLE)) {
+            } else if (isAssignable(ap, typeMirror, TYPE_SERIALIZABLE)) {
                 // Detect Serializable
                 elementType = TYPE_SERIALIZABLE;
                 if (desc.isArray) {
@@ -291,20 +288,6 @@ public class SaveFieldProcessor extends FieldProcessor {
             throw new IllegalArgumentException("Type " + element + " can't be defined as array. You have to define custom FieldStateManager.");
         }
         return desc;
-    }
-
-    private boolean findParentType(@NonNull TypeElement typeElement, @NonNull TypeElement parent) {
-        TypeMirror type;
-        while (true) {
-            type = typeElement.getSuperclass();
-            if (type.getKind() == TypeKind.NONE) {
-                return false;
-            }
-            typeElement = (TypeElement) ((DeclaredType) type).asElement();
-            if (typeElement.equals(parent)) {
-                return true;
-            }
-        }
     }
 
     @NonNull
@@ -393,65 +376,66 @@ public class SaveFieldProcessor extends FieldProcessor {
         // TODO Needs optimization
         for (SaveField field : fields) {
             final FieldSpec manager = field.getManagerField();
-            if (manager == null) {
-                if (field.needsParcelableWrapper()) {
-                    // -> target.field = copyParcelableArray(getParcelableArray(key, state), targetClass[].class);
-                    builder.addStatement(
-                            "$L.$L = copyParcelableArray(get$L($L + $S, $L), $L.class)",
-                            METHOD_VAR_TARGET,
-                            field.getFieldName(),
-                            field.getMethodSuffix(),
-                            METHOD_VAR_KEY_PREFIX,
-                            field.getKey(),
-                            METHOD_PARAM_STATE,
-                            field.getFieldType()
-                    );
-
-                } else if (field.needsSerializableWrapper()) {
-                    // -> target.field = copySerializableArray(getSerializableArray(key, state), targetClass[].class);
-                    builder.addStatement(
-                            "$L.$L = copySerializableArray(get$L($L + $S, $L), $L.class)",
-                            METHOD_VAR_TARGET,
-                            field.getFieldName(),
-                            field.getMethodSuffix(),
-                            METHOD_VAR_KEY_PREFIX,
-                            field.getKey(),
-                            METHOD_PARAM_STATE,
-                            field.getFieldType()
-                    );
-                } else {
-                    if (field.needsClassCast()) {
-                        // -> target.field = (FieldClass) getValue(key, state);
-                        builder.addStatement(
-                                "$L.$L = ($T) get$L($L + $S, $L)",
-                                METHOD_VAR_TARGET,
-                                field.getFieldName(),
-                                ClassName.bestGuess(field.getFieldType()),
-                                field.getMethodSuffix(),
-                                METHOD_VAR_KEY_PREFIX,
-                                field.getKey(),
-                                METHOD_PARAM_STATE
-                        );
-                    } else {
-                        // -> target.field = getInt(key, state);
-                        builder.addStatement(
-                                "$L.$L = get$L($L + $S, $L)",
-                                METHOD_VAR_TARGET,
-                                field.getFieldName(),
-                                field.getMethodSuffix(),
-                                METHOD_VAR_KEY_PREFIX,
-                                field.getKey(),
-                                METHOD_PARAM_STATE
-                        );
-                    }
-                }
-            } else {
+            if (manager != null) {
+                // Has custom manager
                 // -> target.field = managerField.get(key, state);
                 builder.addStatement(
                         "$L.$L = $N.get($L + $S, $L)",
                         METHOD_VAR_TARGET,
                         field.getFieldName(),
                         manager,
+                        METHOD_VAR_KEY_PREFIX,
+                        field.getKey(),
+                        METHOD_PARAM_STATE
+                );
+            } else if (field.needsParcelableWrapper()) {
+                // Copy parcelables array to array of given type
+                // -> target.field = copyParcelableArray(getParcelableArray(key, state), targetClass[].class);
+                builder.addStatement(
+                        "$L.$L = copyParcelableArray(get$L($L + $S, $L), $L.class)",
+                        METHOD_VAR_TARGET,
+                        field.getFieldName(),
+                        field.getMethodSuffix(),
+                        METHOD_VAR_KEY_PREFIX,
+                        field.getKey(),
+                        METHOD_PARAM_STATE,
+                        field.getFieldType()
+                );
+
+            } else if (field.needsSerializableWrapper()) {
+                // Copy serializables array to array of given type
+                // -> target.field = copySerializableArray(getSerializableArray(key, state), targetClass[].class);
+                builder.addStatement(
+                        "$L.$L = copySerializableArray(get$L($L + $S, $L), $L.class)",
+                        METHOD_VAR_TARGET,
+                        field.getFieldName(),
+                        field.getMethodSuffix(),
+                        METHOD_VAR_KEY_PREFIX,
+                        field.getKey(),
+                        METHOD_PARAM_STATE,
+                        field.getFieldType()
+                );
+            } else if (field.needsClassCast()) {
+                // Statements with class cast
+                // -> target.field = (FieldClass) getValue(key, state);
+                builder.addStatement(
+                        "$L.$L = ($T) get$L($L + $S, $L)",
+                        METHOD_VAR_TARGET,
+                        field.getFieldName(),
+                        guessClassName(field.getFieldType()),
+                        field.getMethodSuffix(),
+                        METHOD_VAR_KEY_PREFIX,
+                        field.getKey(),
+                        METHOD_PARAM_STATE
+                );
+            } else {
+                // Everything else
+                // -> target.field = getInt(key, state);
+                builder.addStatement(
+                        "$L.$L = get$L($L + $S, $L)",
+                        METHOD_VAR_TARGET,
+                        field.getFieldName(),
+                        field.getMethodSuffix(),
                         METHOD_VAR_KEY_PREFIX,
                         field.getKey(),
                         METHOD_PARAM_STATE
@@ -504,10 +488,10 @@ public class SaveFieldProcessor extends FieldProcessor {
                 getKeyPrefix(className)
         );
 
-        // TODO needs optimization
         for (SaveField field : fields) {
             final FieldSpec manager = field.getManagerField();
             if (manager == null) {
+                // Save known types
                 // -> putInt(key, target.field, state);
                 builder.addStatement(
                         "put$L($L + $S, $L.$L, $L)",
@@ -519,6 +503,7 @@ public class SaveFieldProcessor extends FieldProcessor {
                         METHOD_PARAM_STATE
                 );
             } else {
+                // Save with manager
                 // -> managerField.put(key, target.field, state);
                 builder.addStatement(
                         "$N.put($L + $S, $L.$L, $L)",
