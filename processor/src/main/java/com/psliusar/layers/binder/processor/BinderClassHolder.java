@@ -75,6 +75,7 @@ public class BinderClassHolder {
     private TypeSpec getTypeSpec() {
         TypeSpec.Builder builder = TypeSpec.classBuilder(className + BinderConstants.BINDER_SUFFIX)
                 .addModifiers(Modifier.PUBLIC)
+                // TODO add @Generated annotation
                 // TODO Really need to @Keep here?
                 .addAnnotation(Keep.class);
 

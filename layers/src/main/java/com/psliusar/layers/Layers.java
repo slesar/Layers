@@ -543,7 +543,8 @@ public class Layers {
 
     @Nullable
     public <L extends Layer<?>> L peek() {
-        return get(layerStack.size() - 1);
+        final int size = layerStack.size();
+        return size != 0 ? null : (L) get(size - 1);
     }
 
     @Nullable

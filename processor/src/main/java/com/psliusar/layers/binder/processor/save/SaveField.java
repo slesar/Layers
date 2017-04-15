@@ -3,12 +3,10 @@ package com.psliusar.layers.binder.processor.save;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.psliusar.layers.binder.processor.FieldHolder;
 import com.squareup.javapoet.FieldSpec;
 
-public class SaveField {
-
-    private final String fieldName;
-    private final String fieldType;
+public class SaveField extends FieldHolder {
 
     private String manager;
     private String key;
@@ -23,18 +21,7 @@ public class SaveField {
     public SaveField(
             @NonNull String fieldName,
             @NonNull String fieldType) {
-        this.fieldName = fieldName;
-        this.fieldType = fieldType;
-    }
-
-    @NonNull
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    @NonNull
-    public String getFieldType() {
-        return fieldType;
+        super(fieldName, fieldType);
     }
 
     @Nullable

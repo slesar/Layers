@@ -2,10 +2,9 @@ package com.psliusar.layers.binder.processor.view;
 
 import android.support.annotation.NonNull;
 
-public class ViewField {
+import com.psliusar.layers.binder.processor.FieldHolder;
 
-    private final String fieldName;
-    private final String fieldType;
+public class ViewField extends FieldHolder {
 
     private final int resId;
     private final Integer parentContainer;
@@ -17,21 +16,10 @@ public class ViewField {
             int resId,
             @NonNull Integer parentContainer,
             boolean clickListener) {
-        this.fieldName = fieldName;
-        this.fieldType = fieldType;
+        super(fieldName, fieldType);
         this.resId = resId;
         this.parentContainer = parentContainer;
         this.clickListener = clickListener;
-    }
-
-    @NonNull
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    @NonNull
-    public String getFieldType() {
-        return fieldType;
     }
 
     public int getResId() {

@@ -81,6 +81,7 @@ public abstract class Track<V, P> {
     public void dispose() {
         value = null;
         disposed = true;
+        cancel();
         unsubscribe();
     }
 
