@@ -28,10 +28,6 @@ public abstract class Track<V, P> {
      */
     private boolean started;
 
-    public Track() {
-
-    }
-
     public void subscribe(@Nullable OnTrackListener<V, P> listener) {
         this.listener = listener;
     }
