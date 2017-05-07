@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public abstract class LayerBinder {
+public abstract class ObjectBinder {
 
     @NonNull
     protected static View find(@NonNull View container, @IdRes int viewResId) {
@@ -47,7 +47,7 @@ public abstract class LayerBinder {
     }
 
     protected void bind(@NonNull View.OnClickListener listener, @NonNull View view) {
-        copyParcelableArray(new Parcelable[0], Bundle[].class);
+
     }
 
     protected void unbind(@NonNull View.OnClickListener listener) {

@@ -15,8 +15,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.psliusar.layers.binder.Binder;
+import com.psliusar.layers.binder.BinderHolder;
+import com.psliusar.layers.binder.ObjectBinder;
 
-public abstract class Layer<P extends Presenter> implements LayersHost, View.OnClickListener {
+public abstract class Layer<P extends Presenter> implements LayersHost, View.OnClickListener, BinderHolder {
 
     private static final String SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS";
     private static final String SAVED_STATE_CUSTOM = "LAYER.SAVED_STATE_CUSTOM";
@@ -42,6 +44,8 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     private boolean fromSavedState;
 
     private boolean finishing;
+
+    private ObjectBinder layerBinder;
 
     public Layer() {
         // Default constructor
@@ -311,4 +315,12 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         return null;
     }
 
+    @Nullable
+    public ObjectBinder getObjectBinder() {
+        return layerBinder;
+    }
+
+    public void setObjectBinder(@NonNull ObjectBinder objectBinder) {
+        layerBinder = objectBinder;
+    }
 }

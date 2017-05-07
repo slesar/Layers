@@ -149,7 +149,7 @@ public class LayersAnnotationProcessor extends AbstractProcessor {
             superclass = superclassElement.getSuperclass();
         }
 
-        return "com.psliusar.layers.binder.LayerBinder";
+        return "com.psliusar.layers.binder.ObjectBinder";
     }
 
     private boolean isAnnotated(@NonNull Element element) {

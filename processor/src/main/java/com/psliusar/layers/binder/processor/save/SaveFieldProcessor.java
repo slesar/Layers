@@ -472,7 +472,7 @@ public class SaveFieldProcessor extends FieldProcessor {
                 METHOD_PARAM_STATE
         );
 
-        // -> final NextLayer target = (NextLayer) object;
+        // -> final NextObject target = (NextObject) object;
         builder.addStatement(
                 "final $T $L = ($T) $L",
                 targetClass,

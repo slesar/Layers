@@ -10,33 +10,33 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Binder {
 
-    private static final Map<Class<?>, LayerBinder> BINDERS = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, ObjectBinder> BINDERS = new ConcurrentHashMap<>();
 
-    private static final LayerBinder DEFAULT_BINDER = new LayerBinder() { };
+    private static final ObjectBinder DEFAULT_BINDER = new ObjectBinder() { };
 
     public static void restore(@NonNull Object target, @NonNull Bundle state) {
-        final LayerBinder binder = getBinder(target.getClass());
+        final ObjectBinder binder = getBinder(target);
         if (binder != DEFAULT_BINDER) {
             binder.restore(target, state);
         }
     }
 
     public static void save(@NonNull Object target, @NonNull Bundle state) {
-        final LayerBinder binder = getBinder(target.getClass());
+        final ObjectBinder binder = getBinder(target);
         if (binder != DEFAULT_BINDER) {
             binder.save(target, state);
         }
     }
 
     public static void bind(@NonNull View.OnClickListener target, @NonNull View view) {
-        final LayerBinder binder = getBinder(target.getClass());
+        final ObjectBinder binder = getBinder(target);
         if (binder != DEFAULT_BINDER) {
             binder.bind(target, view);
         }
     }
 
     public static void unbind(@NonNull View.OnClickListener target) {
-        final LayerBinder binder = getBinder(target.getClass());
+        final ObjectBinder binder = getBinder(target);
         if (binder != DEFAULT_BINDER) {
             binder.unbind(target);
         }
@@ -47,21 +47,37 @@ public class Binder {
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
-            // TODO
+            // ignore
         }
         return null;
     }
 
     @NonNull
-    private static LayerBinder getBinder(@NonNull Class<?> targetClass) {
-        LayerBinder binder = BINDERS.get(targetClass);
+    private static ObjectBinder getBinder(@NonNull Object target) {
+        final Class<?> targetClass = target.getClass();
+        ObjectBinder binder = null;
+        BinderHolder holder = null;
+        boolean saveToHolder = false;
+        boolean saveToCache = false;
+        // Try to get binder from holder
+        if (target instanceof BinderHolder) {
+            holder = (BinderHolder) target;
+            binder = holder.getObjectBinder();
+        }
+        // Try to get cached binder
         if (binder == null) {
+            saveToHolder = true;
+            binder = BINDERS.get(targetClass);
+        }
+        // Load binder
+        if (binder == null) {
+            saveToCache = true;
             try {
                 Class<?> cl = targetClass;
                 while (cl != Object.class) {
                     final Class<?> binderClass = getClass(cl.getCanonicalName() + BinderConstants.BINDER_SUFFIX);
                     if (binderClass != null) {
-                        binder = (LayerBinder) binderClass.newInstance();
+                        binder = (ObjectBinder) binderClass.newInstance();
                         break;
                     }
                     cl = cl.getSuperclass();
@@ -70,10 +86,18 @@ public class Binder {
                 throw new IllegalArgumentException("Could not instantiate LayerBinder for class " + targetClass.getCanonicalName(), ex);
             }
         }
+        // Use default binder if not found
         if (binder == null) {
             binder = DEFAULT_BINDER;
         }
-        BINDERS.put(targetClass, binder);
+        // Cache binder
+        if (saveToCache) {
+            BINDERS.put(targetClass, binder);
+        }
+        // Save binder to holder
+        if (holder != null && saveToHolder) {
+            holder.setObjectBinder(binder);
+        }
         return binder;
     }
 

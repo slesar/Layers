@@ -103,7 +103,7 @@ public class ViewFieldProcessor extends FieldProcessor {
                 METHOD_PARAM_VIEW
         );
 
-        // -> final NextLayer target = (NextLayer) listener;
+        // -> final NextObject target = (NextObject) listener;
         builder.addStatement(
                 "final $T $L = ($T) $L",
                 targetClass,
@@ -176,7 +176,7 @@ public class ViewFieldProcessor extends FieldProcessor {
         );
 
         final ClassName targetClass = ClassName.get(packageName, className);
-        // -> final NextLayer target = (NextLayer) listener");
+        // -> final NextObject target = (NextObject) listener");
         builder.addStatement(
                 "final $T $L = ($T) $L",
                 targetClass,
