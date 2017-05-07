@@ -2,7 +2,6 @@ package com.psliusar.layers.binder.processor;
 
 import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.psliusar.layers.binder.BinderConstants;
 import com.psliusar.layers.binder.processor.save.SaveField;
@@ -75,7 +74,12 @@ public class BinderClassHolder {
     private TypeSpec getTypeSpec() {
         TypeSpec.Builder builder = TypeSpec.classBuilder(className + BinderConstants.BINDER_SUFFIX)
                 .addModifiers(Modifier.PUBLIC)
-                // TODO add @Generated annotation
+                .addJavadoc(
+                        "Generated class. Do not modify.\n" +
+                                "Generator: $T.\n" +
+                                "Details: $L.",
+                        LayersAnnotationProcessor.class,
+                        "https://github.com/slesar/Layers")
                 // TODO Really need to @Keep here?
                 .addAnnotation(Keep.class);
 
