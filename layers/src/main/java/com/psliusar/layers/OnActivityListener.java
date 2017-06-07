@@ -32,7 +32,7 @@ public interface OnActivityListener {
 
     void onNewIntent(@NonNull Intent intent);
 
-    void onConfigurationChanged(Configuration newConfig);
+    void onConfigurationChanged(@Nullable Configuration newConfig);
 
     void onActivityResult(int requestCode, int resultCode, Intent intent);
 

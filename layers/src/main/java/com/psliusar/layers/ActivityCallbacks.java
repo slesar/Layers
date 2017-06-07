@@ -158,7 +158,7 @@ public class ActivityCallbacks implements OnActivityListener {
 
         @Override public void onNewIntent(@NonNull Intent intent) {}
 
-        @Override public void onConfigurationChanged(Configuration newConfig) {}
+        @Override public void onConfigurationChanged(@Nullable Configuration newConfig) {}
 
         @Override public void onActivityResult(int requestCode, int resultCode, Intent intent) {}
         @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {}
@@ -171,7 +171,7 @@ public class ActivityCallbacks implements OnActivityListener {
 
         private LinkedList<ActivityCallbacks.EventSubscription> subscriptions;
 
-        public void manage(ActivityCallbacks.EventSubscription subscription) {
+        public void manage(@NonNull ActivityCallbacks.EventSubscription subscription) {
             if (subscriptions == null) {
                 subscriptions = new LinkedList<>();
             }
@@ -196,7 +196,7 @@ public class ActivityCallbacks implements OnActivityListener {
         private final OnActivityListener listener;
         private boolean subscribed;
 
-        public EventSubscription(ActivityCallbacks callbacks, OnActivityListener listener, boolean subscribed) {
+        public EventSubscription(@NonNull ActivityCallbacks callbacks, @NonNull OnActivityListener listener, boolean subscribed) {
             this.callbacks = callbacks;
             this.listener = listener;
             this.subscribed = subscribed;
@@ -211,7 +211,7 @@ public class ActivityCallbacks implements OnActivityListener {
             return subscribed;
         }
 
-        public void manageWith(ManagedSubscriptions manager) {
+        public void manageWith(@NonNull ManagedSubscriptions manager) {
             manager.manage(this);
         }
     }
