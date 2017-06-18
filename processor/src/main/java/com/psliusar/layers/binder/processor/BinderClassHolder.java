@@ -77,7 +77,7 @@ public class BinderClassHolder {
                 .addJavadoc(
                         "Generated class. Do not modify.\n" +
                                 "Generator: $T.\n" +
-                                "Details: $L.",
+                                "Details: $L\n",
                         LayersAnnotationProcessor.class,
                         "https://github.com/slesar/Layers")
                 // TODO Really need to @Keep here?
@@ -86,15 +86,16 @@ public class BinderClassHolder {
         // TODO parametrized class
         builder.superclass(ClassName.bestGuess(parentClassName));
 
+        final String innerClassName = className.replace('$', '.');
         if (!saveFields.isEmpty()) {
             builder.addFields(SaveFieldProcessor.getFields(saveFields));
-            builder.addMethod(SaveFieldProcessor.getRestoreMethod(packageName, className, saveFields));
-            builder.addMethod(SaveFieldProcessor.getSaveMethod(packageName, className, saveFields));
+            builder.addMethod(SaveFieldProcessor.getRestoreMethod(packageName, innerClassName, saveFields));
+            builder.addMethod(SaveFieldProcessor.getSaveMethod(packageName, innerClassName, saveFields));
         }
 
         if (!viewFields.isEmpty()) {
-            builder.addMethod(ViewFieldProcessor.getBindMethod(packageName, className, viewFields));
-            builder.addMethod(ViewFieldProcessor.getUnbindMethod(packageName, className, viewFields));
+            builder.addMethod(ViewFieldProcessor.getBindMethod(packageName, innerClassName, viewFields));
+            builder.addMethod(ViewFieldProcessor.getUnbindMethod(packageName, innerClassName, viewFields));
         }
 
         return builder.build();

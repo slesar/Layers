@@ -75,7 +75,7 @@ public class Binder {
             try {
                 Class<?> cl = targetClass;
                 while (cl != Object.class) {
-                    final Class<?> binderClass = getClass(cl.getCanonicalName() + BinderConstants.BINDER_SUFFIX);
+                    final Class<?> binderClass = getClass(cl.getName() + BinderConstants.BINDER_SUFFIX);
                     if (binderClass != null) {
                         binder = (ObjectBinder) binderClass.newInstance();
                         break;
@@ -83,7 +83,7 @@ public class Binder {
                     cl = cl.getSuperclass();
                 }
             } catch (Exception ex) {
-                throw new IllegalArgumentException("Could not instantiate LayerBinder for class " + targetClass.getCanonicalName(), ex);
+                throw new IllegalArgumentException("Could not instantiate LayerBinder for class " + targetClass.getName(), ex);
             }
         }
         // Use default binder if not found
