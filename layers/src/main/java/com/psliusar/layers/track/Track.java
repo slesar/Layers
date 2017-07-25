@@ -81,8 +81,17 @@ public abstract class Track<V, P> {
         unsubscribe();
     }
 
+    public boolean isFinished() {
+        return finished;
+    }
+
     public boolean isDisposed() {
         return disposed;
+    }
+
+    @Nullable
+    public V getValue() {
+        return value;
     }
 
     protected void postProgress(@Nullable P progress) {

@@ -40,7 +40,7 @@ public class LayersTest {
     public void setUp() {
         container = mock(ViewGroup.class);
 
-        LayoutInflater inflater = mock(LayoutInflater.class);
+        final LayoutInflater inflater = mock(LayoutInflater.class);
         when(inflater.inflate(eq(0), (ViewGroup) any(), eq(false))).thenAnswer(new Answer<View>() {
             @Override
             public View answer(InvocationOnMock invocation) throws Throwable {
@@ -51,8 +51,7 @@ public class LayersTest {
             }
         });
 
-        Activity activity = mock(Activity.class);
-        //when(activity.getApplicationContext()).thenReturn(context);
+        final Activity activity = mock(Activity.class);
         when(activity.getLayoutInflater()).thenReturn(inflater);
 
         host = mock(LayersHost.class);
@@ -170,9 +169,9 @@ public class LayersTest {
 
     @Test
     public void testAddTransparent() throws Exception {
-        MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
-        MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
-        MockedLayer layer3 = addLayer(MockedLayer.class, null, "Test Layer 3", false);
+        final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
+        final MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
+        final MockedLayer layer3 = addLayer(MockedLayer.class, null, "Test Layer 3", false);
 
         verify(container, times(0)).removeView(any(View.class));
 
@@ -191,37 +190,49 @@ public class LayersTest {
 
     @Test
     public void testAddOpaque() throws Exception {
-        addLayer(MockedLayer.class, null, "Test Layer 1", true);
-        addLayer(MockedLayer.class, null, "Test Layer 2", false);
-        addLayer(MockedLayer.class, null, "Test Layer 3", true);
-        addLayer(MockedLayer.class, null, "Test Layer 4", false);
+        final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", true);
+        final MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
+        final MockedLayer layer3 = addLayer(MockedLayer.class, null, "Test Layer 3", true);
+        final MockedLayer layer4 = addLayer(MockedLayer.class, null, "Test Layer 4", false);
 
+        assertNull(layer1.getView());
+        assertFalse(layer1.isAttached());
+        assertNull(layer2.getView());
+        assertFalse(layer2.isAttached());
+        assertNotNull(layer3.getView());
+        assertTrue(layer3.isAttached());
+        assertNotNull(layer4.getView());
+        assertTrue(layer4.isAttached());
         verify(container, times(2)).removeView(any(View.class));
         verify(container, times(4)).addView(any(View.class));
     }
 
     @Test
     public void testRemove() throws Exception {
-        MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
+        final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
         layers.remove(layer1);
 
         assertEquals(0, layers.getStackSize());
 
-        MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
-        addLayer(MockedLayer.class, null, "Test Layer 3", false);
-        MockedLayer layer4 = addLayer(MockedLayer.class, null, "Test Layer 4", false);
+        final MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
+        final MockedLayer layer3 = addLayer(MockedLayer.class, null, "Test Layer 3", true);
+        final MockedLayer layer4 = addLayer(MockedLayer.class, null, "Test Layer 4", false);
+        final MockedLayer layer5 = addLayer(MockedLayer.class, null, "Test Layer 5", false);
         layers.remove(layer2);
         layers.remove(layer4);
 
-        assertEquals(1, layers.getStackSize());
+        assertEquals(2, layers.getStackSize());
 
-        Layer<?> topLayer = layers.peek();
+        assertNotNull(layer3.getView());
+        assertTrue(layer3.isAttached());
+
+        final MockedLayer topLayer = layers.peek();
         assertNotNull(topLayer);
-        assertEquals("Test Layer 3", topLayer.getName());
+        assertEquals("Test Layer 5", topLayer.getName());
+        assertNotNull(topLayer.getView());
+        assertTrue(topLayer.isAttached());
 
         verify(container, times(3)).removeView(any(View.class));
-
-        // TODO remove with opaque in stack
     }
 
     @Test
@@ -342,10 +353,10 @@ public class LayersTest {
         addLayer(MockedLayer.class, null, "Test Layer 4", true);
         assertEquals(4, layers.getStackSize());
 
+        verify(container, times(4)).addView(any(View.class));
         layers.clear();
         assertEquals(0, layers.getStackSize());
 
-        verify(container, times(4)).addView(any(View.class));
         verify(container, times(4)).removeView(any(View.class));
     }
 
