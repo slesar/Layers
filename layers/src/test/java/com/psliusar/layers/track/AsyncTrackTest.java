@@ -3,16 +3,17 @@ package com.psliusar.layers.track;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class TrackTest {
+public class AsyncTrackTest {
 
-    private SimpleSyncTrack track;
+    private SimpleAsyncTrack track;
     private MockedListener listener;
 
     @Before
     public void setUp() {
-        track = new SimpleSyncTrack(new String[] { "Hello", "world" });
+        track = new SimpleAsyncTrack(new String[] { "Hello", "world" });
         listener = new MockedListener();
     }
 

@@ -166,16 +166,16 @@ public class SimpleAnimation extends Animator implements Animation.AnimationList
                 final AnimatorListener listener = listeners.get(i);
                 switch (eventType) {
                     case EVENT_START:
-                        listener.onAnimationStart(SimpleAnimation.this);
+                        listener.onAnimationStart(this);
                         break;
                     case EVENT_FINISH:
-                        listener.onAnimationEnd(SimpleAnimation.this);
+                        listener.onAnimationEnd(this);
                         break;
                     case EVENT_REPEAT:
-                        listener.onAnimationRepeat(SimpleAnimation.this);
+                        listener.onAnimationRepeat(this);
                         break;
                     case EVENT_CANCEL:
-                        listener.onAnimationCancel(SimpleAnimation.this);
+                        listener.onAnimationCancel(this);
                         break;
                 }
             }

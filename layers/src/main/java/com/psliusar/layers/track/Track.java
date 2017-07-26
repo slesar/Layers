@@ -45,8 +45,10 @@ public abstract class Track<V, P> {
     }
 
     public void restart() {
+        if (finished) {
+            callOnRestart();
+        }
         value = null;
-        callOnRestart();
         disposed = false;
         finished = false;
         started = true;
