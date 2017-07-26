@@ -51,6 +51,10 @@ public abstract class ObjectBinder {
     }
 
     protected void unbind(@NonNull View.OnClickListener listener) {
+        unbindTracks(listener);
+    }
+
+    protected void unbindTracks(@NonNull Object object) {
 
     }
 

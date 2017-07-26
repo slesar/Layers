@@ -10,6 +10,7 @@ import com.psliusar.layers.binder.processor.view.ViewField;
 import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
@@ -89,8 +90,12 @@ public class BinderClassHolder {
         final String innerClassName = className.replace('$', '.');
         if (!saveFields.isEmpty()) {
             builder.addFields(SaveFieldProcessor.getFields(saveFields));
-            builder.addMethod(SaveFieldProcessor.getRestoreMethod(packageName, innerClassName, saveFields));
             builder.addMethod(SaveFieldProcessor.getSaveMethod(packageName, innerClassName, saveFields));
+            builder.addMethod(SaveFieldProcessor.getRestoreMethod(packageName, innerClassName, saveFields));
+            final MethodSpec unbindTracksMethod = SaveFieldProcessor.getUnbindTracksMethod(packageName, innerClassName, saveFields);
+            if (unbindTracksMethod != null) {
+                builder.addMethod(unbindTracksMethod);
+            }
         }
 
         if (!viewFields.isEmpty()) {
