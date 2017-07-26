@@ -25,6 +25,36 @@ import javax.lang.model.util.Types;
 
 public abstract class Processor {
 
+    @NonNull
+    public static String typeNameToFieldName(@NonNull String typeName) {
+        typeName = typeName.replaceAll("^.+\\.", "");
+        String result = String.valueOf(typeName.charAt(0)).toLowerCase();
+        if (typeName.length() > 1) {
+            result = result + typeName.substring(1);
+        }
+        return result;
+    }
+
+    @NonNull
+    public static ClassName guessClassName(@NonNull String fieldType) {
+        final String type = Pattern.compile("<.+>$").matcher(fieldType).replaceAll("");
+        if (fieldType.length() == type.length()) {
+            // No generics
+            return ClassName.bestGuess(fieldType);
+        } else {
+            return ParameterizedTypeName.get(ClassName.bestGuess(type), WildcardTypeName.subtypeOf(Object.class)).rawType;
+        }
+    }
+
+    @NonNull
+    public static String getKeyPrefix(@NonNull String className) {
+        return elementNameToSnakeCase(className) + "$$";
+    }
+
+    public static String elementNameToSnakeCase(@NonNull String elementName) {
+        return elementName.replaceAll("([a-z0-9])([A-Z0-9])", "$1_$2").toUpperCase();
+    }
+
     protected static String getPackageName(
             @NonNull TypeElement type,
             @NonNull Elements elements) {
@@ -41,20 +71,6 @@ public abstract class Processor {
             @NonNull TypeElement type,
             @NonNull String packageName) {
         return type.getQualifiedName().toString().substring(packageName.length() + 1).replace('.', '$');
-    }
-
-    protected static String elementNameToSnakeCase(@NonNull String elementName) {
-        return elementName.replaceAll("([a-z0-9])([A-Z0-9])", "$1_$2").toUpperCase();
-    }
-
-    @NonNull
-    protected static String typeNameToFieldName(@NonNull String typeName) {
-        typeName = typeName.replaceAll("^.+\\.", "");
-        String result = String.valueOf(typeName.charAt(0)).toLowerCase();
-        if (typeName.length() > 1) {
-            result = result + typeName.substring(1);
-        }
-        return result;
     }
 
     protected static boolean ensureSubtypeOfType(
@@ -135,17 +151,6 @@ public abstract class Processor {
             if (typeElement.equals(parent)) {
                 return true;
             }
-        }
-    }
-
-    @NonNull
-    protected static ClassName guessClassName(@NonNull String fieldType) {
-        final String type = Pattern.compile("<.+>$").matcher(fieldType).replaceAll("");
-        if (fieldType.length() == type.length()) {
-            // No generics
-            return ClassName.bestGuess(fieldType);
-        } else {
-            return ParameterizedTypeName.get(ClassName.bestGuess(type), WildcardTypeName.subtypeOf(Object.class)).rawType;
         }
     }
 

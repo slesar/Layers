@@ -7,21 +7,14 @@ import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.binder.processor.BinderClassHolder;
 import com.psliusar.layers.binder.processor.FieldProcessor;
 import com.psliusar.layers.binder.processor.LayersAnnotationProcessor;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterSpec;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
@@ -30,10 +23,7 @@ import javax.lang.model.util.Elements;
 
 public class SaveFieldProcessor extends FieldProcessor {
 
-    private static final String METHOD_PARAM_OBJECT = "object";
-    private static final String METHOD_PARAM_STATE = "state";
-    private static final String METHOD_VAR_TARGET = "target";
-    private static final String METHOD_VAR_KEY_PREFIX = "keyPrefix";
+    public static final String SUFFIX_TRACK = "Track";
 
     private static final String TYPE_STRING = "java.lang.String";
     private static final String TYPE_INTEGER = "java.lang.Integer";
@@ -42,8 +32,6 @@ public class SaveFieldProcessor extends FieldProcessor {
     private static final String TYPE_SERIALIZABLE = "java.io.Serializable";
     private static final String TYPE_BUNDLE = "android.os.Bundle";
     private static final String TYPE_TRACK = "com.psliusar.layers.track.Track";
-
-    private static final String SUFFIX_TRACK = "Track";
 
     private static final Pattern PATTERN_SPARSE_ARRAY = Pattern.compile("android\\.util\\.SparseArray<(.*?)>");
     private static final Pattern PATTERN_ARRAY_LIST = Pattern.compile("java\\.util\\.ArrayList<(.*?)>");
@@ -290,293 +278,6 @@ public class SaveFieldProcessor extends FieldProcessor {
             throw new IllegalArgumentException("Type " + element + " can't be defined as array. You have to define custom FieldStateManager.");
         }
         return desc;
-    }
-
-    @NonNull
-    public static List<FieldSpec> getFields(@NonNull List<SaveField> fields) {
-        final ArrayList<FieldSpec> specs = new ArrayList<>();
-        final HashMap<String, FieldSpec> managers = new HashMap<>();
-        for (SaveField field : fields) {
-            final String manager = field.getManager();
-            if (manager == null) {
-                continue;
-            }
-            FieldSpec managerField = managers.get(manager);
-            if (managerField == null) {
-                final String managerFieldName = typeNameToFieldName(manager);
-                final ClassName managerClassName = ClassName.bestGuess(manager);
-
-                // -> protected final ManagerType managerType = new ManagerType();
-                managerField = FieldSpec
-                        .builder(managerClassName, managerFieldName, Modifier.PROTECTED, Modifier.FINAL)
-                        .initializer("new $T()", managerClassName)
-                        .build();
-
-                managers.put(manager, managerField);
-                specs.add(managerField);
-            }
-            field.setManagerField(managerField);
-        }
-        return specs;
-    }
-
-    @NonNull
-    public static MethodSpec getSaveMethod(
-            @NonNull String packageName,
-            @NonNull String className,
-            @NonNull List<SaveField> fields) {
-        final ClassName targetClass = ClassName.get(packageName, className);
-
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("save")
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PROTECTED)
-                .addParameter(ParameterSpec
-                        .builder(ClassName.get("java.lang", "Object"), METHOD_PARAM_OBJECT)
-                        .addAnnotation(NonNull.class)
-                        .build())
-                .addParameter(ParameterSpec
-                        .builder(ClassName.get("android.os", "Bundle"), METHOD_PARAM_STATE)
-                        .addAnnotation(NonNull.class)
-                        .build());
-
-        // -> super.save(object, state);
-        builder.addStatement(
-                "super.save($L, $L)",
-                METHOD_PARAM_OBJECT,
-                METHOD_PARAM_STATE
-        );
-
-        // -> final NextObject target = (NextObject) object;
-        builder.addStatement(
-                "final $T $L = ($T) $L",
-                targetClass,
-                METHOD_VAR_TARGET,
-                targetClass,
-                METHOD_PARAM_OBJECT
-        );
-
-        // -> final String keyPrefix = "SUBCLASS_NAME$$";
-        builder.addStatement(
-                "final String $L = $S",
-                METHOD_VAR_KEY_PREFIX,
-                getKeyPrefix(className)
-        );
-
-        for (SaveField field : fields) {
-            final FieldSpec manager = field.getManagerField();
-            if (manager == null) {
-                // Save known types
-                // -> putInt(key, target.field, state);
-                builder.addStatement(
-                        "put$L($L + $S, $L.$L, $L)",
-                        field.getMethodSuffix(),
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        METHOD_PARAM_STATE
-                );
-            } else {
-                // Save with manager
-                // -> managerField.put(key, target.field, state);
-                builder.addStatement(
-                        "$N.put($L + $S, $L.$L, $L)",
-                        manager,
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        METHOD_PARAM_STATE
-                );
-            }
-        }
-
-        return builder.build();
-    }
-
-    @NonNull
-    public static MethodSpec getRestoreMethod(
-            @NonNull String packageName,
-            @NonNull String className,
-            @NonNull List<SaveField> fields) {
-        final ClassName targetClass = ClassName.get(packageName, className);
-
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("restore")
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PROTECTED)
-                .addParameter(ParameterSpec
-                        .builder(ClassName.get("java.lang", "Object"), METHOD_PARAM_OBJECT)
-                        .addAnnotation(ClassName.get(NonNull.class))
-                        .build())
-                .addParameter(ParameterSpec
-                        .builder(ClassName.get("android.os", "Bundle"), METHOD_PARAM_STATE)
-                        .addAnnotation(ClassName.get(NonNull.class))
-                        .build());
-
-        // -> super.restore(object, state);
-        builder.addStatement(
-                "super.restore($L, $L)",
-                METHOD_PARAM_OBJECT,
-                METHOD_PARAM_STATE
-        );
-
-        // Loop through fields and find out whether they need to define class loader or not
-        for (SaveField field : fields) {
-            if (field.needsClassLoader()) {
-                // -> initClassLoader(state, object);
-                builder.addStatement(
-                        "initClassLoader($L, $L)",
-                        METHOD_PARAM_STATE,
-                        METHOD_PARAM_OBJECT
-                );
-                break;
-            }
-        }
-
-        // -> final NextLayer target = (NextLayer) object;
-        builder.addStatement(
-                "final $T $L = ($T) $L",
-                targetClass,
-                METHOD_VAR_TARGET,
-                targetClass,
-                METHOD_PARAM_OBJECT
-        );
-
-        // -> final String keyPrefix = "SUBCLASS_NAME$$";
-        builder.addStatement(
-                "final String $L = $S",
-                METHOD_VAR_KEY_PREFIX,
-                getKeyPrefix(className)
-        );
-
-        // TODO Needs optimization
-        for (SaveField field : fields) {
-            final FieldSpec manager = field.getManagerField();
-            if (manager != null) {
-                // Has custom manager
-                // -> target.field = managerField.get(key, state);
-                builder.addStatement(
-                        "$L.$L = $N.get($L + $S, $L)",
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        manager,
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_PARAM_STATE
-                );
-            } else if (field.needsParcelableWrapper()) {
-                // Copy parcelables array to array of given type
-                // -> target.field = copyParcelableArray(getParcelableArray(key, state), targetClass[].class);
-                builder.addStatement(
-                        "$L.$L = copyParcelableArray(get$L($L + $S, $L), $L.class)",
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        field.getMethodSuffix(),
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_PARAM_STATE,
-                        field.getFieldType()
-                );
-
-            } else if (field.needsSerializableWrapper()) {
-                // Copy serializables array to array of given type
-                // -> target.field = copySerializableArray(getSerializableArray(key, state), targetClass[].class);
-                builder.addStatement(
-                        "$L.$L = copySerializableArray(get$L($L + $S, $L), $L.class)",
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        field.getMethodSuffix(),
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_PARAM_STATE,
-                        field.getFieldType()
-                );
-            } else if (field.needsClassCast()) {
-                // Statements with class cast
-                // -> target.field = (FieldClass) getValue(key, state);
-                builder.addStatement(
-                        "$L.$L = ($T) get$L($L + $S, $L)",
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        guessClassName(field.getFieldType()),
-                        field.getMethodSuffix(),
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_PARAM_STATE
-                );
-            } else {
-                // Everything else
-                // -> target.field = getInt(key, state);
-                builder.addStatement(
-                        "$L.$L = get$L($L + $S, $L)",
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        field.getMethodSuffix(),
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_PARAM_STATE
-                );
-            }
-        }
-
-        return builder.build();
-    }
-
-    @Nullable
-    public static MethodSpec getUnbindTracksMethod(
-            @NonNull String packageName,
-            @NonNull String className,
-            @NonNull List<SaveField> fields) {
-        final ClassName targetClass = ClassName.get(packageName, className);
-
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("unbindTracks")
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PROTECTED)
-                .addParameter(ParameterSpec
-                        .builder(ClassName.get("java.lang", "Object"), METHOD_PARAM_OBJECT)
-                        .addAnnotation(ClassName.get(NonNull.class))
-                        .build());
-
-        // -> super.unbindTracks(object);
-        builder.addStatement(
-                "super.unbindTracks($L)",
-                METHOD_PARAM_OBJECT
-        );
-
-        // -> final NextLayer target = (NextLayer) object;
-        builder.addStatement(
-                "final $T $L = ($T) $L",
-                targetClass,
-                METHOD_VAR_TARGET,
-                targetClass,
-                METHOD_PARAM_OBJECT
-        );
-
-        int fieldsProcessed = 0;
-        for (SaveField field : fields) {
-            if (!SUFFIX_TRACK.equals(field.getMethodSuffix())) {
-                continue;
-            }
-
-            // -> target.track.unsubscribe();
-            builder.addStatement(
-                    "$L.$L.unsubscribe()",
-                    METHOD_VAR_TARGET,
-                    field.getFieldName()
-            );
-            fieldsProcessed++;
-        }
-
-        if (fieldsProcessed > 0) {
-            return builder.build();
-        } else {
-            return null;
-        }
-    }
-
-    @NonNull
-    private static String getKeyPrefix(@NonNull String className) {
-        return elementNameToSnakeCase(className) + "$$";
     }
 
     private static class TypeDescription {

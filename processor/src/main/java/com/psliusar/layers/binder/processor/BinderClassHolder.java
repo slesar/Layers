@@ -1,22 +1,17 @@
 package com.psliusar.layers.binder.processor;
 
-import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 
-import com.psliusar.layers.binder.BinderConstants;
+import com.psliusar.layers.binder.processor.builder.ClassBuilder;
 import com.psliusar.layers.binder.processor.save.SaveField;
-import com.psliusar.layers.binder.processor.save.SaveFieldProcessor;
+import com.psliusar.layers.binder.processor.save.SaveStatementsBuilder;
 import com.psliusar.layers.binder.processor.view.ViewField;
-import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
-import com.squareup.javapoet.ClassName;
+import com.psliusar.layers.binder.processor.view.ViewStatementsBuilder;
 import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.lang.model.element.Modifier;
 
 public class BinderClassHolder {
 
@@ -73,34 +68,15 @@ public class BinderClassHolder {
 
     @NonNull
     private TypeSpec getTypeSpec() {
-        TypeSpec.Builder builder = TypeSpec.classBuilder(className + BinderConstants.BINDER_SUFFIX)
-                .addModifiers(Modifier.PUBLIC)
-                .addJavadoc(
-                        "Generated class. Do not modify.\n" +
-                                "Generator: $T.\n" +
-                                "Details: $L\n",
-                        LayersAnnotationProcessor.class,
-                        "https://github.com/slesar/Layers")
-                // TODO Really need to @Keep here?
-                .addAnnotation(Keep.class);
-
-        // TODO parametrized class
-        builder.superclass(ClassName.bestGuess(parentClassName));
+        final ClassBuilder builder = new ClassBuilder(className, parentClassName);
 
         final String innerClassName = className.replace('$', '.');
-        if (!saveFields.isEmpty()) {
-            builder.addFields(SaveFieldProcessor.getFields(saveFields));
-            builder.addMethod(SaveFieldProcessor.getSaveMethod(packageName, innerClassName, saveFields));
-            builder.addMethod(SaveFieldProcessor.getRestoreMethod(packageName, innerClassName, saveFields));
-            final MethodSpec unbindTracksMethod = SaveFieldProcessor.getUnbindTracksMethod(packageName, innerClassName, saveFields);
-            if (unbindTracksMethod != null) {
-                builder.addMethod(unbindTracksMethod);
-            }
-        }
 
+        if (!saveFields.isEmpty()) {
+            builder.addStatementsBuilder(new SaveStatementsBuilder(packageName, innerClassName, saveFields));
+        }
         if (!viewFields.isEmpty()) {
-            builder.addMethod(ViewFieldProcessor.getBindMethod(packageName, innerClassName, viewFields));
-            builder.addMethod(ViewFieldProcessor.getUnbindMethod(packageName, innerClassName, viewFields));
+            builder.addStatementsBuilder(new ViewStatementsBuilder(packageName, innerClassName, viewFields));
         }
 
         return builder.build();
