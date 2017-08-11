@@ -41,7 +41,6 @@ public class Layers {
             if (layerStack != null) {
                 for (int i = 0, size = layerStack.size(); i < size; i++) {
                     final StackEntry entry = layerStack.get(i);
-                    // TODO honor existing state ?
                     entry.layerInstance = null;
                     entry.state = StackEntry.LAYER_STATE_EMPTY;
                     moveToState(entry, StackEntry.LAYER_STATE_CREATED, false);
@@ -82,19 +81,9 @@ public class Layers {
         return layers;
     }
 
-    void restoreState() {
-        stateSaved = false;
-        final int size = layerStack.size();
-        for (int i = size - 1; i >= 0; i--) {
-            layerStack.get(i).layerInstance.restoreLayerState();
-        }
-
-        // Restore state of layers which are at other containers
-        final int layersCount = layerGroup == null ? 0 : layerGroup.size();
-        for (int i = 0; i < layersCount; i++) {
-            final int key = layerGroup.keyAt(i);
-            layerGroup.get(key).restoreState();
-        }
+    @NonNull
+    public LayersHost getHost() {
+        return host;
     }
 
     /**
@@ -123,43 +112,230 @@ public class Layers {
         viewPaused = true;
     }
 
-    public boolean hasRunningTransition() {
-        return transition != null/* && !transition.isFinished()*/;
+
+    /* === Public layer operations === */
+
+    @NonNull
+    public <L extends Layer<?>> Transition<L> add(@NonNull Class<L> layerClass) {
+        return new Transition<>(this, layerClass, Transition.ACTION_ADD);
     }
 
-    int startTransition(@NonNull Transition<?> transition, int skip) {
-        // TODO finish current transition
+    @NonNull
+    public <L extends Layer<?>> Transition<L> replace(@NonNull Class<L> layerClass) {
+        return new Transition<>(this, layerClass, Transition.ACTION_REPLACE);
+    }
 
-        this.transition = transition;
-        if (viewPaused) {
-            return 0;
+    @NonNull
+    public <L extends Layer<?>> Transition<L> remove(int index) {
+        final StackEntry entry = layerStack.get(index);
+        return new Transition<>(this, entry, Transition.ACTION_REMOVE);
+    }
+
+    @NonNull
+    public <L extends Layer<?>> Transition<L> remove(@NonNull L layer) {
+        final int size = layerStack.size();
+        for (int i = size - 1; i >= 0; i--) {
+            final StackEntry entry = layerStack.get(i);
+            if (entry.layerInstance == layer) {
+                return remove(i);
+            }
         }
-        // Prepare for transition
+        throw new IllegalArgumentException("Layer not found: " + layer);
+    }
+
+    /**
+     * Remove layer and View
+     * TODO remove method if not really needed
+     *
+     * @param layer
+     * @return
+     */
+    @Nullable
+    public <L extends Layer<?>> L removeLayer(@NonNull L layer) {
+        final int size = layerStack.size();
+        if (size == 0) {
+            return null;
+        }
+
+        pauseView();
+
+        L result = null;
+        for (int i = size - 1; i >= 0; i--) {
+            final StackEntry entry = layerStack.get(i);
+            if (entry.layerInstance == layer) {
+                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
+                layerStack.remove(i);
+                result = layer;
+                break;
+            }
+        }
+
+        resumeView();
+
+        return result;
+    }
+
+    @Nullable
+    public <L extends Layer<?>> L pop() {
+        final int size = layerStack.size();
+        if (size == 0) {
+            return null;
+        }
+        final StackEntry entry = layerStack.get(size - 1);
+
+        //noinspection unchecked
+        return (L) new Transition<>(this, entry, Transition.ACTION_POP).commit();
+    }
+
+    @Nullable
+    public <L extends Layer<?>> L popLayersTo(@Nullable String name, boolean inclusive) {
+        final int size = layerStack.size();
+        if (size == 0) {
+            return null;
+        }
+
+        // If name is not defined - any layer matches
+        if (name == null) {
+            // Remove all
+            if (inclusive) {
+                final StackEntry entry = layerStack.get(0);
+                clear();
+                //noinspection unchecked
+                return (L) entry.layerInstance;
+            }
+        } else {
+            boolean found = false;
+
+            for (int i = size - 1; i >= 0; i--) {
+                final StackEntry entry = layerStack.get(i);
+                if (name.equals(entry.name)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            // Nothing found, do not touch the stack
+            if (!found) {
+                return null;
+            }
+        }
+
+        pauseView();
+
+        StackEntry lastEntry = null;
+        for (int i = size - 1; i >= 0; i--) {
+            final StackEntry entry = layerStack.get(i);
+            if ((name == null && i > 0) || (name != null && !name.equals(entry.name)) || inclusive) {
+                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
+                layerStack.remove(i);
+                lastEntry = entry;
+                if (!(name == null || !name.equals(entry.name))) {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        resumeView();
+
+        //noinspection unchecked
+        return lastEntry == null ? null : (L) lastEntry.layerInstance;
+    }
+
+    public int clear() {
         final int size = layerStack.size();
         if (size == 0) {
             return 0;
         }
-        // Reset state
-        for (int i = 0; i < size; i++) {
-            final StackEntry entry = layerStack.get(i);
-            entry.layerTypeAnimated = i < size - skip ? entry.layerType : StackEntry.TYPE_TRANSPARENT;
+
+        pauseView();
+
+        for (int i = size - 1; i >= 0; i--) {
+            moveToState(layerStack.get(i), StackEntry.LAYER_STATE_DESTROYED, false);
         }
-        return ensureViews();
+
+        layerStack.clear();
+
+        resumeView();
+
+        return size;
     }
 
-    void finishTransition() {
-        transition = null;
-        ensureViews();
+
+    /* === Layer getters === */
+
+    @Nullable
+    public <L extends Layer<?>> L peek() {
+        final int size = layerStack.size();
+        return size == 0 ? null : this.<L>get(size - 1);
     }
 
     @Nullable
-    Transition<?> getCurrentTransition() {
-        return transition;
+    public <L extends Layer<?>> L get(int index) {
+        final int size = layerStack.size();
+        if (index < 0 || index >= size) {
+            return null;
+        }
+
+        //noinspection unchecked
+        return (L) layerStack.get(index).layerInstance;
     }
 
-    @NonNull
-    public LayersHost getHost() {
-        return host;
+    @Nullable
+    public <L extends Layer<?>> L find(@Nullable String name) {
+        final int size = layerStack.size();
+        if (size == 0) {
+            return null;
+        }
+
+        for (int i = size - 1; i >= 0; i--) {
+            final StackEntry entry = layerStack.get(i);
+            if (name == entry.name // == is the same object or null ("cheap" version of equals)
+                    || (name != null && name.equals(entry.name))) {
+                //noinspection unchecked
+                return (L) entry.layerInstance;
+            }
+        }
+
+        return null;
+    }
+
+
+    /* === Indicators === */
+
+    public boolean hasRunningTransition() {
+        return transition != null/* && !transition.isFinished()*/;
+    }
+
+    public boolean isViewPaused() {
+        return viewPaused;
+    }
+
+    public boolean isInSavedState() {
+        return stateSaved;
+    }
+
+    public int getStackSize() {
+        return layerStack.size();
+    }
+
+
+    /* === Lifecycle === */
+
+    void restoreState() {
+        stateSaved = false;
+        final int size = layerStack.size();
+        for (int i = size - 1; i >= 0; i--) {
+            layerStack.get(i).layerInstance.restoreLayerState();
+        }
+
+        // Restore state of layers which are at other containers
+        final int layersCount = layerGroup == null ? 0 : layerGroup.size();
+        for (int i = 0; i < layersCount; i++) {
+            final int key = layerGroup.keyAt(i);
+            layerGroup.get(key).restoreState();
+        }
     }
 
     @Nullable
@@ -208,6 +384,63 @@ public class Layers {
         final int layersCount = (layerGroup == null ? 0 : layerGroup.size());
         for (int i = 0; i < layersCount; i++) {
             layerGroup.get(layerGroup.keyAt(i)).destroy();
+        }
+    }
+
+
+    /* === Layer management === */
+
+    private void moveToState(@NonNull StackEntry entry, int targetState, boolean saveState) {
+        if (targetState <= StackEntry.LAYER_STATE_VIEW_CREATED) {
+            int state = entry.state;
+            while (state < targetState) {
+                switch (state) {
+                    case StackEntry.LAYER_STATE_EMPTY:
+                        createLayer(entry);
+                        entry.state = StackEntry.LAYER_STATE_CREATED;
+                        break;
+                    case StackEntry.LAYER_STATE_CREATED:
+                        if (!viewPaused) {
+                            createView(entry);
+                            entry.state = StackEntry.LAYER_STATE_VIEW_CREATED;
+                        }
+                        break;
+                    case StackEntry.LAYER_STATE_VIEW_CREATED:
+                        // nothing to do
+                        break;
+                    default:
+                        return;
+                }
+                state++;
+            }
+        } else {
+            switch (targetState) {
+                case StackEntry.LAYER_STATE_VIEW_DESTROYED:
+                    targetState = StackEntry.LAYER_STATE_CREATED;
+                    break;
+                case StackEntry.LAYER_STATE_DESTROYED:
+                    targetState = StackEntry.LAYER_STATE_EMPTY;
+                    break;
+            }
+            int state = entry.state;
+            while (state > targetState) {
+                switch (state) {
+                    case StackEntry.LAYER_STATE_EMPTY:
+                        // nothing to do
+                        return;
+                    case StackEntry.LAYER_STATE_CREATED:
+                        destroyLayer(entry, saveState);
+                        entry.state = StackEntry.LAYER_STATE_EMPTY;
+                        break;
+                    case StackEntry.LAYER_STATE_VIEW_CREATED:
+                        destroyView(entry, saveState);
+                        entry.state = StackEntry.LAYER_STATE_CREATED;
+                        break;
+                    default:
+                        return;
+                }
+                state--;
+            }
         }
     }
 
@@ -280,58 +513,74 @@ public class Layers {
         entry.layerInstance.destroy(!saveState);
     }
 
-    private void moveToState(@NonNull StackEntry entry, int targetState, boolean saveState) {
-        if (targetState <= StackEntry.LAYER_STATE_VIEW_CREATED) {
-            int state = entry.state;
-            while (state < targetState) {
-                switch (state) {
-                case StackEntry.LAYER_STATE_EMPTY:
-                    createLayer(entry);
-                    entry.state = StackEntry.LAYER_STATE_CREATED;
-                    break;
-                case StackEntry.LAYER_STATE_CREATED:
-                    if (!viewPaused) {
-                        createView(entry);
-                        entry.state = StackEntry.LAYER_STATE_VIEW_CREATED;
-                    }
-                    break;
-                case StackEntry.LAYER_STATE_VIEW_CREATED:
-                    // nothing to do
-                    break;
-                default:
-                    return;
-                }
-                state++;
-            }
-        } else {
-            switch (targetState) {
-            case StackEntry.LAYER_STATE_VIEW_DESTROYED:
-                targetState = StackEntry.LAYER_STATE_CREATED;
-                break;
-            case StackEntry.LAYER_STATE_DESTROYED:
-                targetState = StackEntry.LAYER_STATE_EMPTY;
-                break;
-            }
-            int state = entry.state;
-            while (state > targetState) {
-                switch (state) {
-                case StackEntry.LAYER_STATE_EMPTY:
-                    // nothing to do
-                    return;
-                case StackEntry.LAYER_STATE_CREATED:
-                    destroyLayer(entry, saveState);
-                    entry.state = StackEntry.LAYER_STATE_EMPTY;
-                    break;
-                case StackEntry.LAYER_STATE_VIEW_CREATED:
-                    destroyView(entry, saveState);
-                    entry.state = StackEntry.LAYER_STATE_CREATED;
-                    break;
-                default:
-                    return;
-                }
-                state--;
-            }
+
+    /* === Transition === */
+
+    int startTransition(@NonNull Transition<?> transition, int skip) {
+        // TODO finish current transition
+
+        this.transition = transition;
+        if (viewPaused) {
+            return 0;
         }
+        // Prepare for transition
+        final int size = layerStack.size();
+        if (size == 0) {
+            return 0;
+        }
+        // Reset state
+        for (int i = 0; i < size; i++) {
+            final StackEntry entry = layerStack.get(i);
+            entry.layerTypeAnimated = i < size - skip ? entry.layerType : StackEntry.TYPE_TRANSPARENT;
+        }
+        return ensureViews();
+    }
+
+    void finishTransition() {
+        transition = null;
+        ensureViews();
+    }
+
+    @Nullable
+    Transition<?> getCurrentTransition() {
+        return transition;
+    }
+
+
+    /* === Internal tools === */
+
+    Layer<?> commitStackEntry(@NonNull StackEntry entry) {
+        layerStack.add(entry);
+        ensureViews();
+
+        return entry.layerInstance;
+    }
+
+    @NonNull
+    StackEntry getStackEntryAt(int index) {
+        return layerStack.get(index);
+    }
+
+    /**
+     * TODO
+     *
+     * @param index
+     * @param <L>
+     * @return
+     */
+    @Nullable
+    <L extends Layer<?>> L removeLayerAt(int index) {
+        final int size = layerStack.size();
+        if (index < 0 || index >= size) {
+            return null;
+        }
+        final StackEntry entry = layerStack.get(index);
+        moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
+
+        ensureViews();
+
+        //noinspection unchecked
+        return (L) layerStack.remove(index).layerInstance;
     }
 
     /**
@@ -362,6 +611,9 @@ public class Layers {
         return lower;
     }
 
+
+    /* === Views === */
+
     private int ensureViews() {
         final int size;
         if (viewPaused || (size = layerStack.size()) == 0) {
@@ -378,236 +630,6 @@ public class Layers {
             }
         }
         return lowest;
-    }
-
-    public boolean isViewPaused() {
-        return viewPaused;
-    }
-
-    public boolean isInSavedState() {
-        return stateSaved;
-    }
-
-    @NonNull
-    public <L extends Layer<?>> Transition<L> add(@NonNull Class<L> layerClass) {
-        return new Transition<>(this, layerClass, Transition.ACTION_ADD);
-    }
-
-    @NonNull
-    public <L extends Layer<?>> Transition<L> replace(@NonNull Class<L> layerClass) {
-        return new Transition<>(this, layerClass, Transition.ACTION_REPLACE);
-    }
-
-    Layer<?> commitStackEntry(@NonNull StackEntry entry) {
-        layerStack.add(entry);
-        ensureViews();
-
-        return entry.layerInstance;
-    }
-
-    /**
-     * Remove layer and View
-     *
-     * @param layer
-     * @return
-     */
-    @Nullable
-    public <L extends Layer<?>> L remove(@NonNull L layer) {
-        final int size = layerStack.size();
-        if (size == 0) {
-            return null;
-        }
-
-        pauseView();
-
-        L result = null;
-        for (int i = size - 1; i >= 0; i--) {
-            final StackEntry entry = layerStack.get(i);
-            if (entry.layerInstance == layer) {
-                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
-                layerStack.remove(i);
-                result = layer;
-                break;
-            }
-        }
-
-        resumeView();
-
-        return result;
-    }
-
-    /**
-     * TODO
-     *
-     * @param index
-     * @param <L>
-     * @return
-     */
-    @Nullable
-    public <L extends Layer<?>> L remove(int index) {
-        final int size = layerStack.size();
-        if (index < 0 || index >= size) {
-            return null;
-        }
-        final StackEntry entry = layerStack.get(index);
-        moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
-
-        ensureViews();
-
-        //noinspection unchecked
-        return (L) layerStack.remove(index).layerInstance;
-    }
-
-    @Nullable
-    public <L extends Layer<?>> L pop() {
-        final int size = layerStack.size();
-        if (size == 0) {
-            return null;
-        }
-        final StackEntry entry = layerStack.get(size - 1);
-
-        //noinspection unchecked
-        return (L) new Transition<>(this, entry, Transition.ACTION_POP).commit();
-    }
-
-    @Nullable
-    <L extends Layer<?>> L popLayer() {
-        if (layerStack.size() == 0) {
-            return null;
-        }
-
-        final StackEntry entry = removeLast();
-        moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
-
-        ensureViews();
-
-        //noinspection unchecked
-        return (L) entry.layerInstance;
-    }
-
-    @Nullable
-    public <L extends Layer<?>> L popLayersTo(@Nullable String name, boolean inclusive) {
-        final int size = layerStack.size();
-        if (size == 0) {
-            return null;
-        }
-
-        // If name not defined - any layer matches
-        if (name == null) {
-            // Remove all
-            if (inclusive) {
-                final StackEntry entry = layerStack.get(0);
-                clear();
-                //noinspection unchecked
-                return (L) entry.layerInstance;
-            }
-        } else {
-            boolean found = false;
-
-            for (int i = size - 1; i >= 0; i--) {
-                final StackEntry entry = layerStack.get(i);
-                if (name.equals(entry.name)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            // Nothing found, do not touch the stack
-            if (!found) {
-                return null;
-            }
-        }
-
-        pauseView();
-
-        StackEntry lastEntry = null;
-        for (int i = size - 1; i >= 0; i--) {
-            final StackEntry entry = layerStack.get(i);
-            if ((name == null && i > 0) || (name != null && !name.equals(entry.name)) || inclusive) {
-                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
-                layerStack.remove(i);
-                lastEntry = entry;
-                if (!(name == null || !name.equals(entry.name))) {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-
-        resumeView();
-
-        //noinspection unchecked
-        return lastEntry == null ? null : (L) lastEntry.layerInstance;
-    }
-
-    @Nullable
-    public <L extends Layer<?>> L peek() {
-        final int size = layerStack.size();
-        return size == 0 ? null : this.<L>get(size - 1);
-    }
-
-    @Nullable
-    public <L extends Layer<?>> L get(int index) {
-        final int size = layerStack.size();
-        if (index < 0 || index >= size) {
-            return null;
-        }
-
-        //noinspection unchecked
-        return (L) layerStack.get(index).layerInstance;
-    }
-
-    @Nullable
-    public <L extends Layer<?>> L find(@Nullable String name) {
-        final int size = layerStack.size();
-        if (size == 0) {
-            return null;
-        }
-
-        for (int i = size - 1; i >= 0; i--) {
-            final StackEntry entry = layerStack.get(i);
-            if (name == entry.name // == is the same object or nulls ("cheap" version of equals)
-                    || (name != null && name.equals(entry.name))) {
-                //noinspection unchecked
-                return (L) entry.layerInstance;
-            }
-        }
-
-        return null;
-    }
-
-    public int getStackSize() {
-        return layerStack.size();
-    }
-
-    @NonNull
-    StackEntry getStackEntryAt(int index) {
-        return layerStack.get(index);
-    }
-
-    public int clear() {
-        final int size = layerStack.size();
-        if (size == 0) {
-            return 0;
-        }
-
-        pauseView();
-
-        for (int i = size - 1; i >= 0; i--) {
-            moveToState(layerStack.get(i), StackEntry.LAYER_STATE_DESTROYED, false);
-        }
-
-        layerStack.clear();
-
-        resumeView();
-
-        return size;
-    }
-
-    @NonNull
-    private StackEntry removeLast() {
-        return layerStack.remove(layerStack.size() - 1);
     }
 
     private ViewGroup getContainer() {

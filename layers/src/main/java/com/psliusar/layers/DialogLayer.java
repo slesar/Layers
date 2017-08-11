@@ -202,7 +202,7 @@ public abstract class DialogLayer<P extends Presenter> extends Layer<P>
         if (isAttached()) {
             final LayersHost host = getParent(LayersHost.class);
             if (host != null) {
-                host.getLayers().remove(this);
+                host.getLayers().removeLayer(this);
             }
         }
     }

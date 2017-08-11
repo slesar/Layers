@@ -3,7 +3,6 @@ package com.psliusar.layers.track;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class SimpleAsyncTrack extends AsyncTrack<String, Integer> {
@@ -15,7 +14,7 @@ public class SimpleAsyncTrack extends AsyncTrack<String, Integer> {
     }
 
     @Override
-    protected String doInBackground() {
+    protected String doInBackground() throws Throwable {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
             if (i > 0) {
@@ -37,27 +36,23 @@ public class SimpleAsyncTrack extends AsyncTrack<String, Integer> {
 
         @Override
         protected void execute(@NonNull final AsyncTrack<String, Integer> parent) {
-            final Semaphore semaphore = new Semaphore(1);
             final AtomicReference<String> valueRef = new AtomicReference<>();
             final AtomicReference<Throwable> throwableRef = new AtomicReference<>();
-            new Thread() {
+            final Thread backgroundThread = new Thread() {
                 @Override
                 public void run() {
                     try {
-                        semaphore.acquire();
-                        sleep(40);
                         valueRef.set(parent.doInBackground());
                     } catch (Throwable throwable) {
                         throwableRef.set(throwable);
                     }
-                    semaphore.release();
                 }
-            }.start();
+            };
+            backgroundThread.start();
 
             try {
-                Thread.sleep(20);
-                semaphore.acquire();
-                semaphore.release();
+                // Wait for task to complete
+                backgroundThread.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

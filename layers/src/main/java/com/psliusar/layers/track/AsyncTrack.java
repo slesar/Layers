@@ -52,8 +52,7 @@ public abstract class AsyncTrack<V, P> extends Track<V, P> {
     }
 
     @WorkerThread
-
-    protected abstract V doInBackground();
+    protected abstract V doInBackground() throws Throwable;
 
     protected WorkerTask<V, P> createWorkerTask() {
         return new WorkerTask<>();
