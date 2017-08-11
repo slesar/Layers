@@ -72,37 +72,38 @@ public class Transition<LAYER extends Layer<?>> {
     public @interface ActionType {}
 
     private final Layers layers;
-    private final int action;
-
-    private int initialStackSize;
-    private int lowestVisibleLayer;
-    private boolean committed = false;
-    private final HashSet<Animator> toAnimate = new HashSet<>();
-
-    @Nullable
-    private AnimatorSet animatorSet;
+    private final Action<LAYER> action;
 
     @NonNull
     private final StackEntry stackEntry;
 
-    private final Animator.AnimatorListener animationListener = new AnimatorListenerAdapter() {
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            finish();
-        }
-    };
-
-    Transition(@NonNull Layers layers, @NonNull Class<LAYER> layerClass, @ActionType int action) {
+    Transition(@NonNull Layers layers, @NonNull Class<LAYER> layerClass, @ActionType int actionType) {
         this.layers = layers;
-        this.action = action;
         stackEntry = new StackEntry(layerClass);
         stackEntry.instantiateLayer(layers.getHost().getActivity().getApplicationContext());
+        action = getAction(actionType);
     }
 
-    Transition(@NonNull Layers layers, @NonNull StackEntry entry, @ActionType int action) {
+    Transition(@NonNull Layers layers, @NonNull StackEntry entry, @ActionType int actionType) {
         this.layers = layers;
-        this.stackEntry = entry;
-        this.action = action;
+        stackEntry = entry;
+        action = getAction(actionType);
+    }
+
+    @NonNull
+    private Action<LAYER> getAction(@ActionType int action) {
+        switch (action) {
+            case ACTION_ADD:
+                return new AddAction<>(this, layers, stackEntry);
+            case ACTION_REPLACE:
+                return new ReplaceAction<>(this, layers, stackEntry);
+            case ACTION_POP:
+                return new PopAction<>(this, layers, stackEntry);
+            case ACTION_REMOVE:
+                return new RemoveAction<>(this, layers, stackEntry);
+            default:
+                throw new IllegalArgumentException("Invalid action ID: " + action);
+        }
     }
 
     public Transition<LAYER> setArguments(@NonNull Bundle arguments) {
@@ -120,8 +121,8 @@ public class Transition<LAYER extends Layer<?>> {
         return this;
     }
 
-    public Transition<LAYER> prepareLayer(@NonNull OnLayerTransition<LAYER> action) {
-        action.onBeforeTransition((LAYER) stackEntry.layerInstance);
+    public Transition<LAYER> prepareLayer(@NonNull OnLayerTransition<LAYER> transitionAction) {
+        transitionAction.onBeforeTransition((LAYER) stackEntry.layerInstance);
         return this;
     }
 
@@ -163,148 +164,240 @@ public class Transition<LAYER extends Layer<?>> {
     }
 
     public boolean isFinished() {
-        return committed && animatorSet == null;
+        return action.isFinished();
     }
 
     public boolean hasAnimations() {
-        return committed && animatorSet != null;
+        return action.hasAnimations();
     }
 
     private void cancelAnimations() {
-        if (animatorSet != null) {
-            animatorSet.end();
-        }
-    }
-
-    void start() {
-        initialStackSize = layers.getStackSize();
-        final int skip;
-        if (action == ACTION_POP) {
-            if (initialStackSize == 0) {
-                throw new IllegalStateException("Cannot pop a Layer from empty stack");
-            }
-            skip = 1;
-        } else {
-            skip = 0;
-        }
-        lowestVisibleLayer = layers.startTransition(this, skip);
-    }
-
-    void finish() {
-        switch (action) {
-            case ACTION_REPLACE:
-                if (initialStackSize > 0) {
-                    layers.remove(initialStackSize - 1);
-                }
-                break;
-            case ACTION_POP:
-                layers.popLayer();
-                break;
-        }
-        layers.finishTransition();
-        animatorSet = null;
+        action.cancelAnimations();
     }
 
     @NonNull
     public LAYER commit() {
-        if (committed) {
-            throw new IllegalStateException("!!");
-        }
-        start();
-        committed = true;
-        final LAYER layer;
-        switch (action) {
-            case ACTION_ADD:
-                layer = commitAdd();
-                break;
-            case ACTION_REPLACE:
-                layer = commitReplace();
-                break;
-            case ACTION_POP:
-                layer = commitPop();
-                break;
-            case ACTION_REMOVE:
-                // TODO
-                throw new IllegalArgumentException("Not yet implemented");
-            default:
-                throw new IllegalArgumentException("Invalid action ID: " + action);
-        }
-        if (toAnimate.size() == 0) {
-            finish();
-        } else {
-            animatorSet = new AnimatorSet();
-            animatorSet.addListener(animationListener);
-            animatorSet.playTogether(toAnimate);
-            animatorSet.start();
-        }
-        return layer;
+        return action.start();
     }
 
-    private LAYER commitAdd() {
-        for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
-            animateLayer(layers.getStackEntryAt(i).layerInstance, ANIMATION_LOWER_OUT);
+    private abstract static class Action<LAYER extends Layer<?>> {
+
+        private final Animator.AnimatorListener animationListener = new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                finish();
+            }
+        };
+
+        @Nullable
+        private AnimatorSet animatorSet;
+        private final HashSet<Animator> toAnimate = new HashSet<>();
+
+        private final Transition<LAYER> transition;
+        protected final Layers layers;
+        protected final StackEntry stackEntry;
+
+        protected int initialStackSize;
+        protected int lowestVisibleLayer;
+        private boolean committed = false;
+
+        public Action(@NonNull Transition<LAYER> transition, @NonNull Layers layers, @NonNull StackEntry stackEntry) {
+            this.transition = transition;
+            this.layers = layers;
+            this.stackEntry = stackEntry;
         }
 
-        final LAYER layer = (LAYER) layers.commitStackEntry(stackEntry);
-        animateLayer(layer, ANIMATION_UPPER_IN);
-
-        return layer;
-    }
-
-    private LAYER commitReplace() {
-        for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
-            animateLayer(layers.getStackEntryAt(i).layerInstance, ANIMATION_LOWER_OUT);
+        public boolean isFinished() {
+            return committed && animatorSet == null;
         }
 
-        final LAYER layer;
+        public boolean hasAnimations() {
+            return committed && toAnimate.size() > 0;
+        }
 
-        if (toAnimate.size() == 0) {
-            // TODO detect ALL animations
-            // No animation, just replace
-            //layer = layers.replace(layerClass, arguments, name, opaque);
-            layer = (LAYER) layers.commitStackEntry(stackEntry);
-        } else {
-            // Add a new layer first
-            layer = (LAYER) layers.commitStackEntry(stackEntry);
-            //layers.getStackEntryAt(initialStackSize).layerType = opaque ? StackEntry.TYPE_OPAQUE : StackEntry.TYPE_TRANSPARENT;
-            layers.getStackEntryAt(initialStackSize).layerTypeAnimated = StackEntry.TYPE_TRANSPARENT;
-            // Then invalidate layer beneath and then remove
-            if (initialStackSize > 0) {
-                layers.getStackEntryAt(initialStackSize - 1).valid = false;
+        @NonNull
+        public LAYER start() {
+            if (committed) {
+                throw new IllegalStateException("!!");
+            }
+            committed = true;
+
+            initialStackSize = layers.getStackSize();
+            final int skip = getSkipTopLayersCount();
+            lowestVisibleLayer = layers.startTransition(transition, skip);
+
+            final LAYER layer = startInternal();
+            if (toAnimate.size() == 0) {
+                finish();
+            } else {
+                animatorSet = new AnimatorSet();
+                animatorSet.addListener(animationListener);
+                animatorSet.playTogether(toAnimate);
+                animatorSet.start();
+            }
+            return layer;
+        }
+
+        @NonNull
+        protected abstract LAYER startInternal();
+
+        protected void finish() {
+            finishInternal();
+            layers.finishTransition();
+            animatorSet = null;
+        }
+
+        protected abstract void finishInternal();
+
+        protected void cancelAnimations() {
+            if (animatorSet != null) {
+                animatorSet.end();
             }
         }
-        animateLayer(layer, ANIMATION_UPPER_IN);
 
-        return layer;
+        @Nullable
+        protected Animator animateLayer(@NonNull Layer<?> layer, @AnimationType int animationType) {
+            if (layers.isViewPaused()
+                    || !layer.isViewInLayout()
+                    || layer.getView() == null) {
+                return null;
+            }
+            Animator animation = layer.getAnimation(animationType);
+            if (animation == null && stackEntry.animations != null && stackEntry.animations[animationType] != 0) {
+                animation = new SimpleAnimation(layer.getView(), stackEntry.animations[animationType]);
+                animation.setTarget(layer.getView());
+            }
+            if (animation != null) {
+                toAnimate.add(animation);
+            }
+            return animation;
+        }
+
+        protected int getSkipTopLayersCount() {
+            return 0;
+        }
     }
 
-    private LAYER commitPop() {
-        for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
-            animateLayer(layers.getStackEntryAt(i).layerInstance, i < initialStackSize - 1 ? ANIMATION_LOWER_IN : ANIMATION_UPPER_OUT);
+    private static class AddAction<LAYER extends Layer<?>> extends Action<LAYER> {
+
+        public AddAction(@NonNull Transition<LAYER> transition, @NonNull Layers layers, @NonNull StackEntry stackEntry) {
+            super(transition, layers, stackEntry);
         }
 
-        layers.getStackEntryAt(initialStackSize - 1).valid = false;
+        @NonNull
+        @Override
+        protected LAYER startInternal() {
+            for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
+                animateLayer(layers.getStackEntryAt(i).layerInstance, ANIMATION_LOWER_OUT);
+            }
 
-        final LAYER layer = layers.peek();
+            final LAYER layer = (LAYER) layers.commitStackEntry(stackEntry);
+            animateLayer(layer, ANIMATION_UPPER_IN);
 
-        return layer;
+            return layer;
+        }
+
+        @Override
+        protected void finishInternal() {
+
+        }
     }
 
-    @Nullable
-    private Animator animateLayer(@NonNull Layer<?> layer, @AnimationType int animationType) {
-        if (layers.isViewPaused()
-                || !layer.isViewInLayout()
-                || layer.getView() == null) {
-            return null;
+    private static class ReplaceAction<LAYER extends Layer<?>> extends Action<LAYER> {
+
+        public ReplaceAction(@NonNull Transition<LAYER> transition, @NonNull Layers layers, @NonNull StackEntry stackEntry) {
+            super(transition, layers, stackEntry);
         }
-        Animator animation = layer.getAnimation(animationType);
-        if (animation == null && stackEntry.animations != null && stackEntry.animations[animationType] != 0) {
-            animation = new SimpleAnimation(layer.getView(), stackEntry.animations[animationType]);
-            animation.setTarget(layer.getView());
+
+        @NonNull
+        @Override
+        protected LAYER startInternal() {
+            for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
+                animateLayer(layers.getStackEntryAt(i).layerInstance, ANIMATION_LOWER_OUT);
+            }
+
+            final LAYER layer;
+
+            if (!hasAnimations()) {
+                // TODO detect ALL animations
+                // No animation, just replace
+                //layer = layers.replace(layerClass, arguments, name, opaque);
+                layer = (LAYER) layers.commitStackEntry(stackEntry);
+            } else {
+                // Add a new layer first
+                layer = (LAYER) layers.commitStackEntry(stackEntry);
+                //layers.getStackEntryAt(initialStackSize).layerType = opaque ? StackEntry.TYPE_OPAQUE : StackEntry.TYPE_TRANSPARENT;
+                layers.getStackEntryAt(initialStackSize).layerTypeAnimated = StackEntry.TYPE_TRANSPARENT;
+                // Then invalidate layer beneath and then removeLayerAt
+                if (initialStackSize > 0) {
+                    layers.getStackEntryAt(initialStackSize - 1).valid = false;
+                }
+            }
+            animateLayer(layer, ANIMATION_UPPER_IN);
+
+            return layer;
         }
-        if (animation != null) {
-            toAnimate.add(animation);
+
+        @Override
+        public void finishInternal() {
+            if (initialStackSize > 0) {
+                layers.removeLayerAt(initialStackSize - 1);
+            }
         }
-        return animation;
+    }
+
+    private static class PopAction<LAYER extends Layer<?>> extends Action<LAYER> {
+
+        public PopAction(@NonNull Transition<LAYER> transition, @NonNull Layers layers, @NonNull StackEntry stackEntry) {
+            super(transition, layers, stackEntry);
+        }
+
+        @Override
+        protected int getSkipTopLayersCount() {
+            return 1;
+        }
+
+        @NonNull
+        @Override
+        protected LAYER startInternal() {
+            if (initialStackSize == 0) {
+                throw new IllegalStateException("Cannot pop a Layer from empty stack");
+            }
+
+            for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
+                animateLayer(layers.getStackEntryAt(i).layerInstance, i < initialStackSize - 1 ? ANIMATION_LOWER_IN : ANIMATION_UPPER_OUT);
+            }
+
+            layers.getStackEntryAt(initialStackSize - 1).valid = false;
+
+            return layers.peek();
+        }
+
+        @Override
+        public void finishInternal() {
+            if (initialStackSize > 0) {
+                layers.removeLayerAt(initialStackSize - 1);
+            }
+        }
+    }
+
+    private static class RemoveAction<LAYER extends Layer<?>> extends Action<LAYER> {
+
+        public RemoveAction(@NonNull Transition<LAYER> transition, @NonNull Layers layers, @NonNull StackEntry stackEntry) {
+            super(transition, layers, stackEntry);
+        }
+
+        @NonNull
+        @Override
+        protected LAYER startInternal() {
+            // TODO
+            throw new IllegalArgumentException("Not yet implemented");
+        }
+
+        @Override
+        protected void finishInternal() {
+            // TODO
+            throw new IllegalArgumentException("Not yet implemented");
+        }
     }
 }

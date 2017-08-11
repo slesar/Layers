@@ -141,7 +141,7 @@ public class LayersTest {
         // Delete permanently
         MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
         View view = layer.getView();
-        layers.remove(layer);
+        layers.removeLayer(layer);
 
         assertEquals(0, layer.getSaveViewStateCalled());
         assertEquals(1, layer.getOnDetachCalled());
@@ -159,7 +159,7 @@ public class LayersTest {
         // Delete permanently
         MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
 
-        layers.remove(layer);
+        layers.removeLayer(layer);
 
         assertEquals(1, layer.getOnDestroyCalled());
 
@@ -210,7 +210,7 @@ public class LayersTest {
     @Test
     public void testRemove() throws Exception {
         final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
-        layers.remove(layer1);
+        layers.removeLayer(layer1);
 
         assertEquals(0, layers.getStackSize());
 
@@ -218,8 +218,8 @@ public class LayersTest {
         final MockedLayer layer3 = addLayer(MockedLayer.class, null, "Test Layer 3", true);
         final MockedLayer layer4 = addLayer(MockedLayer.class, null, "Test Layer 4", false);
         final MockedLayer layer5 = addLayer(MockedLayer.class, null, "Test Layer 5", false);
-        layers.remove(layer2);
-        layers.remove(layer4);
+        layers.removeLayer(layer2);
+        layers.removeLayer(layer4);
 
         assertEquals(2, layers.getStackSize());
 

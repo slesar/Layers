@@ -102,7 +102,7 @@ public class TracksLayer extends Layer<TracksPresenter> {
         }
 
         @Override
-        protected Integer doInBackground() {
+        protected Integer doInBackground() throws Throwable {
             for (int i = 0 ; i < 100; i++) {
                 if (i % 5 == 0) {
                     postProgress(i);
