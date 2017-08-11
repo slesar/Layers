@@ -117,18 +117,20 @@ public class Layers {
 
     @NonNull
     public <L extends Layer<?>> Transition<L> add(@NonNull Class<L> layerClass) {
+        finishTransition();
         return new Transition<>(this, layerClass, Transition.ACTION_ADD);
     }
 
     @NonNull
     public <L extends Layer<?>> Transition<L> replace(@NonNull Class<L> layerClass) {
+        finishTransition();
         return new Transition<>(this, layerClass, Transition.ACTION_REPLACE);
     }
 
     @NonNull
     public <L extends Layer<?>> Transition<L> remove(int index) {
-        final StackEntry entry = layerStack.get(index);
-        return new Transition<>(this, entry, Transition.ACTION_REMOVE);
+        finishTransition();
+        return new Transition<>(this, index, Transition.ACTION_REMOVE);
     }
 
     @NonNull
@@ -177,14 +179,14 @@ public class Layers {
 
     @Nullable
     public <L extends Layer<?>> L pop() {
+        finishTransition();
         final int size = layerStack.size();
         if (size == 0) {
             return null;
         }
-        final StackEntry entry = layerStack.get(size - 1);
 
         //noinspection unchecked
-        return (L) new Transition<>(this, entry, Transition.ACTION_POP).commit();
+        return (L) new Transition<>(this, size - 1, Transition.ACTION_REMOVE).commit();
     }
 
     @Nullable
@@ -516,9 +518,7 @@ public class Layers {
 
     /* === Transition === */
 
-    int startTransition(@NonNull Transition<?> transition, int skip) {
-        // TODO finish current transition
-
+    int startTransition(@NonNull Transition<?> transition, int minTransparentLayersCount) {
         this.transition = transition;
         if (viewPaused) {
             return 0;
@@ -531,14 +531,19 @@ public class Layers {
         // Reset state
         for (int i = 0; i < size; i++) {
             final StackEntry entry = layerStack.get(i);
-            entry.layerTypeAnimated = i < size - skip ? entry.layerType : StackEntry.TYPE_TRANSPARENT;
+            entry.layerTypeAnimated = i < size - minTransparentLayersCount ? entry.layerType : StackEntry.TYPE_TRANSPARENT;
         }
         return ensureViews();
     }
 
     void finishTransition() {
-        transition = null;
-        ensureViews();
+        // TODO check all the places that depend on stack size
+        if (transition != null) {
+            // The only reason why it's not null - animations.
+            transition.cancelAnimations();
+            transition = null;
+            ensureViews();
+        }
     }
 
     @Nullable
