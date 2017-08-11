@@ -577,10 +577,12 @@ public class Layers {
         final StackEntry entry = layerStack.get(index);
         moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
 
+        //noinspection unchecked
+        final L layer = (L) layerStack.remove(index).layerInstance;
+
         ensureViews();
 
-        //noinspection unchecked
-        return (L) layerStack.remove(index).layerInstance;
+        return layer;
     }
 
     /**
