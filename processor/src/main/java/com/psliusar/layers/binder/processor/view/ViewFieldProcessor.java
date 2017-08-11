@@ -12,6 +12,9 @@ import java.lang.annotation.Annotation;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 
 public class ViewFieldProcessor extends FieldProcessor {
 
@@ -54,12 +57,37 @@ public class ViewFieldProcessor extends FieldProcessor {
         final String fieldName = element.getSimpleName().toString();
         final String fieldType = element.asType().toString();
 
-        holder.addViewField(
+        final ViewField field = holder.addViewField(
                 fieldName,
                 fieldType,
                 annotation.value(),
                 annotation.parent(),
                 annotation.clicks()
         );
+
+        final String manager = getManagerName(annotation);
+        field.setManager(manager);
+    }
+
+    @Nullable
+    private String getManagerName(@NonNull Bind annotation) {
+        final LayersAnnotationProcessor ap = getAnnotationProcessor();
+        final Elements elements = ap.getElementUtils();
+        TypeMirror typeMirror;
+        try {
+            typeMirror = elements.getTypeElement(annotation.bindManager().getCanonicalName()).asType();
+        } catch (MirroredTypeException ex) {
+            typeMirror = ex.getTypeMirror();
+        }
+
+        if (typeMirror == null || "void".equals(typeMirror.toString())) {
+            return null;
+        }
+
+        if (!isAssignable(ap, typeMirror, "com.psliusar.layers.binder.ViewBindManager")) {
+            throw new IllegalArgumentException("Bind manager must extend class ViewBindManager");
+        }
+
+        return typeMirror.toString();
     }
 }

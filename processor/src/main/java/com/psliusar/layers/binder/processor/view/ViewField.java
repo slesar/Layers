@@ -1,14 +1,19 @@
 package com.psliusar.layers.binder.processor.view;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.psliusar.layers.binder.processor.FieldHolder;
+import com.squareup.javapoet.FieldSpec;
 
 public class ViewField extends FieldHolder {
 
     private final int resId;
     private final Integer parentContainer;
     private final boolean clickListener;
+    private String manager;
+
+    private FieldSpec managerField;
 
     public ViewField(
             @NonNull String fieldName,
@@ -33,5 +38,23 @@ public class ViewField extends FieldHolder {
 
     public boolean isClickListener() {
         return clickListener;
+    }
+
+    @Nullable
+    public String getManager() {
+        return manager;
+    }
+
+    public void setManager(@Nullable String managerClass) {
+        manager = managerClass;
+    }
+
+    @Nullable
+    public FieldSpec getManagerField() {
+        return managerField;
+    }
+
+    public void setManagerField(@Nullable FieldSpec fieldSpec) {
+        managerField = fieldSpec;
     }
 }

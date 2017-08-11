@@ -180,7 +180,7 @@ public class SaveFieldProcessor extends FieldProcessor {
         }
 
         if (!ensureSubtypeOfType(elements, ap.getTypeUtils(), typeMirror, "com.psliusar.layers.binder.FieldStateManager")) {
-            throw new IllegalArgumentException("StateManager must implement interface FieldStateManager");
+            throw new IllegalArgumentException("State manager must implement interface FieldStateManager");
         }
 
         return typeMirror.toString();

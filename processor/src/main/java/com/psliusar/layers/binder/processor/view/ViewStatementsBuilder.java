@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 
+import com.psliusar.layers.binder.processor.Processor;
 import com.psliusar.layers.binder.processor.builder.StatementsBuilder;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -32,7 +33,30 @@ public class ViewStatementsBuilder extends StatementsBuilder<ViewField> {
     @Nullable
     @Override
     public List<FieldSpec> createClassFields() {
-        return null;
+        final ArrayList<FieldSpec> specs = new ArrayList<>();
+        final HashMap<String, FieldSpec> managers = new HashMap<>();
+        for (ViewField field : getFields()) {
+            final String manager = field.getManager();
+            if (manager == null) {
+                continue;
+            }
+            FieldSpec managerField = managers.get(manager);
+            if (managerField == null) {
+                final String managerFieldName = Processor.typeNameToFieldName(manager);
+                final ClassName managerClassName = ClassName.bestGuess(manager);
+
+                // -> protected final ManagerType managerType = new ManagerType();
+                managerField = FieldSpec
+                        .builder(managerClassName, managerFieldName, Modifier.PROTECTED, Modifier.FINAL)
+                        .initializer("new $T()", managerClassName)
+                        .build();
+
+                managers.put(manager, managerField);
+                specs.add(managerField);
+            }
+            field.setManagerField(managerField);
+        }
+        return specs;
     }
 
     @Nullable
@@ -97,15 +121,31 @@ public class ViewStatementsBuilder extends StatementsBuilder<ViewField> {
             final ParentView parentView = getParentView(parents, field.getParentContainer());
             final String parent = parentView == null ? METHOD_PARAM_VIEW : parentView.getVarName();
 
-            // -> target.button = (Button) find(Button.class, parent_001, R.id.button);
-            builder.addStatement(
-                    "$L.$L = ($T) find($L, $L)",
-                    METHOD_VAR_TARGET,
-                    field.getFieldName(),
-                    fieldTypeClass,
-                    parent,
-                    field.getResId()
-            );
+            final FieldSpec manager = field.getManagerField();
+            if (manager == null) {
+                // -> target.button = (Button) find(parent_001, R.id.button);
+                builder.addStatement(
+                        "$L.$L = ($T) find($L, $L)",
+                        METHOD_VAR_TARGET,
+                        field.getFieldName(),
+                        fieldTypeClass,
+                        parent,
+                        field.getResId()
+                );
+            } else {
+                // Bind with manager
+                // -> target.button = (Button) managerField.find(parent_001, R.id.button);
+                builder.addStatement(
+                        //"$N.put($L + $S, $L.$L, $L)",
+                        "$L.$L = ($T) $N.find($L, $L)",
+                        METHOD_VAR_TARGET,
+                        field.getFieldName(),
+                        fieldTypeClass,
+                        manager,
+                        parent,
+                        field.getResId()
+                );
+            }
 
             // -> target.button.setOnClickListener(target);
             if (field.isClickListener()) {

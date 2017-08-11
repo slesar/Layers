@@ -28,4 +28,5 @@ dependencies {
     //provided 'com.psliusar:layers-binder-processor:1.0-SNAPSHOT'
     provided project(':processor')
     compile project(':layers')
+    compile project(':binder')
 }

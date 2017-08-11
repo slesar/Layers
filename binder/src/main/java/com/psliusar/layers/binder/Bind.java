@@ -1,6 +1,7 @@
 package com.psliusar.layers.binder;
 
 import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,4 +18,7 @@ public @interface Bind {
     int parent() default BinderConstants.NO_ID;
 
     boolean clicks() default false;
+
+    @Nullable
+    Class bindManager() default void.class;
 }
