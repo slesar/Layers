@@ -98,8 +98,8 @@ public class StackLayer extends Layer<StackPresenter> {
 
         @NonNull
         @Override
-        public View find(@NonNull View container, int viewResId) {
-            final TextView view = (TextView) super.find(container, viewResId);
+        public View find(@NonNull View.OnClickListener listener, @NonNull View container, int viewResId) {
+            final TextView view = (TextView) super.find(listener, container, viewResId);
             view.setTypeface(Typeface.SERIF);
             return view;
         }
