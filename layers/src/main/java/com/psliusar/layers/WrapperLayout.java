@@ -2,13 +2,14 @@ package com.psliusar.layers;
 
 import android.content.Context;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 public class WrapperLayout extends FrameLayout {
 
-    static WrapperLayout addTo(ViewGroup container) {
+    static WrapperLayout addTo(@NonNull ViewGroup container) {
         final ViewGroup.LayoutParams lp = container.getLayoutParams();
         final LayoutParams newParams = new LayoutParams(lp.width, lp.height);
         final WrapperLayout wrapper = new WrapperLayout(container.getContext());

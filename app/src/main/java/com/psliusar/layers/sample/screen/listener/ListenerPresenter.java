@@ -14,8 +14,8 @@ public class ListenerPresenter extends Presenter<ListenerModel, ListenerLayer> {
         getModel().stopUpdates();
     }
 
-    void pickPhotoClick() {
-        getModel().pickPhoto();
+    void takePhotoClick() {
+        getModel().takePhoto(getHost().getActivity());
     }
 
     void setPhotoUri(Uri uri) {

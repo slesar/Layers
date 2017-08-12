@@ -1,4 +1,4 @@
-package com.psliusar.layers;
+package com.psliusar.layers.callbacks;
 
 import android.content.Intent;
 import android.content.res.Configuration;

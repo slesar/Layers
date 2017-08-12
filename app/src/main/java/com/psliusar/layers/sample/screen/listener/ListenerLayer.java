@@ -8,9 +8,12 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.psliusar.layers.Layer;
+import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 
 public class ListenerLayer extends Layer<ListenerPresenter> implements View.OnClickListener {
+
+    @Bind(value = R.id.listener_take_photo, clicks = true) View takePhotoButton;
 
     @Nullable
     @Override
@@ -21,9 +24,6 @@ public class ListenerLayer extends Layer<ListenerPresenter> implements View.OnCl
     @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-
-        bindClickListener(this, R.id.listener_pick_photo);
-
         getPresenter().viewCreated();
     }
 
@@ -41,8 +41,8 @@ public class ListenerLayer extends Layer<ListenerPresenter> implements View.OnCl
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-        case R.id.listener_pick_photo:
-            getPresenter().pickPhotoClick();
+        case R.id.listener_take_photo:
+            getPresenter().takePhotoClick();
             break;
         }
     }

@@ -11,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.psliusar.layers.callbacks.ActivityCallbacks;
+
 public abstract class LayersActivity extends AppCompatActivity implements LayersHost {
 
     private static final String SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS";
