@@ -1,7 +1,9 @@
 package com.psliusar.layers;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 public abstract class Presenter<M extends Model, L extends Layer> {
 
@@ -29,10 +31,17 @@ public abstract class Presenter<M extends Model, L extends Layer> {
 
     }
 
+    @NonNull
     public LayersHost getHost() {
         return host;
     }
 
+    @NonNull
+    public Activity getActivity() {
+        return host.getActivity();
+    }
+
+    @NonNull
     public Context getContext() {
         return host.getActivity().getApplicationContext();
     }
@@ -48,6 +57,7 @@ public abstract class Presenter<M extends Model, L extends Layer> {
         return model;
     }
 
+    @Nullable
     protected M onCreateModel() {
         return null;
     }

@@ -18,33 +18,6 @@ import java.util.HashSet;
 public class Transition<LAYER extends Layer<?>> {
 
     /**
-     * Layer goes deeper to the stack, will be covered with a new layer
-     */
-    public static final int ANIMATION_LOWER_OUT = 0;
-
-    /**
-     * Layer appears at the top of the stack
-     */
-    public static final int ANIMATION_UPPER_IN = 1;
-
-    /**
-     * Layer pops out of the stack
-     */
-    public static final int ANIMATION_UPPER_OUT = 2;
-
-    /**
-     * Layer goes up to the top of the stack
-     */
-    public static final int ANIMATION_LOWER_IN = 3;
-
-    /**
-     * All possible values of animation type
-     */
-    @IntDef({ANIMATION_LOWER_OUT, ANIMATION_UPPER_IN, ANIMATION_UPPER_OUT, ANIMATION_LOWER_IN})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface AnimationType {}
-
-    /**
      * Add new layer within transition
      */
     static final int ACTION_ADD = 1;
@@ -64,7 +37,7 @@ public class Transition<LAYER extends Layer<?>> {
      */
     @IntDef({ACTION_ADD, ACTION_REPLACE, ACTION_REMOVE})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface ActionType {}
+    @interface ActionType {}
 
     private final Layers layers;
     @NonNull
@@ -148,8 +121,8 @@ public class Transition<LAYER extends Layer<?>> {
         if (stackEntry.animations == null) {
             stackEntry.animations = new int[4];
         }
-        stackEntry.animations[ANIMATION_LOWER_OUT] = outAnimId;
-        stackEntry.animations[ANIMATION_UPPER_IN] = inAnimId;
+        stackEntry.animations[AnimationType.ANIMATION_LOWER_OUT] = outAnimId;
+        stackEntry.animations[AnimationType.ANIMATION_UPPER_IN] = inAnimId;
         return this;
     }
 
@@ -164,8 +137,8 @@ public class Transition<LAYER extends Layer<?>> {
         if (stackEntry.animations == null) {
             stackEntry.animations = new int[4];
         }
-        stackEntry.animations[ANIMATION_UPPER_OUT] = outAnimId;
-        stackEntry.animations[ANIMATION_LOWER_IN] = inAnimId;
+        stackEntry.animations[AnimationType.ANIMATION_UPPER_OUT] = outAnimId;
+        stackEntry.animations[AnimationType.ANIMATION_LOWER_IN] = inAnimId;
         return this;
     }
 
@@ -295,11 +268,11 @@ public class Transition<LAYER extends Layer<?>> {
         protected LAYER performOperation() {
             // TODO index
             for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
-                animateLayer(layers.getStackEntryAt(i).layerInstance, ANIMATION_LOWER_OUT);
+                animateLayer(layers.getStackEntryAt(i).layerInstance, AnimationType.ANIMATION_LOWER_OUT);
             }
 
             final LAYER layer = (LAYER) layers.commitStackEntry(stackEntry);
-            animateLayer(layer, ANIMATION_UPPER_IN);
+            animateLayer(layer, AnimationType.ANIMATION_UPPER_IN);
 
             return layer;
         }
@@ -312,7 +285,7 @@ public class Transition<LAYER extends Layer<?>> {
         protected LAYER performOperation() {
             // TODO index
             for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
-                animateLayer(layers.getStackEntryAt(i).layerInstance, ANIMATION_LOWER_OUT);
+                animateLayer(layers.getStackEntryAt(i).layerInstance, AnimationType.ANIMATION_LOWER_OUT);
             }
 
             final LAYER layer;
@@ -332,7 +305,7 @@ public class Transition<LAYER extends Layer<?>> {
                     layers.getStackEntryAt(initialStackSize - 1).valid = false;
                 }
             }
-            animateLayer(layer, ANIMATION_UPPER_IN);
+            animateLayer(layer, AnimationType.ANIMATION_UPPER_IN);
 
             return layer;
         }
@@ -361,7 +334,7 @@ public class Transition<LAYER extends Layer<?>> {
             }
 
             for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
-                animateLayer(layers.getStackEntryAt(i).layerInstance, i == index ? ANIMATION_UPPER_OUT : ANIMATION_LOWER_IN);
+                animateLayer(layers.getStackEntryAt(i).layerInstance, i == index ? AnimationType.ANIMATION_UPPER_OUT : AnimationType.ANIMATION_LOWER_IN);
             }
 
             layers.getStackEntryAt(index).valid = false;

@@ -161,12 +161,6 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
 
     @NonNull
     @Override
-    public Layers getLayers(@IdRes int viewId) {
-        return getLayers().at(viewId);
-    }
-
-    @NonNull
-    @Override
     public <T extends View> T getView(@IdRes int viewId) {
         final View view = findViewById(viewId);
         if (view == null) {

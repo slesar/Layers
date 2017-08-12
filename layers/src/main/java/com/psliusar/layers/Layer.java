@@ -263,12 +263,6 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     @NonNull
     @Override
-    public Layers getLayers(@IdRes int viewId) {
-        return getLayers().at(viewId);
-    }
-
-    @NonNull
-    @Override
     public Activity getActivity() {
         return host.getActivity();
     }
@@ -311,7 +305,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     @Nullable
-    public Animator getAnimation(@Transition.AnimationType int animationType) {
+    public Animator getAnimation(@AnimationType int animationType) {
         return null;
     }
 
