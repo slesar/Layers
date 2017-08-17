@@ -145,38 +145,6 @@ public class Layers {
         throw new IllegalArgumentException("Layer not found: " + layer);
     }
 
-    /**
-     * Remove layer and View
-     * TODO remove method if not really needed
-     *
-     * @param layer
-     * @return
-     */
-    @Nullable
-    public <L extends Layer<?>> L removeLayer(@NonNull L layer) {
-        final int size = layerStack.size();
-        if (size == 0) {
-            return null;
-        }
-
-        pauseView();
-
-        L result = null;
-        for (int i = size - 1; i >= 0; i--) {
-            final StackEntry entry = layerStack.get(i);
-            if (entry.layerInstance == layer) {
-                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
-                layerStack.remove(i);
-                result = layer;
-                break;
-            }
-        }
-
-        resumeView();
-
-        return result;
-    }
-
     @Nullable
     public <L extends Layer<?>> L pop() {
         finishTransition();
@@ -518,22 +486,22 @@ public class Layers {
 
     /* === Transition === */
 
-    int startTransition(@NonNull Transition<?> transition, int minTransparentLayersCount) {
+    void startTransition(@NonNull Transition<?> transition, int minTransparentLayersCount) {
         this.transition = transition;
         if (viewPaused) {
-            return 0;
+            return;
         }
         // Prepare for transition
         final int size = layerStack.size();
         if (size == 0) {
-            return 0;
+            return;
         }
         // Reset state
         for (int i = 0; i < size; i++) {
             final StackEntry entry = layerStack.get(i);
             entry.layerTypeAnimated = i < size - minTransparentLayersCount ? entry.layerType : StackEntry.TYPE_TRANSPARENT;
         }
-        return ensureViews();
+        ensureViews();
     }
 
     void finishTransition() {
@@ -595,7 +563,7 @@ public class Layers {
      *
      * @return the lowest visible layer index
      */
-    private int getLowestVisibleEntry() {
+    int getLowestVisibleLayer() {
         final int upper = layerStack.size() - 1;
         if (upper < 0) {
             return 0;
@@ -621,13 +589,13 @@ public class Layers {
 
     /* === Views === */
 
-    private int ensureViews() {
+    private void ensureViews() {
         final int size;
         if (viewPaused || (size = layerStack.size()) == 0) {
-            return 0;
+            return;
         }
 
-        final int lowest = getLowestVisibleEntry();
+        final int lowest = getLowestVisibleLayer();
         for (int i = 0; i < size; i++) {
             final StackEntry entry = layerStack.get(i);
             if (i < lowest) {
@@ -636,7 +604,6 @@ public class Layers {
                 moveToState(entry, StackEntry.LAYER_STATE_VIEW_CREATED, false);
             }
         }
-        return lowest;
     }
 
     private ViewGroup getContainer() {

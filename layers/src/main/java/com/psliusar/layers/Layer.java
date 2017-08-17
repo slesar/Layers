@@ -317,4 +317,15 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     public void setObjectBinder(@NonNull ObjectBinder objectBinder) {
         layerBinder = objectBinder;
     }
+
+    @Override
+    public String toString() {
+        return "Layer{" +
+                "name='" + name + '\'' +
+                ", arguments=" + arguments +
+                ", attached=" + attached +
+                ", fromSavedState=" + fromSavedState +
+                ", finishing=" + finishing +
+                '}';
+    }
 }

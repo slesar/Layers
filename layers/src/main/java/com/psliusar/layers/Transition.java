@@ -74,7 +74,7 @@ public class Transition<LAYER extends Layer<?>> {
                 action = new RemoveAction<>();
                 break;
             default:
-                throw new IllegalArgumentException("Invalid action ID: " + actionType);
+                throw new IllegalArgumentException("Invalid action type: " + actionType);
         }
         action.init(this, layers, stackEntry, index);
         return action;
@@ -204,13 +204,15 @@ public class Transition<LAYER extends Layer<?>> {
         @NonNull
         public LAYER commit() {
             if (committed) {
+                // TODO
                 throw new IllegalStateException("!!");
             }
             committed = true;
 
             initialStackSize = layers.getStackSize();
+            lowestVisibleLayer = layers.getLowestVisibleLayer();
             final int transparentCount = getMinTransparentLayersCount();
-            lowestVisibleLayer = layers.startTransition(transition, transparentCount);
+            layers.startTransition(transition, transparentCount);
 
             final LAYER layer = performOperation();
             if (toAnimate.size() == 0) {
@@ -288,23 +290,15 @@ public class Transition<LAYER extends Layer<?>> {
                 animateLayer(layers.getStackEntryAt(i).layerInstance, AnimationType.ANIMATION_LOWER_OUT);
             }
 
-            final LAYER layer;
+            // Add a new layer first
+            final LAYER layer = (LAYER) layers.commitStackEntry(stackEntry);
+            layers.getStackEntryAt(initialStackSize).layerTypeAnimated = StackEntry.TYPE_TRANSPARENT;
 
-            if (!hasAnimations()) {
-                // TODO detect ALL animations
-                // No animation, just replace
-                //layer = layers.replace(layerClass, arguments, name, opaque);
-                layer = (LAYER) layers.commitStackEntry(stackEntry);
-            } else {
-                // Add a new layer first
-                layer = (LAYER) layers.commitStackEntry(stackEntry);
-                //layers.getStackEntryAt(initialStackSize).layerType = opaque ? StackEntry.TYPE_OPAQUE : StackEntry.TYPE_TRANSPARENT;
-                layers.getStackEntryAt(initialStackSize).layerTypeAnimated = StackEntry.TYPE_TRANSPARENT;
-                // Then invalidate layer beneath and then removeLayerAt
-                if (initialStackSize > 0) {
-                    layers.getStackEntryAt(initialStackSize - 1).valid = false;
-                }
+            // Then invalidate layer beneath and then remove it (after animation)
+            if (initialStackSize > 0) {
+                layers.getStackEntryAt(initialStackSize - 1).valid = false;
             }
+
             animateLayer(layer, AnimationType.ANIMATION_UPPER_IN);
 
             return layer;
@@ -323,6 +317,7 @@ public class Transition<LAYER extends Layer<?>> {
 
         @Override
         protected int getMinTransparentLayersCount() {
+            // TODO
             return index < lowestVisibleLayer ? 0 : initialStackSize - index;
         }
 
@@ -330,6 +325,7 @@ public class Transition<LAYER extends Layer<?>> {
         @Override
         protected LAYER performOperation() {
             if (index < 0 || index >= initialStackSize) {
+                // TODO
                 throw new IllegalArgumentException("!!");
             }
 
