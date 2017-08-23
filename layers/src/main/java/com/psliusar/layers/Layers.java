@@ -118,19 +118,19 @@ public class Layers {
     @NonNull
     public <L extends Layer<?>> Transition<L> add(@NonNull Class<L> layerClass) {
         finishTransition();
-        return new Transition<>(this, layerClass, Transition.ACTION_ADD);
+        return new AddTransition<>(this, layerClass);
     }
 
     @NonNull
     public <L extends Layer<?>> Transition<L> replace(@NonNull Class<L> layerClass) {
         finishTransition();
-        return new Transition<>(this, layerClass, Transition.ACTION_REPLACE);
+        return new ReplaceTransition<>(this, layerClass);
     }
 
     @NonNull
     public <L extends Layer<?>> Transition<L> remove(int index) {
         finishTransition();
-        return new Transition<>(this, index, Transition.ACTION_REMOVE);
+        return new RemoveTransition<>(this, index);
     }
 
     @NonNull
@@ -154,7 +154,7 @@ public class Layers {
         }
 
         //noinspection unchecked
-        return (L) new Transition<>(this, size - 1, Transition.ACTION_REMOVE).commit();
+        return (L) new RemoveTransition<>(this, size - 1).commit();
     }
 
     @Nullable
@@ -606,6 +606,7 @@ public class Layers {
         }
     }
 
+    @NonNull
     private ViewGroup getContainer() {
         if (container == null) {
             final ViewGroup viewGroup = containerId == View.NO_ID
@@ -621,12 +622,14 @@ public class Layers {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private static ViewGroup getContainerHc(ViewGroup viewGroup) {
+    @NonNull
+    private static ViewGroup getContainerHc(@NonNull ViewGroup viewGroup) {
         viewGroup.setSaveFromParentEnabled(false);
         return viewGroup;
     }
 
-    private static ViewGroup getContainerPreHc(ViewGroup viewGroup) {
+    @NonNull
+    private static ViewGroup getContainerPreHc(@NonNull ViewGroup viewGroup) {
         return WrapperLayout.addTo(viewGroup);
     }
 }
