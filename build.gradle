@@ -1,18 +1,13 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
     repositories {
         mavenLocal()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.2'
+        classpath 'com.android.tools.build:gradle:2.3.3'
         classpath 'de.mobilej.unmock:UnMockPlugin:0.5.0'
         classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
     }
 }
 
@@ -20,28 +15,14 @@ allprojects {
     repositories {
         mavenLocal()
         jcenter()
-        maven {
-            Properties properties = new Properties()
-            properties.load(project.rootProject.file('local.properties').newDataInputStream())
-            String sdkDir = properties.getProperty('sdk.dir')
-            url "${sdkDir}/extras/android/m2repository"
-        }
+        maven { url 'https://maven.google.com' }
     }
 
     group = GROUP
     version = VERSION_NAME
 
     ext {
-        compileSdkVersion = 25
-        buildToolsVersion = '25.0.0'
-        minSdkVersion = 11
-        targetSdkVersion = 25
-        supportLibVersion = '25.0.0'
-        javaVersion = JavaVersion.VERSION_1_7
-        javapoetVersion = '1.2.0'
-        googleAndroidVersion = '4.1.1.4'
-        junitVersion = '4.12'
-        mockitoVersion = '2.0.98-beta'
+        javaVersion = JavaVersion.toVersion(project.property("javaVersionString"))
     }
 }
 

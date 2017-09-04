@@ -1,12 +1,12 @@
 apply plugin: 'java'
 apply plugin: 'nexus'
 
-sourceCompatibility = rootProject.ext.javaVersion
-targetCompatibility = rootProject.ext.javaVersion
+sourceCompatibility = project.property("javaVersion")
+targetCompatibility = project.property("javaVersion")
 
 dependencies {
-    compileOnly "com.google.android:android:${rootProject.ext.googleAndroidVersion}"
-    compile "com.squareup:javapoet:${rootProject.ext.javapoetVersion}"
+    compileOnly "com.google.android:android:${googleAndroidVersion}"
+    compile "com.squareup:javapoet:${javaPoetVersion}"
     compileOnly project(':binder')
 }
 

@@ -3,12 +3,12 @@ apply plugin: 'de.mobilej.unmock'
 apply plugin: 'com.github.dcendents.android-maven'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion project.property("compileSdkVersion").toInteger()
+    buildToolsVersion project.property("buildToolsVersion")
 
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion project.property("minSdkVersion")
+        targetSdkVersion project.property("targetSdkVersion")
     }
     buildTypes {
         release {
@@ -25,12 +25,12 @@ unMock {
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
+    compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile project(':binder')
 
-    // Test
-    testCompile "junit:junit:${rootProject.ext.junitVersion}"
-    testCompile "org.mockito:mockito-core:${rootProject.ext.mockitoVersion}"
+    // Tests
+    testCompile "junit:junit:${junitVersion}"
+    testCompile "org.mockito:mockito-core:${mockitoVersion}"
 }
 
 task androidJavadocs(type: Javadoc) {
