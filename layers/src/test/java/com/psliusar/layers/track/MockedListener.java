@@ -34,15 +34,18 @@ class MockedListener implements Track.OnTrackListener<String, Integer> {
         onTrackProgressCalled++;
     }
 
-    public boolean isSingleShot() {
+    public boolean singleShot() {
         return onTrackFinishedCalled == 1
                 && onTrackErrorCalled == 0
                 && onTrackRestartCalled == 0;
     }
 
-    public boolean isShotTimes(int times) {
-        return onTrackFinishedCalled == times
-                && onTrackRestartCalled == Math.max(times - 1, 0);
+    public boolean shotTimes(int times) {
+        return onTrackFinishedCalled == times;
+    }
+
+    public boolean restartTimes(int times) {
+        return onTrackRestartCalled == times;
     }
 
     @Nullable

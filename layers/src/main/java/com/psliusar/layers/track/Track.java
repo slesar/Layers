@@ -30,9 +30,12 @@ public abstract class Track<V, P> {
 
     public void subscribe(@Nullable OnTrackListener<V, P> listener) {
         this.listener = listener;
+        if (finished) {
+            done(value);
+        }
     }
 
-    public void unsubscribe() {
+    public void unSubscribe() {
         listener = null;
     }
 
@@ -80,7 +83,7 @@ public abstract class Track<V, P> {
         value = null;
         disposed = true;
         cancel();
-        unsubscribe();
+        unSubscribe();
     }
 
     public boolean isFinished() {

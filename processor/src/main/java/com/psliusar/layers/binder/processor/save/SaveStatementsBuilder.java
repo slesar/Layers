@@ -298,9 +298,9 @@ public class SaveStatementsBuilder extends StatementsBuilder<SaveField> {
                 continue;
             }
 
-            // -> if (target.track != null) target.track.unsubscribe();
+            // -> if (target.track != null) target.track.unSubscribe();
             builder.addStatement(
-                    "if ($L.$L != null) $L.$L.unsubscribe()",
+                    "if ($L.$L != null) $L.$L.unSubscribe()",
                     METHOD_VAR_TARGET,
                     field.getFieldName(),
                     METHOD_VAR_TARGET,

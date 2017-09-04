@@ -22,7 +22,7 @@ public class AsyncTrackTest {
         track.subscribe(listener);
         track.start();
 
-        assertTrue(listener.isSingleShot());
+        assertTrue(listener.singleShot());
         assertEquals("Hello, world", listener.getValue());
     }
 
@@ -32,7 +32,8 @@ public class AsyncTrackTest {
         track.start();
         track.restart();
 
-        assertTrue(listener.isShotTimes(2));
+        assertTrue(listener.shotTimes(2));
+        assertTrue(listener.restartTimes(1));
         assertEquals("Hello, world", listener.getValue());
     }
 }

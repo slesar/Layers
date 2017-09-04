@@ -1,11 +1,9 @@
 package com.psliusar.layers.binder.processor.builder;
 
-import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.psliusar.layers.binder.BinderConstants;
-import com.psliusar.layers.binder.processor.BinderClassHolder;
 import com.psliusar.layers.binder.processor.LayersAnnotationProcessor;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -29,8 +27,6 @@ public class ClassBuilder {
                                 "Details: $L\n",
                         LayersAnnotationProcessor.class,
                         "https://github.com/slesar/Layers")
-                // TODO Really need to @Keep here?
-                .addAnnotation(Keep.class)
                 // TODO parametrized class
                 .superclass(ClassName.bestGuess(parentClassName));
     }

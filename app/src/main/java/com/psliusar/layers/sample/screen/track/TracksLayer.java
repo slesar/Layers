@@ -68,8 +68,8 @@ public class TracksLayer extends Layer<TracksPresenter> {
     @Override
     protected void onDestroyView() {
         super.onDestroyView();
-        syncTrack.unsubscribe();
-        asyncTrack.unsubscribe();
+        syncTrack.unSubscribe();
+        asyncTrack.unSubscribe();
     }
 
     void setSyncResult(@Nullable CharSequence text) {
