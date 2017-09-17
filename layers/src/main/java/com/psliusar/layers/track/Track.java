@@ -9,7 +9,7 @@ public abstract class Track<V, P> {
     protected OnTrackListener<V, P> listener;
 
     /**
-     * Value that was achieved during work
+     * Value that was achieved during work.
      */
     private V value;
 
@@ -19,19 +19,26 @@ public abstract class Track<V, P> {
     private boolean disposed = false;
 
     /**
-     * Indicates that work reached its end
+     * Indicates that work reached its end.
      */
     private boolean finished;
 
     /**
-     * Indicates that work is started
+     * Indicates that work is started.
      */
     private boolean started;
+
+    /**
+     * Makes Track start immediately when a listener is subscribed.
+     */
+    private boolean autoStart = false;
 
     public void subscribe(@Nullable OnTrackListener<V, P> listener) {
         this.listener = listener;
         if (finished) {
             done(value);
+        } else if (autoStart) {
+            start();
         }
     }
 
@@ -97,6 +104,14 @@ public abstract class Track<V, P> {
     @Nullable
     public V getValue() {
         return value;
+    }
+
+    public void setAutoStart(boolean value) {
+        autoStart = value;
+    }
+
+    public boolean isAutoStart() {
+        return autoStart;
     }
 
     protected void postProgress(@Nullable P progress) {
