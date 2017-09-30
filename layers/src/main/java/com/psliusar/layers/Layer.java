@@ -100,8 +100,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     protected void onBindView(@NonNull View view) {
         Binder.bind(this, view);
-        if (presenter != null) {
-            presenter.onStart();
+        final P p = getPresenter();
+        if (p != null) {
+            p.onStart();
         }
     }
 
@@ -157,8 +158,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     void destroyView() {
-        if (presenter != null) {
-            presenter.onStop();
+        final P p = getPresenter();
+        if (p != null) {
+            p.onStop();
         }
         if (layers != null) {
             layers.destroy();
