@@ -21,6 +21,14 @@ public abstract class Presenter<M extends Model, L extends Layer> {
 
     }
 
+    protected void onStart() {
+
+    }
+
+    protected void onStop() {
+
+    }
+
     void destroy() {
         onDestroy();
         model = null;

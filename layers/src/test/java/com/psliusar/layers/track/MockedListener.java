@@ -3,7 +3,7 @@ package com.psliusar.layers.track;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-class MockedListener implements Track.OnTrackListener<String, Integer> {
+class MockedListener implements OnTrackListener<String, Integer> {
 
     private int onTrackFinishedCalled = 0;
     private int onTrackErrorCalled = 0;
