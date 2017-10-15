@@ -30,7 +30,7 @@ public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListe
 
     @Override
     protected HomePresenter onCreatePresenter() {
-        return new HomePresenter();
+        return new HomePresenter(this);
     }
 
     @Override

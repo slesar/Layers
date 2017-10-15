@@ -34,7 +34,7 @@ public class TracksLayer extends Layer<TracksPresenter> {
 
     @Override
     protected TracksPresenter onCreatePresenter() {
-        return new TracksPresenter();
+        return new TracksPresenter(this);
     }
 
     @Override

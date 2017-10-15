@@ -38,7 +38,7 @@ public class SaveLayer extends Layer<SavePresenter> {
 
     @Override
     protected SavePresenter onCreatePresenter() {
-        return new SavePresenter();
+        return new SavePresenter(this);
     }
 
     @Nullable

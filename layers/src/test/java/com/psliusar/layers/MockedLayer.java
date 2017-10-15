@@ -184,6 +184,6 @@ public class MockedLayer extends Layer<MockedPresenter> {
     @Override
     protected MockedPresenter onCreatePresenter() {
         onCreatePresenterCalled++;
-        return new MockedPresenter();
+        return new MockedPresenter(this);
     }
 }

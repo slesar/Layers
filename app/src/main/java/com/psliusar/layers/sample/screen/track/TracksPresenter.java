@@ -11,27 +11,13 @@ import com.psliusar.layers.track.Track;
 
 public class TracksPresenter extends Presenter<Model, TracksLayer> {
 
-    /*public @interface ProvideTrack {
-        String value();
+
+    public TracksPresenter(@NonNull TracksLayer layer) {
+        super(layer);
     }
 
-    public @interface ProvideTrackListener {
-        String value();
-    }
 
-    public Track<?, ?> getTrack(@NonNull String name) {
-        return null;
-    }
 
-    @ProvideTrack("SyncTrack")
-    public Track<?, ?> provideSyncTrack() {
-        return null;
-    }
-
-    @ProvideTrackListener("SyncTrack")
-    public Track.OnTrackListener<?, ?> provideTrackListener() {
-        return null;
-    }*/
 
     OnTrackListener<Integer, Integer> getSyncTrackListener() {
         return new SimpleTrackListener<Integer, Integer>() {

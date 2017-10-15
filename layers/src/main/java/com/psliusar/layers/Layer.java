@@ -55,8 +55,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         if (presenter == null) {
             presenter = onCreatePresenter();
             if (presenter != null) {
-                //noinspection unchecked
-                presenter.create(host, this);
+                presenter.onCreate();
             }
         }
         return presenter;

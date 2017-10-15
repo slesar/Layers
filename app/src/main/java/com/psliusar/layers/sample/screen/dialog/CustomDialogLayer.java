@@ -43,7 +43,7 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
 
     @Override
     protected CustomDialogPresenter onCreatePresenter() {
-        return new CustomDialogPresenter();
+        return new CustomDialogPresenter(this);
     }
 
     @Override

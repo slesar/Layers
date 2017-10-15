@@ -42,7 +42,7 @@ public class StackLayer extends Layer<StackPresenter> {
 
     @Override
     protected StackPresenter onCreatePresenter() {
-        return new StackPresenter();
+        return new StackPresenter(this);
     }
 
     @Override

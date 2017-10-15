@@ -33,7 +33,7 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
 
     @Override
     protected DialogsPresenter onCreatePresenter() {
-        return new DialogsPresenter();
+        return new DialogsPresenter(this);
     }
 
     @Override

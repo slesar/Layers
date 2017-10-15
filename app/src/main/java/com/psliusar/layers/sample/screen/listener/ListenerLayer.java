@@ -35,7 +35,7 @@ public class ListenerLayer extends Layer<ListenerPresenter> implements View.OnCl
 
     @Override
     protected ListenerPresenter onCreatePresenter() {
-        return new ListenerPresenter();
+        return new ListenerPresenter(this);
     }
 
     @Override
