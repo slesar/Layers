@@ -12,25 +12,31 @@ class MockedCallbacks implements TrackCallbacks<String, Integer> {
 
     private String value;
 
+    @NonNull
     @Override
-    public void onTrackFinished(@NonNull Track<String, Integer> track, @Nullable String value) {
+    public Track<String, Integer> createTrack(int trackId) {
+        return null;
+    }
+
+    @Override
+    public void onTrackFinished(int trackId, @NonNull Track<String, Integer> track, @Nullable String value) {
         onTrackFinishedCalled++;
         this.value = value;
     }
 
     @Override
-    public void onTrackError(@NonNull Track<String, Integer> track, @NonNull Throwable throwable) {
+    public void onTrackError(int trackId, @NonNull Track<String, Integer> track, @NonNull Throwable throwable) {
         throwable.printStackTrace();
         onTrackErrorCalled++;
     }
 
     @Override
-    public void onTrackRestart(@NonNull Track<String, Integer> track) {
+    public void onTrackRestart(int trackId, @NonNull Track<String, Integer> track) {
         onTrackRestartCalled++;
     }
 
     @Override
-    public void onTrackProgress(@NonNull Track<String, Integer> track, @Nullable Integer progress) {
+    public void onTrackProgress(int trackId, @NonNull Track<String, Integer> track, @Nullable Integer progress) {
         onTrackProgressCalled++;
     }
 
