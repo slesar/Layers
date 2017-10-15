@@ -14,7 +14,6 @@ public class SaveField extends FieldHolder {
     private boolean needsClassLoader;
     private boolean needsParcelableWrapper;
     private boolean needsSerializableWrapper;
-    private boolean needsClassCast;
 
     private FieldSpec managerField;
 
@@ -82,13 +81,5 @@ public class SaveField extends FieldHolder {
 
     public void setManagerField(@Nullable FieldSpec fieldSpec) {
         managerField = fieldSpec;
-    }
-
-    public boolean needsClassCast() {
-        return needsClassCast;
-    }
-
-    public void setNeedsClassCast(boolean value) {
-        needsClassCast = value;
     }
 }

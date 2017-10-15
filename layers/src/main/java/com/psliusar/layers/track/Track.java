@@ -6,7 +6,15 @@ import android.support.annotation.Nullable;
 
 public abstract class Track<V, P> {
 
-    protected OnTrackListener<V, P> listener;
+    /**
+     * Listener to report events to.
+     */
+    protected TrackCallbacks<V, P> listener;
+
+    /**
+     * An ID that is used in {@link TrackManager}.
+     */
+    private int id;
 
     /**
      * Value that was achieved during work.
@@ -28,17 +36,18 @@ public abstract class Track<V, P> {
      */
     private boolean started;
 
-    /**
-     * Makes Track start immediately when a listener is subscribed.
-     */
-    private boolean autoStart = false;
+    void setId(int id) {
+        this.id = id;
+    }
 
-    public void subscribe(@Nullable OnTrackListener<V, P> listener) {
+    public int getId() {
+        return id;
+    }
+
+    public void subscribe(@Nullable TrackCallbacks<V, P> listener) {
         this.listener = listener;
         if (finished) {
             done(value);
-        } else if (autoStart) {
-            start();
         }
     }
 
@@ -71,6 +80,13 @@ public abstract class Track<V, P> {
             started = false;
             callOnError(t);
         }
+    }
+
+    protected void done(@Nullable V result) {
+        value = result;
+        finished = true;
+        started = false;
+        callOnFinished();
     }
 
     public void cancel() {
@@ -106,46 +122,31 @@ public abstract class Track<V, P> {
         return value;
     }
 
-    public void setAutoStart(boolean value) {
-        autoStart = value;
-    }
-
-    public boolean isAutoStart() {
-        return autoStart;
-    }
-
     protected void postProgress(@Nullable P progress) {
         callOnProgress(progress);
     }
 
-    protected void done(@Nullable V result) {
-        value = result;
-        finished = true;
-        started = false;
-        callOnFinished();
-    }
-
     protected void callOnFinished() {
         if (listener != null) {
-            listener.onTrackFinished(this, value);
+            listener.onTrackFinished(id, this, value);
         }
     }
 
     protected void callOnError(@NonNull Throwable t) {
         if (listener != null) {
-            listener.onTrackError(this, t);
+            listener.onTrackError(id, this, t);
         }
     }
 
     protected void callOnRestart() {
         if (listener != null) {
-            listener.onTrackRestart(this);
+            listener.onTrackRestart(id, this);
         }
     }
 
     protected void callOnProgress(@Nullable P progress) {
         if (listener != null) {
-            listener.onTrackProgress(this, progress);
+            listener.onTrackProgress(id, this, progress);
         }
     }
 

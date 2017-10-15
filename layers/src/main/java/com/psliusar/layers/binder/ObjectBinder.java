@@ -9,13 +9,13 @@ import android.support.annotation.Nullable;
 import android.util.SparseArray;
 import android.view.View;
 
-import com.psliusar.layers.track.Track;
-import com.psliusar.layers.track.TrackWrapper;
+import com.psliusar.layers.track.TrackManager;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+@SuppressWarnings("unused")
 public abstract class ObjectBinder {
 
     @NonNull
@@ -51,10 +51,10 @@ public abstract class ObjectBinder {
     }
 
     protected void unbind(@NonNull View.OnClickListener listener) {
-        unbindTracks(listener);
+        unbindTrackManagers(listener);
     }
 
-    protected void unbindTracks(@NonNull Object object) {
+    protected void unbindTrackManagers(@NonNull Object object) {
 
     }
 
@@ -234,12 +234,8 @@ public abstract class ObjectBinder {
 
     /* Tracks */
 
-    protected static void putTrack(@NonNull String key, @Nullable Track value, @NonNull Bundle state) {
-        if (value == null || value.isDisposed()) {
-            return;
-        }
-        final TrackWrapper wrapper = new TrackWrapper(value);
-        state.putParcelable(key, wrapper);
+    protected static void putTrackManager(@NonNull String key, @Nullable TrackManager value, @NonNull Bundle state) {
+        if (value != null) state.putParcelable(key, value);
     }
 
     // TODO arrays of boxed primitives
@@ -439,9 +435,8 @@ public abstract class ObjectBinder {
     /* Tracks */
 
     @Nullable
-    protected static Track getTrack(@NonNull String key, @NonNull Bundle state) {
-        final TrackWrapper wrapper = state.getParcelable(key);
-        return wrapper == null ? null : wrapper.getTrack();
+    protected static TrackManager getTrackManager(@NonNull String key, @NonNull Bundle state) {
+        return state.getParcelable(key);
     }
 
     // TODO arrays of boxed primitives

@@ -8,12 +8,12 @@ import static org.junit.Assert.*;
 public class TrackTest {
 
     private SimpleSyncTrack track;
-    private MockedListener listener;
+    private MockedCallbacks listener;
 
     @Before
     public void setUp() {
         track = new SimpleSyncTrack(new String[] { "Hello", "world" });
-        listener = new MockedListener();
+        listener = new MockedCallbacks();
     }
 
     @Test
