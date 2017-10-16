@@ -17,7 +17,7 @@ public class StackPresenter extends Presenter<Model, StackLayer> {
     }
 
     void nextClick() {
-        ((MainActivity) getHost().getActivity()).addToStack(
+        ((MainActivity) getActivity()).addToStack(
                 getLayer().getNextLayerTitle(),
                 getLayer().getLevel() + 1,
                 getLayer().isNextOpaque()

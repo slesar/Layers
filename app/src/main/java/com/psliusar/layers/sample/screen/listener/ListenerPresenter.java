@@ -20,7 +20,7 @@ public class ListenerPresenter extends Presenter<ListenerModel, ListenerLayer> {
     }
 
     void takePhotoClick() {
-        getModel().takePhoto(getHost().getActivity());
+        getModel().takePhoto(getActivity());
     }
 
     void setPhotoUri(Uri uri) {

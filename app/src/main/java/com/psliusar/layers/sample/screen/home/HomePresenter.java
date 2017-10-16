@@ -14,7 +14,7 @@ public class HomePresenter extends Presenter<Model, HomeLayer> {
 
     @NonNull
     protected MainActivity getMainActivity() {
-        return (MainActivity) getHost().getActivity();
+        return (MainActivity) getActivity();
     }
 
     void stackClick() {

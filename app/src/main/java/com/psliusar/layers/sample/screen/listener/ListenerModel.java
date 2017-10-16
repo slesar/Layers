@@ -17,7 +17,7 @@ public class ListenerModel implements Model {
     private final ManagedSubscriptions subscriptions = new ManagedSubscriptions();
 
     void startUpdates(@NonNull final ListenerPresenter presenter) {
-        final LayersActivity activity = (LayersActivity) presenter.getHost().getActivity();
+        final LayersActivity activity = (LayersActivity) presenter.getActivity();
         subscriptions.manage(activity.getActivityCallbacks().add(new BaseActivityListener() {
             @Override
             public void onActivityResult(int requestCode, int resultCode, Intent intent) {
