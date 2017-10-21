@@ -5,7 +5,7 @@ sourceCompatibility = project.property("javaVersion")
 targetCompatibility = project.property("javaVersion")
 
 dependencies {
-    compile "com.android.support:support-annotations:${supportLibVersion}"
+    implementation "com.android.support:support-annotations:${supportLibVersion}"
 }
 
 modifyPom {

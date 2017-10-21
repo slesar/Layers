@@ -23,9 +23,8 @@ android {
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
 
-    provided project(':processor')
-    compile project(':layers')
-    compile project(':binder')
+    annotationProcessor project(':processor')
+    implementation project(':layers')
 }
