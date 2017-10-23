@@ -9,10 +9,6 @@ android {
         targetSdkVersion project.property("targetSdkVersion")
         versionCode 1
         versionName "1.0"
-
-        jackOptions {
-            enabled false
-        }
     }
     buildTypes {
         release {
