@@ -11,11 +11,20 @@ public class ListenerPresenter extends Presenter<ListenerModel, ListenerLayer> {
         super(layer);
     }
 
-    void viewCreated() {
+    @Override
+    protected ListenerModel onCreateModel() {
+        return new ListenerModel();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         getModel().startUpdates(this);
     }
 
-    void viewDestroyed() {
+    @Override
+    protected void onStop() {
+        super.onStop();
         getModel().stopUpdates();
     }
 
@@ -25,10 +34,5 @@ public class ListenerPresenter extends Presenter<ListenerModel, ListenerLayer> {
 
     void setPhotoUri(Uri uri) {
         getLayer().showPhoto(uri);
-    }
-
-    @Override
-    protected ListenerModel onCreateModel() {
-        return new ListenerModel();
     }
 }

@@ -12,7 +12,9 @@ public class StackPresenter extends Presenter<Model, StackLayer> {
         super(layer);
     }
 
-    void initViews() {
+    @Override
+    protected void onStart() {
+        super.onStart();
         getLayer().setStackLevelText(String.format("%s: %s", getLayer().getTitle(), getLayer().getLevel()));
     }
 

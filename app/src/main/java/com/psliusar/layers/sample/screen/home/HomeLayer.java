@@ -1,36 +1,32 @@
 package com.psliusar.layers.sample.screen.home;
 
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.psliusar.layers.Layer;
+import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 
 public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListener {
+
+    @Bind(value = R.id.home_stack, clicks = true) View stackButton;
+    @Bind(value = R.id.home_children, clicks = true) View childrenButton;
+    @Bind(value = R.id.home_dialog, clicks = true) View dialogButton;
+    @Bind(value = R.id.home_activity_listener, clicks = true) View activityListenerButton;
+    @Bind(value = R.id.home_save_annotation, clicks = true) View saveAnnotationButton;
+    @Bind(value = R.id.home_tasks, clicks = true) View tasksButton;
+
+    @Nullable
+    @Override
+    protected HomePresenter onCreatePresenter() {
+        return new HomePresenter(this);
+    }
 
     @Nullable
     @Override
     protected View onCreateView(@Nullable ViewGroup parent) {
         return inflate(R.layout.screen_home, parent);
-    }
-
-    @Override
-    protected void onBindView(@NonNull View view) {
-        super.onBindView(view);
-        bindClickListener(this,
-                R.id.home_stack,
-                R.id.home_children,
-                R.id.home_dialog,
-                R.id.home_activity_listener,
-                R.id.home_save_annotation,
-                R.id.home_tasks);
-    }
-
-    @Override
-    protected HomePresenter onCreatePresenter() {
-        return new HomePresenter(this);
     }
 
     @Override

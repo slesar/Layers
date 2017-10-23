@@ -61,6 +61,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         return presenter;
     }
 
+    @Nullable
     protected abstract P onCreatePresenter();
 
     public boolean onBackPressed() {
@@ -166,6 +167,8 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         }
         onDestroyView();
         Binder.unbind(this);
+        // TODO dismiss tracks if finishing
+        // TODO manage TrackManager in Layer?
     }
 
     protected void onDestroyView() {

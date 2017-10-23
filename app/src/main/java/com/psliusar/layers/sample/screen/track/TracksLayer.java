@@ -20,6 +20,7 @@ public class TracksLayer extends Layer<TracksPresenter> {
 
     @Save TrackManager trackManager;
 
+    @Nullable
     @Override
     protected TracksPresenter onCreatePresenter() {
         return new TracksPresenter(this);
