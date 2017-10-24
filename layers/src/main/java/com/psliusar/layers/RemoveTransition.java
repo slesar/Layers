@@ -44,7 +44,14 @@ public class RemoveTransition<LAYER extends Layer<?>> extends Transition<LAYER> 
                     i == index ? AnimationType.ANIMATION_UPPER_OUT : AnimationType.ANIMATION_LOWER_IN);
         }
 
-        layers.getStackEntryAt(index).valid = false;
-        return layers.removeLayerAt(index);
+        final StackEntry entry = layers.getStackEntryAt(index);
+        entry.valid = false;
+        return (LAYER) entry.layerInstance;
+    }
+
+    @Override
+    protected void cleanUp() {
+        layers.removeLayerAt(index);
+        super.cleanUp();
     }
 }

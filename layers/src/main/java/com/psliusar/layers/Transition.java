@@ -34,6 +34,7 @@ public abstract class Transition<LAYER extends Layer<?>> {
     protected int lowestVisibleLayer;
     private boolean committed = false;
     private boolean animationEnabled = true;
+    private boolean finished = false;
 
     private final Animator.AnimatorListener animationListener = new AnimatorListenerAdapter() {
         @Override
@@ -141,7 +142,7 @@ public abstract class Transition<LAYER extends Layer<?>> {
         committed = true;
 
         initialStackSize = layers.getStackSize();
-        lowestVisibleLayer = layers.getLowestVisibleLayer();
+        lowestVisibleLayer = layers.getLowestVisibleLayer(true);
         final int transparentCount = getMinTransparentLayersCount();
         layers.startTransition(this, transparentCount);
 
@@ -161,6 +162,10 @@ public abstract class Transition<LAYER extends Layer<?>> {
     protected abstract LAYER performOperation();
 
     protected void cleanUp() {
+        if (finished) {
+            return;
+        }
+        finished = true;
         layers.finishTransition();
         animatorSet = null;
     }

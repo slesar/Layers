@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Layers {
 
@@ -313,17 +314,20 @@ public class Layers {
         final Bundle outState = new Bundle();
         final int size = layerStack.size();
         if (size != 0) {
+            final ArrayList<StackEntry> toSave = new ArrayList<>(size);
             for (int i = size - 1; i >= 0; i--) {
                 final StackEntry entry = layerStack.get(i);
                 if (!entry.valid) {
                     continue;
                 }
+                toSave.add(entry);
                 if (entry.layerInstance.view != null) {
                     saveViewState(entry);
                 }
                 saveLayerState(entry);
             }
-            outState.putParcelableArrayList(STATE_STACK, layerStack);
+            Collections.reverse(toSave);
+            outState.putParcelableArrayList(STATE_STACK, toSave);
         }
 
         // Save state of layers which are at other containers
@@ -424,7 +428,7 @@ public class Layers {
         final View layerView = layer.onCreateView(layer.isViewInLayout() ? getContainer() : null);
         layer.view = layerView;
         if (layerView != null && layer.isViewInLayout()) {
-            getContainer().addView(layerView);
+            getContainer().addView(layerView); // TODO place view at proper index
         }
 
         layer.attached = true;
@@ -559,17 +563,17 @@ public class Layers {
     }
 
     /**
-     * All "transparent" from top till ground or "opaque", including it
+     * All "transparent" from top till ground or "opaque", including it.
      *
+     * @param inTransition indicates that index should be calculated for transition state
      * @return the lowest visible layer index
      */
-    int getLowestVisibleLayer() {
+    int getLowestVisibleLayer(boolean inTransition) {
         final int upper = layerStack.size() - 1;
         if (upper < 0) {
             return 0;
         }
         int lower = upper;
-        final boolean inTransition = hasRunningTransition();
         // from end to beginning, search for opaque layer
         for (int i = upper; i >= 0; i--) {
             final StackEntry entry = layerStack.get(i);
@@ -595,7 +599,7 @@ public class Layers {
             return;
         }
 
-        final int lowest = getLowestVisibleLayer();
+        final int lowest = getLowestVisibleLayer(hasRunningTransition());
         for (int i = 0; i < size; i++) {
             final StackEntry entry = layerStack.get(i);
             if (i < lowest) {
