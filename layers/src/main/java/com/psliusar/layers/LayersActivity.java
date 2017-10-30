@@ -142,12 +142,8 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
 
     @Override
     public void onBackPressed() {
-        if (layers.getStackSize() > 1) {
-            final Layer<?> topLayer = layers.peek();
-            if (topLayer != null && !topLayer.onBackPressed()) {
-                layers.pop();
-                return;
-            }
+        if (layers.tryPop()) {
+            return;
         }
         super.onBackPressed();
     }

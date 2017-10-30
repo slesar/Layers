@@ -5,14 +5,11 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.os.Bundle;
 import android.support.annotation.AnimRes;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.psliusar.layers.animation.SimpleAnimation;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 
 public abstract class Transition<LAYER extends Layer<?>> {
@@ -34,6 +31,7 @@ public abstract class Transition<LAYER extends Layer<?>> {
     protected int lowestVisibleLayer;
     private boolean committed = false;
     private boolean animationEnabled = true;
+    private boolean finished = false;
 
     private final Animator.AnimatorListener animationListener = new AnimatorListenerAdapter() {
         @Override
@@ -141,7 +139,7 @@ public abstract class Transition<LAYER extends Layer<?>> {
         committed = true;
 
         initialStackSize = layers.getStackSize();
-        lowestVisibleLayer = layers.getLowestVisibleLayer();
+        lowestVisibleLayer = layers.getLowestVisibleLayer(true);
         final int transparentCount = getMinTransparentLayersCount();
         layers.startTransition(this, transparentCount);
 
@@ -161,6 +159,10 @@ public abstract class Transition<LAYER extends Layer<?>> {
     protected abstract LAYER performOperation();
 
     protected void cleanUp() {
+        if (finished) {
+            return;
+        }
+        finished = true;
         layers.finishTransition();
         animatorSet = null;
     }
