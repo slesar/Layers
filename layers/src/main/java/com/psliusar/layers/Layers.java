@@ -44,7 +44,7 @@ public class Layers {
                     final StackEntry entry = layerStack.get(i);
                     entry.layerInstance = null;
                     entry.state = StackEntry.LAYER_STATE_EMPTY;
-                    moveToState(entry, StackEntry.LAYER_STATE_CREATED, false);
+                    moveToState(entry, i, StackEntry.LAYER_STATE_CREATED, false);
                 }
             }
 
@@ -158,6 +158,26 @@ public class Layers {
         return (L) new RemoveTransition<>(this, size - 1).commit();
     }
 
+    public boolean tryPop() {
+        if (layerStack.size() == 0) {
+            return false;
+        }
+        int validItems = 0;
+        for (StackEntry entry : layerStack) {
+            if (entry.valid) {
+                if (validItems > 0) {
+                    final Layer<?> topLayer = entry.layerInstance;
+                    if (topLayer != null && !topLayer.onBackPressed()) {
+                        pop();
+                        return true;
+                    }
+                }
+                validItems++;
+            }
+        }
+        return false;
+    }
+
     @Nullable
     public <L extends Layer<?>> L popLayersTo(@Nullable String name, boolean inclusive) {
         final int size = layerStack.size();
@@ -197,7 +217,7 @@ public class Layers {
         for (int i = size - 1; i >= 0; i--) {
             final StackEntry entry = layerStack.get(i);
             if ((name == null && i > 0) || (name != null && !name.equals(entry.name)) || inclusive) {
-                moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
+                moveToState(entry, i, StackEntry.LAYER_STATE_DESTROYED, false);
                 layerStack.remove(i);
                 lastEntry = entry;
                 if (!(name == null || !name.equals(entry.name))) {
@@ -223,7 +243,7 @@ public class Layers {
         pauseView();
 
         for (int i = size - 1; i >= 0; i--) {
-            moveToState(layerStack.get(i), StackEntry.LAYER_STATE_DESTROYED, false);
+            moveToState(layerStack.get(i), i, StackEntry.LAYER_STATE_DESTROYED, false);
         }
 
         layerStack.clear();
@@ -351,7 +371,7 @@ public class Layers {
         final int size = layerStack.size();
         for (int i = size - 1; i >= 0; i--) {
             final StackEntry entry = layerStack.get(i);
-            moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
+            moveToState(entry, i, StackEntry.LAYER_STATE_DESTROYED, false);
         }
 
         // Layers at other containers
@@ -364,7 +384,7 @@ public class Layers {
 
     /* === Layer management === */
 
-    private void moveToState(@NonNull StackEntry entry, int targetState, boolean saveState) {
+    private void moveToState(@NonNull StackEntry entry, int index, int targetState, boolean saveState) {
         if (targetState <= StackEntry.LAYER_STATE_VIEW_CREATED) {
             int state = entry.state;
             while (state < targetState) {
@@ -375,7 +395,7 @@ public class Layers {
                         break;
                     case StackEntry.LAYER_STATE_CREATED:
                         if (!viewPaused) {
-                            createView(entry);
+                            createView(entry, index);
                             entry.state = StackEntry.LAYER_STATE_VIEW_CREATED;
                         }
                         break;
@@ -423,12 +443,22 @@ public class Layers {
         layer.create(host, entry.arguments, entry.name, entry.pickLayerSavedState());
     }
 
-    private void createView(@NonNull StackEntry entry) {
+    private void createView(@NonNull StackEntry entry, int index) {
+        final ViewGroup container = getContainer();
         final Layer<?> layer = entry.layerInstance;
-        final View layerView = layer.onCreateView(layer.isViewInLayout() ? getContainer() : null);
+        final View layerView = layer.onCreateView(layer.isViewInLayout() ? container : null);
         layer.view = layerView;
         if (layerView != null && layer.isViewInLayout()) {
-            getContainer().addView(layerView); // TODO place view at proper index
+            int fromEnd = 0;
+            for (int i = layerStack.size() - 1; i > index ; i--) {
+                final StackEntry item = layerStack.get(i);
+                if (item.layerInstance != null && item.layerInstance.view != null) {
+                    fromEnd++;
+                }
+            }
+
+            final int position = container.getChildCount() - fromEnd;
+            container.addView(layerView, position);
         }
 
         layer.attached = true;
@@ -552,7 +582,7 @@ public class Layers {
             return null;
         }
         final StackEntry entry = layerStack.get(index);
-        moveToState(entry, StackEntry.LAYER_STATE_DESTROYED, false);
+        moveToState(entry, index, StackEntry.LAYER_STATE_DESTROYED, false);
 
         //noinspection unchecked
         final L layer = (L) layerStack.remove(index).layerInstance;
@@ -603,9 +633,9 @@ public class Layers {
         for (int i = 0; i < size; i++) {
             final StackEntry entry = layerStack.get(i);
             if (i < lowest) {
-                moveToState(entry, StackEntry.LAYER_STATE_VIEW_DESTROYED, true);
+                moveToState(entry, i, StackEntry.LAYER_STATE_VIEW_DESTROYED, true);
             } else {
-                moveToState(entry, StackEntry.LAYER_STATE_VIEW_CREATED, false);
+                moveToState(entry, i, StackEntry.LAYER_STATE_VIEW_CREATED, false);
             }
         }
     }

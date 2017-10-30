@@ -30,12 +30,12 @@ public class SimpleAsyncTrack extends AsyncTrack<String, Integer> {
         return new MockedWorkerTask();
     }
 
-    private static class MockedWorkerTask extends WorkerTask<String, Integer> {
+    private static class MockedWorkerTask implements WorkerTask<String, Integer> {
 
         private OnCompletionListener<String, Integer> listener;
 
         @Override
-        protected void execute(@NonNull final AsyncTrack<String, Integer> parent) {
+        public void execute(@NonNull final AsyncTrack<String, Integer> parent) {
             final AtomicReference<String> valueRef = new AtomicReference<>();
             final AtomicReference<Throwable> throwableRef = new AtomicReference<>();
             final Thread backgroundThread = new Thread() {
@@ -71,18 +71,18 @@ public class SimpleAsyncTrack extends AsyncTrack<String, Integer> {
         }
 
         @Override
-        protected void cancel() {
+        public void cancel() {
             listener = null;
         }
 
         @Override
-        protected boolean isCancelled() {
+        public boolean isCancelled() {
             // XXX
             return false;
         }
 
         @Override
-        protected void setListener(@Nullable OnCompletionListener<String, Integer> listener) {
+        public void setListener(@Nullable OnCompletionListener<String, Integer> listener) {
             this.listener = listener;
         }
     }
