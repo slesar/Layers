@@ -64,12 +64,7 @@ public class TracksPresenter extends Presenter<Model, TracksLayer> {
     @Override
     protected void onStart() {
         super.onStart();
-        final TracksLayer layer = getLayer();
-        if (layer.trackManager == null) {
-            layer.trackManager = new TrackManager();
-        }
-
-        final TrackManager trackManager = layer.trackManager;
+        final TrackManager trackManager = getLayer().getTrackManager();
 
         trackManager.registerTrackCallbacks(TRACK_SYNC, syncTaskCallbacks).start();
         trackManager.registerTrackCallbacks(TRACK_ASYNC, asyncTaskCallbacks).start();

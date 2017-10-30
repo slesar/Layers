@@ -8,17 +8,13 @@ import android.widget.TextView;
 
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
-import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
-import com.psliusar.layers.track.TrackManager;
 
 public class TracksLayer extends Layer<TracksPresenter> {
 
     @Bind(R.id.track_sync_result) TextView syncResult;
     @Bind(R.id.track_async_progress) ProgressBar asyncProgressBar;
     @Bind(R.id.track_async_result) TextView asyncResult;
-
-    @Save TrackManager trackManager;
 
     @Nullable
     @Override

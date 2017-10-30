@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import com.psliusar.layers.binder.Binder;
 import com.psliusar.layers.binder.BinderHolder;
 import com.psliusar.layers.binder.ObjectBinder;
+import com.psliusar.layers.track.TrackManager;
 
 public abstract class Layer<P extends Presenter> implements LayersHost, View.OnClickListener, BinderHolder {
 
@@ -46,6 +47,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     private boolean finishing;
 
     private ObjectBinder layerBinder;
+
+    @Nullable
+    TrackManager trackManager;
 
     public Layer() {
         // Default constructor
@@ -227,6 +231,14 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     @NonNull
     protected LayoutInflater getLayoutInflater() {
         return host.getActivity().getLayoutInflater();
+    }
+
+    @NonNull
+    public TrackManager getTrackManager() {
+        if (trackManager == null) {
+            trackManager = new TrackManager();
+        }
+        return trackManager;
     }
 
     @NonNull

@@ -82,4 +82,17 @@ public class SaveField extends FieldHolder {
     public void setManagerField(@Nullable FieldSpec fieldSpec) {
         managerField = fieldSpec;
     }
+
+    @Override
+    public String toString() {
+        return "SaveField{" +
+                "manager='" + manager + '\'' +
+                ", key='" + key + '\'' +
+                ", methodSuffix='" + methodSuffix + '\'' +
+                ", needsClassLoader=" + needsClassLoader +
+                ", needsParcelableWrapper=" + needsParcelableWrapper +
+                ", needsSerializableWrapper=" + needsSerializableWrapper +
+                ", managerField=" + managerField +
+                '}';
+    }
 }
