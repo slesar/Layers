@@ -42,6 +42,7 @@ public class BinderClassHolder {
         return fileWritten;
     }
 
+    @NonNull
     public SaveField addSaveField(
             @NonNull String fieldName,
             @NonNull String fieldType) {
@@ -50,6 +51,7 @@ public class BinderClassHolder {
         return field;
     }
 
+    @NonNull
     public ViewField addViewField(
             @NonNull String fieldName,
             @NonNull String fieldType,

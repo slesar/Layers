@@ -74,6 +74,7 @@ public class TracksPresenter extends Presenter<Model, TracksLayer> {
 
         @Override
         protected void doBlocking() {
+            super.doBlocking();
             final Integer result = (int) (Math.random() * 255);
             done(result);
         }

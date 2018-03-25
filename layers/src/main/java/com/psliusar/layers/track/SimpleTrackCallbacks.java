@@ -6,6 +6,11 @@ import android.support.annotation.Nullable;
 public abstract class SimpleTrackCallbacks<V, P> implements TrackCallbacks<V, P> {
 
     @Override
+    public void onTrackStart(int trackId, @NonNull Track<V, P> track) {
+
+    }
+
+    @Override
     public void onTrackFinished(int trackId, @NonNull Track<V, P> track, @Nullable V value) {
 
     }

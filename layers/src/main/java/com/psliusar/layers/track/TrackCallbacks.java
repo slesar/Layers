@@ -8,6 +8,8 @@ public interface TrackCallbacks<V, P> {
     @NonNull
     Track<V, P> createTrack(int trackId);
 
+    void onTrackStart(int trackId, @NonNull Track<V, P> track);
+
     void onTrackFinished(int trackId, @NonNull Track<V, P> track, @Nullable V value);
 
     void onTrackError(int trackId, @NonNull Track<V, P> track, @NonNull Throwable throwable);

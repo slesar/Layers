@@ -209,7 +209,7 @@ public class SaveFieldProcessor extends FieldProcessor {
         if (matcher.matches()) {
             final String typeArgument = matcher.group(1);
             if (!isAssignable(ap, typeArgument, TYPE_PARCELABLE)) {
-                throw new IllegalArgumentException("Type " + element + " must be a subclass of Parcelable. Or you can define custom FieldStateManager.");
+                throw new IllegalArgumentException("Type " + element + " must implement Parcelable interface. Or you can define custom FieldStateManager.");
             }
             desc.canBeArray = false;
         }
@@ -222,7 +222,7 @@ public class SaveFieldProcessor extends FieldProcessor {
                     && !TYPE_INTEGER.equals(typeArgument)
                     && !TYPE_CHAR_SEQUENCE.equals(typeArgument)
                     && !isAssignable(ap, typeArgument, TYPE_PARCELABLE)) {
-                throw new IllegalArgumentException("Type " + element + " must be the String, Integer, CharSequence or subclass of Parcelable." +
+                throw new IllegalArgumentException("Type " + element + " must be the String, Integer, CharSequence or implement Parcelable interface." +
                         " Or you can define custom FieldStateManager.");
             }
             desc.canBeArray = false;

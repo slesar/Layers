@@ -1,5 +1,6 @@
 package com.psliusar.layers.track;
 
+import android.support.annotation.CallSuper;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,6 +37,11 @@ public abstract class Track<V, P> {
      */
     private boolean started;
 
+    /**
+     * Makes track run only once. It will unsubscribe once work is done.
+     */
+    private boolean singleShot = false;
+
     void setId(int id) {
         this.id = id;
     }
@@ -44,11 +50,16 @@ public abstract class Track<V, P> {
         return id;
     }
 
+    public void setSingleShot(boolean value) {
+        singleShot = value;
+    }
+
+    public boolean isSingleShot() {
+        return singleShot;
+    }
+
     public void subscribe(@Nullable TrackCallbacks<V, P> listener) {
         this.listener = listener;
-        if (finished) {
-            done(value);
-        }
     }
 
     public void unSubscribe() {
@@ -82,11 +93,15 @@ public abstract class Track<V, P> {
         }
     }
 
+    @CallSuper
     protected void done(@Nullable V result) {
         value = result;
         finished = true;
         started = false;
         callOnFinished();
+        if (singleShot) {
+            dispose();
+        }
     }
 
     public void cancel() {
@@ -136,6 +151,9 @@ public abstract class Track<V, P> {
         if (listener != null) {
             listener.onTrackError(id, this, t);
         }
+        if (singleShot) {
+            dispose();
+        }
     }
 
     protected void callOnRestart() {
@@ -151,5 +169,10 @@ public abstract class Track<V, P> {
     }
 
     @MainThread
-    protected abstract void doBlocking();
+    @CallSuper
+    protected void doBlocking() {
+        if (listener != null) {
+            listener.onTrackStart(id, this);
+        }
+    }
 }
