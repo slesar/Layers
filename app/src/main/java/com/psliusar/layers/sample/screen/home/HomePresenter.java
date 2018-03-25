@@ -8,9 +8,13 @@ import com.psliusar.layers.sample.MainActivity;
 
 public class HomePresenter extends Presenter<Model, HomeLayer> {
 
+    public HomePresenter(@NonNull HomeLayer layer) {
+        super(layer);
+    }
+
     @NonNull
     protected MainActivity getMainActivity() {
-        return (MainActivity) getHost().getActivity();
+        return (MainActivity) getActivity();
     }
 
     void stackClick() {

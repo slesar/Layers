@@ -30,7 +30,7 @@ public class SimpleAsyncTrack extends AsyncTrack<String, Integer> {
         return new MockedWorkerTask();
     }
 
-    private static class MockedWorkerTask implements WorkerTask<String, Integer> {
+    private static class MockedWorkerTask extends AsyncTaskWorkerTask<String, Integer> {
 
         private OnCompletionListener<String, Integer> listener;
 

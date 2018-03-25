@@ -25,12 +25,12 @@ unMock {
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
     compile project(':binder')
 
     // Tests
-    testCompile "junit:junit:${junitVersion}"
-    testCompile "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 }
 
 task androidJavadocs(type: Javadoc) {

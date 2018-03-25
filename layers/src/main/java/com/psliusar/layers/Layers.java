@@ -1,7 +1,5 @@
 package com.psliusar.layers;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.IdRes;
@@ -643,27 +641,10 @@ public class Layers {
     @NonNull
     private ViewGroup getContainer() {
         if (container == null) {
-            final ViewGroup viewGroup = containerId == View.NO_ID
+            container = containerId == View.NO_ID
                     ? host.getDefaultContainer() : (ViewGroup) host.getView(containerId);
-            if (Build.VERSION.SDK_INT == 0 // local unit tests
-                    || Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                container = getContainerHc(viewGroup);
-            } else {
-                container = getContainerPreHc(viewGroup);
-            }
+            container.setSaveFromParentEnabled(false);
         }
         return container;
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    @NonNull
-    private static ViewGroup getContainerHc(@NonNull ViewGroup viewGroup) {
-        viewGroup.setSaveFromParentEnabled(false);
-        return viewGroup;
-    }
-
-    @NonNull
-    private static ViewGroup getContainerPreHc(@NonNull ViewGroup viewGroup) {
-        return WrapperLayout.addTo(viewGroup);
     }
 }

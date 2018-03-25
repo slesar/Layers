@@ -14,7 +14,6 @@ public class SaveField extends FieldHolder {
     private boolean needsClassLoader;
     private boolean needsParcelableWrapper;
     private boolean needsSerializableWrapper;
-    private boolean needsClassCast;
 
     private FieldSpec managerField;
 
@@ -84,11 +83,16 @@ public class SaveField extends FieldHolder {
         managerField = fieldSpec;
     }
 
-    public boolean needsClassCast() {
-        return needsClassCast;
-    }
-
-    public void setNeedsClassCast(boolean value) {
-        needsClassCast = value;
+    @Override
+    public String toString() {
+        return "SaveField{" +
+                "manager='" + manager + '\'' +
+                ", key='" + key + '\'' +
+                ", methodSuffix='" + methodSuffix + '\'' +
+                ", needsClassLoader=" + needsClassLoader +
+                ", needsParcelableWrapper=" + needsParcelableWrapper +
+                ", needsSerializableWrapper=" + needsSerializableWrapper +
+                ", managerField=" + managerField +
+                '}';
     }
 }

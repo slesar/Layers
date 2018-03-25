@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.psliusar.layers.DialogLayer;
+import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 
 public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implements View.OnClickListener {
@@ -18,6 +19,16 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
         final Bundle bundle = new Bundle();
         bundle.putString(ARGS_TITLE, title);
         return bundle;
+    }
+
+    @Bind(value = R.id.dialog_action1, clicks = true) View action1Button;
+    @Bind(value = R.id.dialog_action2, clicks = true) View action2Button;
+    @Bind(R.id.dialog_title) TextView titleTextView;
+
+    @Nullable
+    @Override
+    protected CustomDialogPresenter onCreatePresenter() {
+        return new CustomDialogPresenter(this);
     }
 
     @Override
@@ -35,15 +46,7 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
     @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-        ((TextView) getView(R.id.dialog_title)).setText(getArguments().getString(ARGS_TITLE));
-        bindClickListener(this,
-                R.id.dialog_action1,
-                R.id.dialog_action2);
-    }
-
-    @Override
-    protected CustomDialogPresenter onCreatePresenter() {
-        return new CustomDialogPresenter();
+        titleTextView.setText(getArguments().getString(ARGS_TITLE));
     }
 
     @Override
@@ -76,8 +79,8 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
 
     public interface OnCustomDialogListener extends OnLayerDialogListener {
 
-        void onDialogAction1(CustomDialogLayer dialog);
+        void onDialogAction1(@NonNull CustomDialogLayer dialog);
 
-        void onDialogAction2(CustomDialogLayer dialog);
+        void onDialogAction2(@NonNull CustomDialogLayer dialog);
     }
 }

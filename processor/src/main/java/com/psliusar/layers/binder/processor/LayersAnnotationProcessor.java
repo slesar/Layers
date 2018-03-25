@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 
 import com.psliusar.layers.binder.processor.save.SaveFieldProcessor;
 import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
-import com.squareup.javapoet.ClassName;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -138,12 +137,13 @@ public class LayersAnnotationProcessor extends AbstractProcessor {
         // TODO cache classes graph
         while (superclass.getKind() != TypeKind.NONE) {
             final TypeElement superclassElement = (TypeElement) typeUtils.asElement(superclass);
-            if (isAnnotated(superclassElement) || isAnnotated(elementUtils.getAllMembers(superclassElement))) {
-                final String superclassPackageName = elementUtils.getPackageOf(superclassElement)
-                        .getQualifiedName()
-                        .toString();
-                final String superclassClassName = Processor.getSimpleClassName(superclassElement, superclassPackageName);
-                return ClassName.get(superclassPackageName, superclassClassName).toString();
+            final String superclassPackageName = elementUtils.getPackageOf(superclassElement)
+                    .getQualifiedName()
+                    .toString();
+            final String superclassClassName = Processor.getSimpleClassName(superclassElement, superclassPackageName);
+            final String className = Processor.getBinderClassName(superclassPackageName, superclassClassName);
+            if (elementUtils.getTypeElement(className) != null) {
+                return className;
             }
 
             superclass = superclassElement.getSuperclass();

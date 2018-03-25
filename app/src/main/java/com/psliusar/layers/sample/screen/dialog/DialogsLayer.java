@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.psliusar.layers.DialogLayer;
 import com.psliusar.layers.Layer;
+import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 
 public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClickListener,
@@ -17,23 +18,19 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
     private static final String DIALOG_SIMPLE = "SimpleDialog";
     private static final String DIALOG_CUSTOM = "CustomDialog";
 
+    @Bind(value = R.id.dialogs_simple, clicks = true) View simpleButton;
+    @Bind(value = R.id.dialogs_custom, clicks = true) View customButton;
+
+    @Nullable
+    @Override
+    protected DialogsPresenter onCreatePresenter() {
+        return new DialogsPresenter(this);
+    }
+
     @Nullable
     @Override
     protected View onCreateView(@Nullable ViewGroup parent) {
         return inflate(R.layout.screen_dialogs, parent);
-    }
-
-    @Override
-    protected void onBindView(@NonNull View view) {
-        super.onBindView(view);
-        bindClickListener(this,
-                R.id.dialogs_simple,
-                R.id.dialogs_custom);
-    }
-
-    @Override
-    protected DialogsPresenter onCreatePresenter() {
-        return new DialogsPresenter();
     }
 
     @Override
@@ -49,14 +46,14 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
     }
 
     @Override
-    public void onDialogAction1(CustomDialogLayer dialog) {
+    public void onDialogAction1(@NonNull CustomDialogLayer dialog) {
         if (DIALOG_CUSTOM.equals(dialog.getName())) {
             Toast.makeText(getContext(), "Action 1 was selected", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onDialogAction2(CustomDialogLayer dialog) {
+    public void onDialogAction2(@NonNull CustomDialogLayer dialog) {
         if (DIALOG_CUSTOM.equals(dialog.getName())) {
             Toast.makeText(getContext(), "Action 2 was selected", Toast.LENGTH_SHORT).show();
         }
@@ -68,7 +65,7 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
     }
 
     void showSimpleDialog(String title, String message) {
-        Bundle args = SimpleDialogLayer.createArguments(title, message);
+        final Bundle args = SimpleDialogLayer.createArguments(title, message);
         getLayers().add(SimpleDialogLayer.class)
                 .setArguments(args)
                 .setName(DIALOG_SIMPLE)
@@ -76,7 +73,7 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
     }
 
     void showCustomDialog(String title) {
-        Bundle args = CustomDialogLayer.createArguments(title);
+        final Bundle args = CustomDialogLayer.createArguments(title);
         getLayers().add(CustomDialogLayer.class)
                 .setArguments(args)
                 .setName(DIALOG_CUSTOM)

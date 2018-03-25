@@ -12,6 +12,7 @@ public class SimpleSyncTrack extends Track<String, Integer> {
 
     @Override
     protected void doBlocking() {
+        super.doBlocking();
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
             if (i > 0) {

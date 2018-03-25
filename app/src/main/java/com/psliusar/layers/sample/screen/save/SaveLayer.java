@@ -21,24 +21,17 @@ import java.util.Collections;
 
 public class SaveLayer extends Layer<SavePresenter> {
 
-    @Bind(R.id.save_string_list)
-    protected TextView stringListView;
+    @Bind(R.id.save_string_list) TextView stringListView;
 
-    @Save
-    protected ArrayList<String> stringList;
+    @Save ArrayList<String> stringList;
+    @Save SparseArray<Parcelable> parcelables;
+    @Save Rect[] parcelablesArray;
+    @Save(stateManager = CustomFieldStateManager.class) String customManagerSample;
 
-    @Save
-    protected SparseArray<Parcelable> parcelables;
-
-    @Save
-    protected Rect[] parcelablesArray;
-
-    @Save(stateManager = CustomFieldStateManager.class)
-    protected String customManagerSample;
-
+    @Nullable
     @Override
     protected SavePresenter onCreatePresenter() {
-        return new SavePresenter();
+        return new SavePresenter(this);
     }
 
     @Nullable

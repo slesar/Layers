@@ -25,4 +25,18 @@ public class ManagedSubscriptions {
             }
         }
     }
+
+    public boolean hasSubscriptions() {
+        if (subscriptions == null || subscriptions.size() == 0) {
+            return false;
+        }
+
+        for (EventSubscription subscription : subscriptions) {
+            if (subscription.isSubscribed()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

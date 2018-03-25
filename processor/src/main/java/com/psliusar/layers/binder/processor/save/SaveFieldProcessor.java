@@ -23,7 +23,7 @@ import javax.lang.model.util.Elements;
 
 public class SaveFieldProcessor extends FieldProcessor {
 
-    public static final String SUFFIX_TRACK = "Track";
+    public static final String SUFFIX_TRACK_MANAGER = "TrackManager";
 
     private static final String TYPE_STRING = "java.lang.String";
     private static final String TYPE_INTEGER = "java.lang.Integer";
@@ -31,7 +31,7 @@ public class SaveFieldProcessor extends FieldProcessor {
     private static final String TYPE_PARCELABLE = "android.os.Parcelable";
     private static final String TYPE_SERIALIZABLE = "java.io.Serializable";
     private static final String TYPE_BUNDLE = "android.os.Bundle";
-    private static final String TYPE_TRACK = "com.psliusar.layers.track.Track";
+    private static final String TYPE_TRACK_MANAGER = "com.psliusar.layers.track.TrackManager";
 
     private static final Pattern PATTERN_SPARSE_ARRAY = Pattern.compile("android\\.util\\.SparseArray<(.*?)>");
     private static final Pattern PATTERN_ARRAY_LIST = Pattern.compile("java\\.util\\.ArrayList<(.*?)>");
@@ -89,7 +89,7 @@ public class SaveFieldProcessor extends FieldProcessor {
             put("java.io.Serializable", "Serializable");
             put("java.io.Serializable[]", "SerializableArray");
 
-            put(TYPE_TRACK, SUFFIX_TRACK);
+            put(TYPE_TRACK_MANAGER, SUFFIX_TRACK_MANAGER);
         }
     };
 
@@ -138,14 +138,11 @@ public class SaveFieldProcessor extends FieldProcessor {
         field.setManager(manager);
 
         final String suffix;
-        boolean needsClassLoader = false;
         if (manager == null) {
             final TypeDescription desc = getTypeDescription(element);
             suffix = desc.suffix;
             field.setNeedsParcelableWrapper(desc.needsParcelableWrapper);
             field.setNeedsSerializableWrapper(desc.needsSerializableWrapper);
-            field.setNeedsClassCast(desc.needsClassCast);
-            needsClassLoader = desc.needsClassCast;
         } else {
             suffix = "";
         }
@@ -160,7 +157,7 @@ public class SaveFieldProcessor extends FieldProcessor {
         }
         field.setKey(key);
 
-        needsClassLoader |= checkFieldNeedsClassLoader(suffix);
+        final boolean needsClassLoader = checkFieldNeedsClassLoader(suffix);
         field.setNeedsClassLoader(needsClassLoader);
     }
 
@@ -212,7 +209,7 @@ public class SaveFieldProcessor extends FieldProcessor {
         if (matcher.matches()) {
             final String typeArgument = matcher.group(1);
             if (!isAssignable(ap, typeArgument, TYPE_PARCELABLE)) {
-                throw new IllegalArgumentException("Type " + element + " must be a subclass of Parcelable. Or you can define custom FieldStateManager.");
+                throw new IllegalArgumentException("Type " + element + " must implement Parcelable interface. Or you can define custom FieldStateManager.");
             }
             desc.canBeArray = false;
         }
@@ -225,7 +222,7 @@ public class SaveFieldProcessor extends FieldProcessor {
                     && !TYPE_INTEGER.equals(typeArgument)
                     && !TYPE_CHAR_SEQUENCE.equals(typeArgument)
                     && !isAssignable(ap, typeArgument, TYPE_PARCELABLE)) {
-                throw new IllegalArgumentException("Type " + element + " must be the String, Integer, CharSequence or subclass of Parcelable." +
+                throw new IllegalArgumentException("Type " + element + " must be the String, Integer, CharSequence or implement Parcelable interface." +
                         " Or you can define custom FieldStateManager.");
             }
             desc.canBeArray = false;
@@ -244,9 +241,8 @@ public class SaveFieldProcessor extends FieldProcessor {
 
         if (desc.suffix == null) {
             // Detect Tracks
-            if (isAssignable(ap, typeMirror, TYPE_TRACK)) {
-                elementType = TYPE_TRACK;
-                desc.needsClassCast = true;
+            if (isAssignable(ap, typeMirror, TYPE_TRACK_MANAGER)) {
+                elementType = TYPE_TRACK_MANAGER;
                 if (desc.isArray) {
                     // XXX Can be array?
                     //elementType += "[]";
@@ -287,7 +283,6 @@ public class SaveFieldProcessor extends FieldProcessor {
         boolean canBeArray;
         boolean needsParcelableWrapper;
         boolean needsSerializableWrapper;
-        boolean needsClassCast;
 
         TypeDescription() {
 

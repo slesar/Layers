@@ -1,10 +1,11 @@
 buildscript {
     repositories {
         mavenLocal()
+        google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.android.tools.build:gradle:3.0.0-rc1'
         classpath 'de.mobilej.unmock:UnMockPlugin:0.5.0'
         classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.7'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
@@ -14,8 +15,8 @@ buildscript {
 allprojects {
     repositories {
         mavenLocal()
+        google()
         jcenter()
-        maven { url 'https://maven.google.com' }
     }
 
     group = GROUP

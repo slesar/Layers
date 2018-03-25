@@ -14,6 +14,12 @@ public class ChildrenContainerLayer extends Layer<Presenter<?, ?>> {
 
     @Nullable
     @Override
+    protected Presenter<?, ?> onCreatePresenter() {
+        return null;
+    }
+
+    @Nullable
+    @Override
     protected View onCreateView(@Nullable ViewGroup parent) {
         return inflate(R.layout.screen_children_container, parent);
     }
@@ -55,10 +61,5 @@ public class ChildrenContainerLayer extends Layer<Presenter<?, ?>> {
                     .setName("Bottom")
                     .commit();
         }
-    }
-
-    @Override
-    protected Presenter<?, ?> onCreatePresenter() {
-        return null;
     }
 }

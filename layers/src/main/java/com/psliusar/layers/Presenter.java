@@ -7,15 +7,15 @@ import android.support.annotation.Nullable;
 
 public abstract class Presenter<M extends Model, L extends Layer> {
 
-    private LayersHost host;
-    private M model;
-    private L layer;
+    private final LayersHost host;
+    private final L layer;
 
-    void create(@NonNull LayersHost host, @NonNull L layer) {
-        this.host = host;
+    public Presenter(@NonNull L layer) {
+        this.host = layer.getHost();
         this.layer = layer;
-        onCreate();
     }
+
+    private M model;
 
     protected void onCreate() {
 
@@ -32,7 +32,6 @@ public abstract class Presenter<M extends Model, L extends Layer> {
     void destroy() {
         onDestroy();
         model = null;
-        layer = null;
     }
 
     protected void onDestroy() {

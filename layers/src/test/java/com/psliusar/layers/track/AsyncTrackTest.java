@@ -9,12 +9,12 @@ import static org.junit.Assert.assertTrue;
 public class AsyncTrackTest {
 
     private SimpleAsyncTrack track;
-    private MockedListener listener;
+    private MockedCallbacks listener;
 
     @Before
     public void setUp() {
         track = new SimpleAsyncTrack(new String[] { "Hello", "world" });
-        listener = new MockedListener();
+        listener = new MockedCallbacks();
     }
 
     @Test
