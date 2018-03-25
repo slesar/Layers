@@ -134,14 +134,15 @@ public class ViewStatementsBuilder extends StatementsBuilder<ViewField> {
                 );
             } else {
                 // Bind with manager
-                // -> target.button = (Button) managerField.find(parent_001, R.id.button);
+                // -> target.button = (Button) managerField.find(target, parent_001, R.id.button);
                 builder.addStatement(
                         //"$N.put($L + $S, $L.$L, $L)",
-                        "$L.$L = ($T) $N.find($L, $L)",
+                        "$L.$L = ($T) $N.find($L, $L, $L)",
                         METHOD_VAR_TARGET,
                         field.getFieldName(),
                         fieldTypeClass,
                         manager,
+                        METHOD_VAR_TARGET,
                         parent,
                         field.getResId()
                 );

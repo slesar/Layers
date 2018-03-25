@@ -24,14 +24,14 @@ public class SimpleDialogLayer extends DialogLayer<Presenter<?, ?>> {
         return bundle;
     }
 
-    @Nullable
     @Override
-    protected View onCreateView(@Nullable ViewGroup parent) {
+    protected Presenter<?, ?> onCreatePresenter() {
         return null;
     }
 
+    @Nullable
     @Override
-    protected Presenter<?, ?> onCreatePresenter() {
+    protected View onCreateView(@Nullable ViewGroup parent) {
         return null;
     }
 

@@ -17,10 +17,10 @@
         android:text="Listener"/>
 
     <Button
-        android:id="@+id/listener_pick_photo"
+        android:id="@+id/listener_take_photo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pick a photo"/>
+        android:text="Take a photo"/>
 
 
 </LinearLayout>

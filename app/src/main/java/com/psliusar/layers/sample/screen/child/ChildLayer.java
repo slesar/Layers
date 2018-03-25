@@ -8,13 +8,20 @@ import android.widget.TextView;
 
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.Presenter;
+import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
 
 public class ChildLayer extends Layer<Presenter<?, ?>> {
 
-    @Save
-    protected String title;
+    @Bind(R.id.child_title) TextView titleTextView;
+    @Save String title;
+
+    @Nullable
+    @Override
+    protected Presenter<?, ?> onCreatePresenter() {
+        return null;
+    }
 
     @Nullable
     @Override
@@ -23,14 +30,9 @@ public class ChildLayer extends Layer<Presenter<?, ?>> {
     }
 
     @Override
-    protected Presenter<?, ?> onCreatePresenter() {
-        return null;
-    }
-
-    @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-        this.<TextView>getView(R.id.child_title).setText(title);
+        titleTextView.setText(title);
     }
 
     public void setParameters(String title) {

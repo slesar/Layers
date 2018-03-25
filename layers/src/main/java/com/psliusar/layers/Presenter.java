@@ -1,38 +1,54 @@
 package com.psliusar.layers;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 public abstract class Presenter<M extends Model, L extends Layer> {
 
-    private LayersHost host;
-    private M model;
-    private L layer;
+    private final LayersHost host;
+    private final L layer;
 
-    void create(@NonNull LayersHost host, @NonNull L layer) {
-        this.host = host;
+    public Presenter(@NonNull L layer) {
+        this.host = layer.getHost();
         this.layer = layer;
-        onCreate();
     }
 
+    private M model;
+
     protected void onCreate() {
+
+    }
+
+    protected void onStart() {
+
+    }
+
+    protected void onStop() {
 
     }
 
     void destroy() {
         onDestroy();
         model = null;
-        layer = null;
     }
 
     protected void onDestroy() {
 
     }
 
+    @NonNull
     public LayersHost getHost() {
         return host;
     }
 
+    @NonNull
+    public Activity getActivity() {
+        return host.getActivity();
+    }
+
+    @NonNull
     public Context getContext() {
         return host.getActivity().getApplicationContext();
     }
@@ -48,6 +64,7 @@ public abstract class Presenter<M extends Model, L extends Layer> {
         return model;
     }
 
+    @Nullable
     protected M onCreateModel() {
         return null;
     }

@@ -1,0 +1,21 @@
+package com.psliusar.layers.callbacks;
+
+public enum ActivityEvent {
+    CREATE,
+    RESTORE_INSTANCE_STATE,
+    RESTART,
+    START,
+    POST_CREATE,
+    RESUME,
+    POST_RESUME,
+    SAVE_INSTANCE_STATE,
+    PAUSE,
+    STOP,
+    DESTROY,
+    NEW_INTENT,
+    CONFIGURATION_CHANGED,
+    ACTIVITY_RESULT,
+    REQUEST_PERMISSIONS_RESULT,
+    TRIM_MEMORY,
+    LOW_MEMORY
+}

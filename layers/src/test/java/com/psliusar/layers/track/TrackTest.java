@@ -8,12 +8,12 @@ import static org.junit.Assert.*;
 public class TrackTest {
 
     private SimpleSyncTrack track;
-    private MockedListener listener;
+    private MockedCallbacks listener;
 
     @Before
     public void setUp() {
         track = new SimpleSyncTrack(new String[] { "Hello", "world" });
-        listener = new MockedListener();
+        listener = new MockedCallbacks();
     }
 
     @Test
@@ -21,7 +21,7 @@ public class TrackTest {
         track.subscribe(listener);
         track.start();
 
-        assertTrue(listener.isSingleShot());
+        assertTrue(listener.singleShot());
         assertEquals("Hello, world", listener.getValue());
     }
 
@@ -31,7 +31,20 @@ public class TrackTest {
         track.start();
         track.restart();
 
-        assertTrue(listener.isShotTimes(2));
+        assertTrue(listener.shotTimes(2));
+        assertTrue(listener.restartTimes(1));
+        assertEquals("Hello, world", listener.getValue());
+    }
+
+    @Test
+    public void testSingleRunReSubscribe() {
+        track.subscribe(listener);
+        track.start();
+        track.unSubscribe();
+        track.subscribe(listener);
+
+        assertTrue(listener.shotTimes(2));
+        assertTrue(listener.restartTimes(0));
         assertEquals("Hello, world", listener.getValue());
     }
 }

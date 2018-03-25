@@ -27,6 +27,12 @@ public class StackLayer extends Layer<StackPresenter> {
 
     @Nullable
     @Override
+    protected StackPresenter onCreatePresenter() {
+        return new StackPresenter(this);
+    }
+
+    @Nullable
+    @Override
     protected View onCreateView(@Nullable ViewGroup parent) {
         return inflate(R.layout.screen_stack, parent);
     }
@@ -34,15 +40,7 @@ public class StackLayer extends Layer<StackPresenter> {
     @Override
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
-
-        getPresenter().initViews();
-
         new InnerLayerBinder(view);
-    }
-
-    @Override
-    protected StackPresenter onCreatePresenter() {
-        return new StackPresenter();
     }
 
     @Override
@@ -81,8 +79,7 @@ public class StackLayer extends Layer<StackPresenter> {
 
     public static class InnerLayerBinder implements View.OnClickListener {
 
-        @Bind(R.id.stack_next_title)
-        protected TextView nextTitle;
+        @Bind(R.id.stack_next_title) TextView nextTitle;
 
         public InnerLayerBinder(@NonNull View view) {
             Binder.bind(this, view);
@@ -98,8 +95,8 @@ public class StackLayer extends Layer<StackPresenter> {
 
         @NonNull
         @Override
-        public View find(@NonNull View container, int viewResId) {
-            final TextView view = (TextView) super.find(container, viewResId);
+        public View find(@NonNull View.OnClickListener listener, @NonNull View container, int viewResId) {
+            final TextView view = (TextView) super.find(listener, container, viewResId);
             view.setTypeface(Typeface.SERIF);
             return view;
         }

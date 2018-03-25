@@ -13,9 +13,6 @@ public interface LayersHost {
     Layers getLayers();
 
     @NonNull
-    Layers getLayers(@IdRes int viewId);
-
-    @NonNull
     <T extends View> T getView(@IdRes int viewId);
 
     @NonNull

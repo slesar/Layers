@@ -1,15 +1,24 @@
 package com.psliusar.layers.track;
 
+import android.support.annotation.CallSuper;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 public abstract class Track<V, P> {
 
-    protected OnTrackListener<V, P> listener;
+    /**
+     * Listener to report events to.
+     */
+    protected TrackCallbacks<V, P> listener;
 
     /**
-     * Value that was achieved during work
+     * An ID that is used in {@link TrackManager}.
+     */
+    private int id;
+
+    /**
+     * Value that was achieved during work.
      */
     private V value;
 
@@ -19,20 +28,41 @@ public abstract class Track<V, P> {
     private boolean disposed = false;
 
     /**
-     * Indicates that work reached its end
+     * Indicates that work reached its end.
      */
     private boolean finished;
 
     /**
-     * Indicates that work is started
+     * Indicates that work is started.
      */
     private boolean started;
 
-    public void subscribe(@Nullable OnTrackListener<V, P> listener) {
+    /**
+     * Makes track run only once. It will unsubscribe once work is done.
+     */
+    private boolean singleShot = false;
+
+    void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setSingleShot(boolean value) {
+        singleShot = value;
+    }
+
+    public boolean isSingleShot() {
+        return singleShot;
+    }
+
+    public void subscribe(@Nullable TrackCallbacks<V, P> listener) {
         this.listener = listener;
     }
 
-    public void unsubscribe() {
+    public void unSubscribe() {
         listener = null;
     }
 
@@ -63,6 +93,17 @@ public abstract class Track<V, P> {
         }
     }
 
+    @CallSuper
+    protected void done(@Nullable V result) {
+        value = result;
+        finished = true;
+        started = false;
+        callOnFinished();
+        if (singleShot) {
+            dispose();
+        }
+    }
+
     public void cancel() {
         disposed = true;
         started = false;
@@ -80,7 +121,7 @@ public abstract class Track<V, P> {
         value = null;
         disposed = true;
         cancel();
-        unsubscribe();
+        unSubscribe();
     }
 
     public boolean isFinished() {
@@ -100,48 +141,38 @@ public abstract class Track<V, P> {
         callOnProgress(progress);
     }
 
-    protected void done(@Nullable V result) {
-        value = result;
-        finished = true;
-        started = false;
-        callOnFinished();
-    }
-
     protected void callOnFinished() {
         if (listener != null) {
-            listener.onTrackFinished(this, value);
+            listener.onTrackFinished(id, this, value);
         }
     }
 
     protected void callOnError(@NonNull Throwable t) {
         if (listener != null) {
-            listener.onTrackError(this, t);
+            listener.onTrackError(id, this, t);
+        }
+        if (singleShot) {
+            dispose();
         }
     }
 
     protected void callOnRestart() {
         if (listener != null) {
-            listener.onTrackRestart(this);
+            listener.onTrackRestart(id, this);
         }
     }
 
     protected void callOnProgress(@Nullable P progress) {
         if (listener != null) {
-            listener.onTrackProgress(this, progress);
+            listener.onTrackProgress(id, this, progress);
         }
     }
 
     @MainThread
-    protected abstract void doBlocking();
-
-    public interface OnTrackListener<V, P> {
-
-        void onTrackFinished(@NonNull Track<V, P> track, @Nullable V value);
-
-        void onTrackError(@NonNull Track<V, P> track, @NonNull Throwable throwable);
-
-        void onTrackRestart(@NonNull Track<V, P> track);
-
-        void onTrackProgress(@NonNull Track<V, P> track, @Nullable P progress);
+    @CallSuper
+    protected void doBlocking() {
+        if (listener != null) {
+            listener.onTrackStart(id, this);
+        }
     }
 }

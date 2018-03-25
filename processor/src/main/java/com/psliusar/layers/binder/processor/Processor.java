@@ -51,22 +51,26 @@ public abstract class Processor {
         return elementNameToSnakeCase(className) + "$$";
     }
 
+    @NonNull
     public static String elementNameToSnakeCase(@NonNull String elementName) {
         return elementName.replaceAll("([a-z0-9])([A-Z0-9])", "$1_$2").toUpperCase();
     }
 
+    @NonNull
     protected static String getPackageName(
             @NonNull TypeElement type,
             @NonNull Elements elements) {
         return elements.getPackageOf(type).getQualifiedName().toString();
     }
 
+    @NonNull
     protected static String getBinderClassName(
             @NonNull String packageName,
             @NonNull String simpleClassName) {
         return packageName + "." + simpleClassName + BinderConstants.BINDER_SUFFIX;
     }
 
+    @NonNull
     protected static String getSimpleClassName(
             @NonNull TypeElement type,
             @NonNull String packageName) {

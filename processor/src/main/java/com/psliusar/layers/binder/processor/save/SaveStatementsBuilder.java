@@ -62,7 +62,7 @@ public class SaveStatementsBuilder extends StatementsBuilder<SaveField> {
         final ArrayList<MethodSpec> methods = new ArrayList<>();
         methods.add(getSaveMethod());
         methods.add(getRestoreMethod());
-        final MethodSpec unbindTracks = getUnbindTracksMethod();
+        final MethodSpec unbindTracks = getUnbindTrackManagersMethod();
         if (unbindTracks != null) {
             methods.add(unbindTracks);
         }
@@ -234,19 +234,6 @@ public class SaveStatementsBuilder extends StatementsBuilder<SaveField> {
                         METHOD_PARAM_STATE,
                         field.getFieldType()
                 );
-            } else if (field.needsClassCast()) {
-                // Statements with class cast
-                // -> target.field = (FieldClass) getValue(key, state);
-                builder.addStatement(
-                        "$L.$L = ($T) get$L($L + $S, $L)",
-                        METHOD_VAR_TARGET,
-                        field.getFieldName(),
-                        Processor.guessClassName(field.getFieldType()),
-                        field.getMethodSuffix(),
-                        METHOD_VAR_KEY_PREFIX,
-                        field.getKey(),
-                        METHOD_PARAM_STATE
-                );
             } else {
                 // Everything else
                 // -> target.field = getInt(key, state);
@@ -266,10 +253,10 @@ public class SaveStatementsBuilder extends StatementsBuilder<SaveField> {
     }
 
     @Nullable
-    public MethodSpec getUnbindTracksMethod() {
+    private MethodSpec getUnbindTrackManagersMethod() {
         final ClassName targetClass = ClassName.get(getPackageName(), getClassName());
 
-        final MethodSpec.Builder builder = MethodSpec.methodBuilder("unbindTracks")
+        final MethodSpec.Builder builder = MethodSpec.methodBuilder("unbindTrackManagers")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(ParameterSpec
@@ -279,7 +266,7 @@ public class SaveStatementsBuilder extends StatementsBuilder<SaveField> {
 
         // -> super.unbindTracks(object);
         builder.addStatement(
-                "super.unbindTracks($L)",
+                "super.unbindTrackManagers($L)",
                 METHOD_PARAM_OBJECT
         );
 
@@ -294,13 +281,13 @@ public class SaveStatementsBuilder extends StatementsBuilder<SaveField> {
 
         int fieldsProcessed = 0;
         for (SaveField field : getFields()) {
-            if (!SaveFieldProcessor.SUFFIX_TRACK.equals(field.getMethodSuffix())) {
+            if (!SaveFieldProcessor.SUFFIX_TRACK_MANAGER.equals(field.getMethodSuffix())) {
                 continue;
             }
 
-            // -> if (target.track != null) target.track.unsubscribe();
+            // -> if (target.trackManager != null) target.trackManager.dropCallbacks();
             builder.addStatement(
-                    "if ($L.$L != null) $L.$L.unsubscribe()",
+                    "if ($L.$L != null) $L.$L.dropCallbacks()",
                     METHOD_VAR_TARGET,
                     field.getFieldName(),
                     METHOD_VAR_TARGET,

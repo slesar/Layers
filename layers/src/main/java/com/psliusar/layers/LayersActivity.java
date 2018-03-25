@@ -11,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.psliusar.layers.callbacks.ActivityCallbacks;
+
 public abstract class LayersActivity extends AppCompatActivity implements LayersHost {
 
     private static final String SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS";
@@ -140,12 +142,8 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
 
     @Override
     public void onBackPressed() {
-        if (layers.getStackSize() > 1) {
-            final Layer<?> topLayer = layers.peek();
-            if (topLayer != null && !topLayer.onBackPressed()) {
-                layers.pop();
-                return;
-            }
+        if (layers.tryPop()) {
+            return;
         }
         super.onBackPressed();
     }
@@ -155,12 +153,6 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
     public Layers getLayers() {
         ensureLayerViews();
         return layers;
-    }
-
-    @NonNull
-    @Override
-    public Layers getLayers(@IdRes int viewId) {
-        return getLayers().at(viewId);
     }
 
     @NonNull

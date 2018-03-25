@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import com.psliusar.layers.binder.Binder;
 import com.psliusar.layers.binder.BinderHolder;
 import com.psliusar.layers.binder.ObjectBinder;
+import com.psliusar.layers.track.TrackManager;
 
 public abstract class Layer<P extends Presenter> implements LayersHost, View.OnClickListener, BinderHolder {
 
@@ -47,6 +48,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     private ObjectBinder layerBinder;
 
+    @Nullable
+    TrackManager trackManager;
+
     public Layer() {
         // Default constructor
     }
@@ -55,13 +59,13 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         if (presenter == null) {
             presenter = onCreatePresenter();
             if (presenter != null) {
-                //noinspection unchecked
-                presenter.create(host, this);
+                presenter.onCreate();
             }
         }
         return presenter;
     }
 
+    @Nullable
     protected abstract P onCreatePresenter();
 
     public boolean onBackPressed() {
@@ -100,6 +104,10 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     protected void onBindView(@NonNull View view) {
         Binder.bind(this, view);
+        final P p = getPresenter();
+        if (p != null) {
+            p.onStart();
+        }
     }
 
     void restoreLayerState() {
@@ -154,11 +162,17 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     void destroyView() {
+        final P p = getPresenter();
+        if (p != null) {
+            p.onStop();
+        }
         if (layers != null) {
             layers.destroy();
         }
         onDestroyView();
         Binder.unbind(this);
+        // TODO dismiss tracks if finishing
+        // TODO manage TrackManager in Layer?
     }
 
     protected void onDestroyView() {
@@ -220,6 +234,14 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     @NonNull
+    public TrackManager getTrackManager() {
+        if (trackManager == null) {
+            trackManager = new TrackManager();
+        }
+        return trackManager;
+    }
+
+    @NonNull
     protected <V extends View> V inflate(@LayoutRes int layoutRes, @Nullable ViewGroup parent) {
         //noinspection unchecked
         return (V) getLayoutInflater().inflate(layoutRes, parent, false);
@@ -259,12 +281,6 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
             layers = new Layers(this, null);
         }
         return layers;
-    }
-
-    @NonNull
-    @Override
-    public Layers getLayers(@IdRes int viewId) {
-        return getLayers().at(viewId);
     }
 
     @NonNull
@@ -311,7 +327,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     @Nullable
-    public Animator getAnimation(@Transition.AnimationType int animationType) {
+    public Animator getAnimation(@AnimationType int animationType) {
         return null;
     }
 
@@ -322,5 +338,16 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     public void setObjectBinder(@NonNull ObjectBinder objectBinder) {
         layerBinder = objectBinder;
+    }
+
+    @Override
+    public String toString() {
+        return "Layer{" +
+                "name='" + name + '\'' +
+                ", arguments=" + arguments +
+                ", attached=" + attached +
+                ", fromSavedState=" + fromSavedState +
+                ", finishing=" + finishing +
+                '}';
     }
 }

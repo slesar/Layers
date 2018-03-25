@@ -130,7 +130,7 @@ public class LayersTest {
         assertFalse(layer.isViewStateRestored());
         assertTrue(layer.isAttached());
 
-        verify(container, times(1)).addView(layer.getView());
+        verify(container, times(1)).addView(eq(layer.getView()), eq(0));
 
         // Restored Layer, with saved state
         // TODO
@@ -141,7 +141,7 @@ public class LayersTest {
         // Delete permanently
         MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
         View view = layer.getView();
-        layers.removeLayer(layer);
+        layers.remove(layer).commit();
 
         assertEquals(0, layer.getSaveViewStateCalled());
         assertEquals(1, layer.getOnDetachCalled());
@@ -159,7 +159,7 @@ public class LayersTest {
         // Delete permanently
         MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
 
-        layers.removeLayer(layer);
+        layers.remove(layer).commit();
 
         assertEquals(1, layer.getOnDestroyCalled());
 
@@ -175,15 +175,16 @@ public class LayersTest {
 
         verify(container, times(0)).removeView(any(View.class));
 
-        verify(container, times(1)).addView(layer1.getView());
+        // TODO mock container.getChildCount();
+        verify(container, times(1)).addView(eq(layer1.getView()), eq(0));
         assertTrue(layer1.isAttached());
         assertNotNull(layer1.getView());
 
-        verify(container, times(1)).addView(layer2.getView());
+        verify(container, times(1)).addView(eq(layer2.getView()), eq(1));
         assertTrue(layer2.isAttached());
         assertNotNull(layer2.getView());
 
-        verify(container, times(1)).addView(layer3.getView());
+        verify(container, times(1)).addView(eq(layer3.getView()), eq(2));
         assertTrue(layer3.isAttached());
         assertNotNull(layer3.getView());
     }
@@ -204,13 +205,13 @@ public class LayersTest {
         assertNotNull(layer4.getView());
         assertTrue(layer4.isAttached());
         verify(container, times(2)).removeView(any(View.class));
-        verify(container, times(4)).addView(any(View.class));
+        verify(container, times(4)).addView(any(View.class), eq(0));
     }
 
     @Test
     public void testRemove() throws Exception {
         final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
-        layers.removeLayer(layer1);
+        layers.remove(layer1).commit();
 
         assertEquals(0, layers.getStackSize());
 
@@ -218,8 +219,8 @@ public class LayersTest {
         final MockedLayer layer3 = addLayer(MockedLayer.class, null, "Test Layer 3", true);
         final MockedLayer layer4 = addLayer(MockedLayer.class, null, "Test Layer 4", false);
         final MockedLayer layer5 = addLayer(MockedLayer.class, null, "Test Layer 5", false);
-        layers.removeLayer(layer2);
-        layers.removeLayer(layer4);
+        layers.remove(layer2).commit();
+        layers.remove(layer4).commit();
 
         assertEquals(2, layers.getStackSize());
 
@@ -353,7 +354,7 @@ public class LayersTest {
         addLayer(MockedLayer.class, null, "Test Layer 4", true);
         assertEquals(4, layers.getStackSize());
 
-        verify(container, times(4)).addView(any(View.class));
+        verify(container, times(4)).addView(any(View.class), eq(0));
         layers.clear();
         assertEquals(0, layers.getStackSize());
 
