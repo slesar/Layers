@@ -6,38 +6,35 @@ import com.psliusar.layers.Model;
 import com.psliusar.layers.Presenter;
 import com.psliusar.layers.sample.MainActivity;
 
-public class HomePresenter extends Presenter<Model, HomeLayer> {
+public class HomePresenter extends Presenter<Model> {
 
-    public HomePresenter(@NonNull HomeLayer layer) {
-        super(layer);
-    }
+    private final MainActivity activity;
 
-    @NonNull
-    protected MainActivity getMainActivity() {
-        return (MainActivity) getActivity();
+    public HomePresenter(@NonNull MainActivity activity) {
+        this.activity = activity;
     }
 
     void stackClick() {
-        getMainActivity().addToStack("Level", 1, true);
+        activity.addToStack("Level", 1, true);
     }
 
     void childrenClick() {
-        getMainActivity().showChildrenLayers();
+        activity.showChildrenLayers();
     }
 
     void dialogClick() {
-        getMainActivity().showDialogLayers();
+        activity.showDialogLayers();
     }
 
     void listenerClick() {
-        getMainActivity().showActivityListener();
+        activity.showActivityListener();
     }
 
     void saveClick() {
-        getMainActivity().showSaveState();
+        activity.showSaveState();
     }
 
     void tasksClick() {
-        getMainActivity().showTracks();
+        activity.showTracks();
     }
 }

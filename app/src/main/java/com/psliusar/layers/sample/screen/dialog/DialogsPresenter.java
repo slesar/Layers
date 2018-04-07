@@ -5,17 +5,19 @@ import android.support.annotation.NonNull;
 import com.psliusar.layers.Model;
 import com.psliusar.layers.Presenter;
 
-public class DialogsPresenter extends Presenter<Model, DialogsLayer> {
+public class DialogsPresenter extends Presenter<Model> {
+
+    private final DialogsLayer layer;
 
     public DialogsPresenter(@NonNull DialogsLayer layer) {
-        super(layer);
+        this.layer = layer;
     }
 
     void simpleDialogClick() {
-        getLayer().showSimpleDialog("Hello World!", "This is simple AlertDialog controlled via Layer");
+        layer.showSimpleDialog("Hello World!", "This is simple AlertDialog controlled via Layer");
     }
 
     void customDialogClick() {
-        getLayer().showCustomDialog("Custom dialog");
+        layer.showCustomDialog("Custom dialog");
     }
 }

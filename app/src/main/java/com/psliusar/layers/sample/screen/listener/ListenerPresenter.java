@@ -4,11 +4,16 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.psliusar.layers.Presenter;
+import com.psliusar.layers.sample.MainActivity;
 
-public class ListenerPresenter extends Presenter<ListenerModel, ListenerLayer> {
+public class ListenerPresenter extends Presenter<ListenerModel> {
 
-    public ListenerPresenter(@NonNull ListenerLayer layer) {
-        super(layer);
+    private final MainActivity activity;
+    private final ListenerLayer layer;
+
+    public ListenerPresenter(@NonNull MainActivity activity, @NonNull ListenerLayer layer) {
+        this.activity = activity;
+        this.layer = layer;
     }
 
     @Override
@@ -29,10 +34,15 @@ public class ListenerPresenter extends Presenter<ListenerModel, ListenerLayer> {
     }
 
     void takePhotoClick() {
-        getModel().takePhoto(getActivity());
+        getModel().takePhoto(activity);
     }
 
     void setPhotoUri(Uri uri) {
-        getLayer().showPhoto(uri);
+        layer.showPhoto(uri);
+    }
+
+    @NonNull
+    MainActivity getActivity() {
+        return activity;
     }
 }

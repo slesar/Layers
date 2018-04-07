@@ -12,14 +12,14 @@ import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
 
-public class ChildLayer extends Layer<Presenter<?, ?>> {
+public class ChildLayer extends Layer<Presenter<?>> {
 
     @Bind(R.id.child_title) TextView titleTextView;
     @Save String title;
 
     @Nullable
     @Override
-    protected Presenter<?, ?> onCreatePresenter() {
+    protected Presenter<?> onCreatePresenter() {
         return null;
     }
 

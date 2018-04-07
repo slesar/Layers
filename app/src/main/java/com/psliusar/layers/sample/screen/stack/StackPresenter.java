@@ -6,23 +6,25 @@ import com.psliusar.layers.Model;
 import com.psliusar.layers.Presenter;
 import com.psliusar.layers.sample.MainActivity;
 
-public class StackPresenter extends Presenter<Model, StackLayer> {
+public class StackPresenter extends Presenter<Model> {
+
+    private final StackLayer layer;
 
     public StackPresenter(@NonNull StackLayer layer) {
-        super(layer);
+        this.layer = layer;
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        getLayer().setStackLevelText(String.format("%s: %s", getLayer().getTitle(), getLayer().getLevel()));
+        layer.setStackLevelText(String.format("%s: %s", layer.getTitle(), layer.getLevel()));
     }
 
     void nextClick() {
-        ((MainActivity) getActivity()).addToStack(
-                getLayer().getNextLayerTitle(),
-                getLayer().getLevel() + 1,
-                getLayer().isNextOpaque()
+        ((MainActivity) layer.getActivity()).addToStack(
+                layer.getNextLayerTitle(),
+                layer.getLevel() + 1,
+                layer.isNextOpaque()
         );
     }
 }

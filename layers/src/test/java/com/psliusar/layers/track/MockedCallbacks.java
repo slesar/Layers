@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 
 class MockedCallbacks implements TrackCallbacks<String, Integer> {
 
+    private int onTrackStartCalled = 0;
     private int onTrackFinishedCalled = 0;
     private int onTrackErrorCalled = 0;
     private int onTrackRestartCalled = 0;
@@ -16,6 +17,11 @@ class MockedCallbacks implements TrackCallbacks<String, Integer> {
     @Override
     public Track<String, Integer> createTrack(int trackId) {
         return null;
+    }
+
+    @Override
+    public void onTrackStart(int trackId, @NonNull Track<String, Integer> track) {
+        onTrackStartCalled++;
     }
 
     @Override

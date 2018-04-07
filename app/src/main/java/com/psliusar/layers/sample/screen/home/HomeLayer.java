@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
+import com.psliusar.layers.sample.MainActivity;
 import com.psliusar.layers.sample.R;
 
 public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListener {
@@ -20,7 +21,7 @@ public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListe
     @Nullable
     @Override
     protected HomePresenter onCreatePresenter() {
-        return new HomePresenter(this);
+        return new HomePresenter((MainActivity) getActivity());
     }
 
     @Nullable
