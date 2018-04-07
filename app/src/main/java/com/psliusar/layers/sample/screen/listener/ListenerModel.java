@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 
-import com.psliusar.layers.LayersActivity;
 import com.psliusar.layers.Model;
 import com.psliusar.layers.callbacks.BaseActivityListener;
 import com.psliusar.layers.callbacks.ManagedSubscriptions;
@@ -17,8 +16,7 @@ public class ListenerModel implements Model {
     private final ManagedSubscriptions subscriptions = new ManagedSubscriptions();
 
     void startUpdates(@NonNull final ListenerPresenter presenter) {
-        final LayersActivity activity = (LayersActivity) presenter.getActivity();
-        subscriptions.manage(activity.getActivityCallbacks().add(new BaseActivityListener() {
+        subscriptions.manage(presenter.getActivity().getActivityCallbacks().add(new BaseActivityListener() {
             @Override
             public void onActivityResult(int requestCode, int resultCode, Intent intent) {
                 presenter.setPhotoUri(intent != null ? intent.getData() : null);

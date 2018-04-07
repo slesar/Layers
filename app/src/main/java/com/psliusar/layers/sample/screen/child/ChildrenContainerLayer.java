@@ -10,11 +10,11 @@ import com.psliusar.layers.Presenter;
 import com.psliusar.layers.Transition;
 import com.psliusar.layers.sample.R;
 
-public class ChildrenContainerLayer extends Layer<Presenter<?, ?>> {
+public class ChildrenContainerLayer extends Layer<Presenter<?>> {
 
     @Nullable
     @Override
-    protected Presenter<?, ?> onCreatePresenter() {
+    protected Presenter<?> onCreatePresenter() {
         return null;
     }
 

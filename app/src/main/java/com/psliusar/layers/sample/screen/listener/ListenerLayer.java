@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
+import com.psliusar.layers.sample.MainActivity;
 import com.psliusar.layers.sample.R;
 
 public class ListenerLayer extends Layer<ListenerPresenter> implements View.OnClickListener {
@@ -17,7 +18,7 @@ public class ListenerLayer extends Layer<ListenerPresenter> implements View.OnCl
     @Nullable
     @Override
     protected ListenerPresenter onCreatePresenter() {
-        return new ListenerPresenter(this);
+        return new ListenerPresenter((MainActivity) getActivity(), this);
     }
 
     @Nullable

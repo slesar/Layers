@@ -10,13 +10,15 @@ import com.psliusar.layers.track.SimpleTrackCallbacks;
 import com.psliusar.layers.track.Track;
 import com.psliusar.layers.track.TrackManager;
 
-public class TracksPresenter extends Presenter<Model, TracksLayer> {
+public class TracksPresenter extends Presenter<Model> {
 
     private static final int TRACK_SYNC = 1;
     private static final int TRACK_ASYNC = 2;
 
+    private final TracksLayer layer;
+
     public TracksPresenter(@NonNull TracksLayer layer) {
-        super(layer);
+        this.layer = layer;
     }
 
     private final SimpleTrackCallbacks<Integer, Integer> syncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
@@ -28,12 +30,12 @@ public class TracksPresenter extends Presenter<Model, TracksLayer> {
 
         @Override
         public void onTrackFinished(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer value) {
-            getLayer().setSyncResult(value == null ? null : value.toString());
+            layer.setSyncResult(value == null ? null : value.toString());
         }
 
         @Override
         public void onTrackRestart(int trackId, @NonNull Track<Integer, Integer> track) {
-            getLayer().setSyncResult(null);
+            layer.setSyncResult(null);
         }
     };
 
@@ -46,25 +48,25 @@ public class TracksPresenter extends Presenter<Model, TracksLayer> {
 
         @Override
         public void onTrackFinished(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer value) {
-            getLayer().setAsyncResult(value == null ? null : value.toString());
-            getLayer().setAsyncProgress(100);
+            layer.setAsyncResult(value == null ? null : value.toString());
+            layer.setAsyncProgress(100);
         }
 
         @Override
         public void onTrackRestart(int trackId, @NonNull Track<Integer, Integer> track) {
-            getLayer().setAsyncResult(null);
+            layer.setAsyncResult(null);
         }
 
         @Override
         public void onTrackProgress(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer progress) {
-            getLayer().setAsyncProgress(progress == null ? 0 : progress);
+            layer.setAsyncProgress(progress == null ? 0 : progress);
         }
     };
 
     @Override
     protected void onStart() {
         super.onStart();
-        final TrackManager trackManager = getLayer().getTrackManager();
+        final TrackManager trackManager = layer.getTrackManager();
 
         trackManager.registerTrackCallbacks(TRACK_SYNC, syncTaskCallbacks).start();
         trackManager.registerTrackCallbacks(TRACK_ASYNC, asyncTaskCallbacks).start();
