@@ -19,7 +19,7 @@ import com.psliusar.layers.sample.R;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class SaveLayer extends Layer<SavePresenter> {
+public class SaveLayer extends Layer<SaveViewModel> {
 
     @Bind(R.id.save_string_list) TextView stringListView;
 
@@ -30,8 +30,8 @@ public class SaveLayer extends Layer<SavePresenter> {
 
     @Nullable
     @Override
-    protected SavePresenter onCreatePresenter() {
-        return new SavePresenter(this);
+    protected SaveViewModel onCreateViewModel() {
+        return new SaveViewModel();
     }
 
     @Nullable

@@ -1,27 +1,31 @@
 package com.psliusar.layers.sample.screen.track;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.psliusar.layers.Model;
-import com.psliusar.layers.Presenter;
+import com.psliusar.layers.ViewModel;
+import com.psliusar.layers.sample.screen.listener.ListenerModel;
 import com.psliusar.layers.track.AsyncTrack;
-import com.psliusar.layers.track.SimpleTrackCallbacks;
 import com.psliusar.layers.track.Track;
-import com.psliusar.layers.track.TrackManager;
 
-public class TracksPresenter extends Presenter<Model> {
+public class TracksViewModel extends ViewModel<Model> {
 
     private static final int TRACK_SYNC = 1;
     private static final int TRACK_ASYNC = 2;
 
-    private final TracksLayer layer;
-
-    public TracksPresenter(@NonNull TracksLayer layer) {
-        this.layer = layer;
+    public TracksViewModel() {
+        super(null);
     }
 
-    private final SimpleTrackCallbacks<Integer, Integer> syncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
+    void getSyncResult(@NonNull ListenerModel.Updatable<CharSequence> updatable) {
+        // TODO fix this
+    }
+
+    void getAsyncStatus(@NonNull ListenerModel.Updatable<TrackModel.AsyncTrackStatus> updatable) {
+
+    }
+
+    /*private final SimpleTrackCallbacks<Integer, Integer> syncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
         @NonNull
         @Override
         public Track<Integer, Integer> createTrack(int trackId) {
@@ -68,9 +72,11 @@ public class TracksPresenter extends Presenter<Model> {
         super.onStart();
         final TrackManager trackManager = layer.getTrackManager();
 
+        //@NonNull TracksLayer layer
+
         trackManager.registerTrackCallbacks(TRACK_SYNC, syncTaskCallbacks).start();
         trackManager.registerTrackCallbacks(TRACK_ASYNC, asyncTaskCallbacks).start();
-    }
+    }*/
 
     private static class SampleSyncTrack extends Track<Integer, Integer> {
 

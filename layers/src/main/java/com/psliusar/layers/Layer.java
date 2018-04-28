@@ -19,7 +19,7 @@ import com.psliusar.layers.binder.BinderHolder;
 import com.psliusar.layers.binder.ObjectBinder;
 import com.psliusar.layers.track.TrackManager;
 
-public abstract class Layer<P extends Presenter> implements LayersHost, View.OnClickListener, BinderHolder {
+public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View.OnClickListener, BinderHolder {
 
     private static final String SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS";
     private static final String SAVED_STATE_CUSTOM = "LAYER.SAVED_STATE_CUSTOM";
@@ -30,7 +30,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     private Layers layers;
 
     @Nullable
-    private P presenter;
+    VM viewModel;
 
     View view;
 
@@ -55,18 +55,19 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         // Default constructor
     }
 
-    public final P getPresenter() {
-        if (presenter == null) {
-            presenter = onCreatePresenter();
-            if (presenter != null) {
-                presenter.onCreate();
-            }
+    @NonNull
+    public final VM getViewModel() {
+        if (viewModel == null) {
+            viewModel = onCreateViewModel();
         }
-        return presenter;
+        if (viewModel == null) {
+            throw new NullPointerException("ViewModel was not provided");
+        }
+        return viewModel;
     }
 
     @Nullable
-    protected abstract P onCreatePresenter();
+    protected abstract VM onCreateViewModel();
 
     public boolean onBackPressed() {
         if (layers != null && layers.getStackSize() > 1) {
@@ -104,10 +105,6 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
 
     protected void onBindView(@NonNull View view) {
         Binder.bind(this, view);
-        final P p = getPresenter();
-        if (p != null) {
-            p.onStart();
-        }
     }
 
     void restoreLayerState() {
@@ -162,14 +159,13 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     void destroyView() {
-        final P p = getPresenter();
-        if (p != null) {
-            p.onStop();
+        onDestroyView();
+        if (viewModel != null) {
+            viewModel.onUnSubscribe();
         }
         if (layers != null) {
             layers.destroy();
         }
-        onDestroyView();
         Binder.unbind(this);
         // TODO dismiss tracks if finishing
         // TODO manage TrackManager in Layer?
@@ -182,9 +178,9 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     void destroy(boolean finish) {
         finishing = finish;
         onDestroy();
-        if (presenter != null) {
-            presenter.destroy();
-            presenter = null;
+        if (finish && viewModel != null) {
+            viewModel.onDestroy();
+            viewModel = null;
         }
     }
 
@@ -295,7 +291,7 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
     }
 
     @Nullable
-    public <T> T getParent(@NonNull Class<T> parentClass) {
+    public <T> T optParent(@NonNull Class<T> parentClass) {
         final Layer<?> parent = getParentLayer();
         if (parent == null) {
             final Activity activity = host.getActivity();
@@ -305,6 +301,15 @@ public abstract class Layer<P extends Presenter> implements LayersHost, View.OnC
         } else {
             return parent.getParent(parentClass);
         }
+    }
+
+    @NonNull
+    public <T> T getParent(@NonNull Class<T> parentClass) {
+        final T parent = optParent(parentClass);
+        if (parent == null) {
+            throw new NullPointerException("A parent implementing " + parentClass + " not found");
+        }
+        return parent;
     }
 
     protected void bindClickListener(@NonNull View.OnClickListener listener, View... views) {

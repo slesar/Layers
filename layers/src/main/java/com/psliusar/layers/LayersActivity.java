@@ -188,6 +188,7 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
         return stateSaved;
     }
 
+    @NonNull
     public ActivityCallbacks getActivityCallbacks() {
         return activityCallbacks;
     }

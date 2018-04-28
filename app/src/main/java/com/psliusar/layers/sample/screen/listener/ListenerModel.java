@@ -2,33 +2,35 @@ package com.psliusar.layers.sample.screen.listener;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import com.psliusar.layers.LayersActivity;
 import com.psliusar.layers.Model;
 import com.psliusar.layers.callbacks.BaseActivityListener;
-import com.psliusar.layers.callbacks.ManagedSubscriptions;
+import com.psliusar.layers.subscription.Subscription;
 
 public class ListenerModel implements Model {
 
+    public interface Updatable<T> {
+
+        void onUpdate(@Nullable T value);
+    }
+
     private static final int CAMERA_IMAGE = 1001;
 
-    private final ManagedSubscriptions subscriptions = new ManagedSubscriptions();
-
-    void startUpdates(@NonNull final ListenerPresenter presenter) {
-        subscriptions.manage(presenter.getActivity().getActivityCallbacks().add(new BaseActivityListener() {
+    public Subscription getPhotoUri(@NonNull LayersActivity activity, @NonNull final Updatable<Uri> updatable) {
+        return activity.getActivityCallbacks().add(new BaseActivityListener() {
             @Override
             public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                presenter.setPhotoUri(intent != null ? intent.getData() : null);
+                updatable.onUpdate(intent != null ? intent.getData() : null);
             }
-        }));
+        });
     }
 
-    void stopUpdates() {
-        subscriptions.unSubscribeAll();
-    }
-
-    void takePhoto(@NonNull Activity activity) {
+    public void requestPhoto(@NonNull Activity activity) {
         activity.startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE), CAMERA_IMAGE);
     }
 }

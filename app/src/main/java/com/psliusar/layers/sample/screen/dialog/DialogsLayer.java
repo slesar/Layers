@@ -12,7 +12,7 @@ import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 
-public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClickListener,
+public class DialogsLayer extends Layer<DialogsViewModel> implements View.OnClickListener,
         CustomDialogLayer.OnCustomDialogListener {
 
     private static final String DIALOG_SIMPLE = "SimpleDialog";
@@ -23,8 +23,8 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
 
     @Nullable
     @Override
-    protected DialogsPresenter onCreatePresenter() {
-        return new DialogsPresenter(this);
+    protected DialogsViewModel onCreateViewModel() {
+        return new DialogsViewModel();
     }
 
     @Nullable
@@ -37,10 +37,10 @@ public class DialogsLayer extends Layer<DialogsPresenter> implements View.OnClic
     public void onClick(View v) {
         switch (v.getId()) {
         case R.id.dialogs_simple:
-            getPresenter().simpleDialogClick();
+            getViewModel().simpleDialogClick(this);
             break;
         case R.id.dialogs_custom:
-            getPresenter().customDialogClick();
+            getViewModel().customDialogClick(this);
             break;
         }
     }

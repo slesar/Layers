@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.SparseArray;
 import android.view.View;
 
+import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.track.TrackManager;
 
 import java.io.Serializable;
@@ -238,6 +239,12 @@ public abstract class ObjectBinder {
         if (value != null) state.putParcelable(key, value);
     }
 
+    /* ViewModel */
+
+    protected static void putViewModel(@NonNull String key, @Nullable ViewModel<?> value, @NonNull Bundle state) {
+        if (value != null && value.isPersistent()) state.putParcelable(key, new SaveWrapper(value));
+    }
+
     // TODO arrays of boxed primitives
 
     /* Get primitives and their boxed versions */
@@ -437,6 +444,14 @@ public abstract class ObjectBinder {
     @Nullable
     protected static TrackManager getTrackManager(@NonNull String key, @NonNull Bundle state) {
         return state.getParcelable(key);
+    }
+
+    /* ViewModel */
+
+    @Nullable
+    protected static <VM extends ViewModel<?>> VM getViewModel(@NonNull String key, @NonNull Bundle state) {
+        final SaveWrapper wrapper = state.getParcelable(key);
+        return wrapper == null ? null : (VM) wrapper.getObject();
     }
 
     // TODO arrays of boxed primitives
