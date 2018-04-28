@@ -26,7 +26,7 @@ unMock {
 
 dependencies {
     implementation "com.android.support:appcompat-v7:${supportLibVersion}"
-    compile project(':binder')
+    api project(':binder')
 
     // Tests
     testImplementation "junit:junit:${junitVersion}"
