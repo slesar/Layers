@@ -1,11 +1,14 @@
 package com.psliusar.layers.sample.screen.track;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import com.psliusar.layers.Layer;
 import com.psliusar.layers.Model;
 import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.sample.screen.listener.ListenerModel;
 import com.psliusar.layers.track.AsyncTrack;
+import com.psliusar.layers.track.SimpleTrackCallbacks;
 import com.psliusar.layers.track.Track;
 
 public class TracksViewModel extends ViewModel<Model> {
@@ -17,66 +20,61 @@ public class TracksViewModel extends ViewModel<Model> {
         super(null);
     }
 
-    void getSyncResult(@NonNull ListenerModel.Updatable<CharSequence> updatable) {
-        // TODO fix this
+    void getSyncResult(@NonNull Layer<?> layer, @NonNull final ListenerModel.Updatable<CharSequence> updatable) {
+        final SimpleTrackCallbacks<Integer, Integer> syncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
+            @NonNull
+            @Override
+            public Track<Integer, Integer> createTrack(int trackId) {
+                return new SampleSyncTrack();
+            }
+
+            @Override
+            public void onTrackFinished(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer value) {
+                updatable.onUpdate(value == null ? null : value.toString());
+            }
+
+            @Override
+            public void onTrackRestart(int trackId, @NonNull Track<Integer, Integer> track) {
+                updatable.onUpdate(null);
+            }
+        };
+        layer.getTrackManager().registerTrackCallbacks(TRACK_SYNC, syncTaskCallbacks).start();
     }
 
-    void getAsyncStatus(@NonNull ListenerModel.Updatable<TrackModel.AsyncTrackStatus> updatable) {
+    void getAsyncStatus(@NonNull Layer<?> layer, @NonNull final ListenerModel.Updatable<TrackModel.AsyncTrackStatus> updatable) {
+        final SimpleTrackCallbacks<Integer, Integer> asyncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
 
+            private Integer result = null;
+            private int progress = 0;
+
+            @NonNull
+            @Override
+            public Track<Integer, Integer> createTrack(int trackId) {
+                return new SampleAsyncTrack();
+            }
+
+            @Override
+            public void onTrackFinished(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer value) {
+                result = value;
+                progress = 100;
+                updatable.onUpdate(new TrackModel.AsyncTrackStatus(result, progress));
+            }
+
+            @Override
+            public void onTrackRestart(int trackId, @NonNull Track<Integer, Integer> track) {
+                result = null;
+                progress = 0;
+                updatable.onUpdate(new TrackModel.AsyncTrackStatus(result, progress));
+            }
+
+            @Override
+            public void onTrackProgress(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer progress) {
+                this.progress = progress;
+                updatable.onUpdate(new TrackModel.AsyncTrackStatus(result, progress));
+            }
+        };
+        layer.getTrackManager().registerTrackCallbacks(TRACK_ASYNC, asyncTaskCallbacks).start();
     }
-
-    /*private final SimpleTrackCallbacks<Integer, Integer> syncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
-        @NonNull
-        @Override
-        public Track<Integer, Integer> createTrack(int trackId) {
-            return new SampleSyncTrack();
-        }
-
-        @Override
-        public void onTrackFinished(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer value) {
-            layer.setSyncResult(value == null ? null : value.toString());
-        }
-
-        @Override
-        public void onTrackRestart(int trackId, @NonNull Track<Integer, Integer> track) {
-            layer.setSyncResult(null);
-        }
-    };
-
-    private final SimpleTrackCallbacks<Integer, Integer> asyncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
-        @NonNull
-        @Override
-        public Track<Integer, Integer> createTrack(int trackId) {
-            return new SampleAsyncTrack();
-        }
-
-        @Override
-        public void onTrackFinished(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer value) {
-            layer.setAsyncResult(value == null ? null : value.toString());
-            layer.setAsyncProgress(100);
-        }
-
-        @Override
-        public void onTrackRestart(int trackId, @NonNull Track<Integer, Integer> track) {
-            layer.setAsyncResult(null);
-        }
-
-        @Override
-        public void onTrackProgress(int trackId, @NonNull Track<Integer, Integer> track, @Nullable Integer progress) {
-            layer.setAsyncProgress(progress == null ? 0 : progress);
-        }
-    };
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        final TrackManager trackManager = layer.getTrackManager();
-
-        //@NonNull TracksLayer layer
-
-        trackManager.registerTrackCallbacks(TRACK_SYNC, syncTaskCallbacks).start();
-        trackManager.registerTrackCallbacks(TRACK_ASYNC, asyncTaskCallbacks).start();
-    }*/
 
     private static class SampleSyncTrack extends Track<Integer, Integer> {
 

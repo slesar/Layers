@@ -34,13 +34,13 @@ public class TracksLayer extends Layer<TracksViewModel> {
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
 
-        getViewModel().getSyncResult(new ListenerModel.Updatable<CharSequence>() {
+        getViewModel().getSyncResult(this, new ListenerModel.Updatable<CharSequence>() {
             @Override
             public void onUpdate(@Nullable CharSequence value) {
                 syncResult.setText(value);
             }
         });
-        getViewModel().getAsyncStatus(new ListenerModel.Updatable<TrackModel.AsyncTrackStatus>() {
+        getViewModel().getAsyncStatus(this, new ListenerModel.Updatable<TrackModel.AsyncTrackStatus>() {
             @Override
             public void onUpdate(@Nullable TrackModel.AsyncTrackStatus value) {
                 asyncResult.setText(value.result);
