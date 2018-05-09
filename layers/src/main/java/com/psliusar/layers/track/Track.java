@@ -60,6 +60,9 @@ public abstract class Track<V, P> {
 
     public void subscribe(@Nullable TrackCallbacks<V, P> listener) {
         this.listener = listener;
+        if (started && listener != null) {
+            listener.onTrackStart(id, this);
+        }
     }
 
     public void unSubscribe() {
@@ -83,6 +86,9 @@ public abstract class Track<V, P> {
         finished = false;
         started = true;
         try {
+            if (listener != null) {
+                listener.onTrackStart(id, this);
+            }
             doBlocking();
         } catch (Throwable t) {
             value = null;
@@ -122,6 +128,10 @@ public abstract class Track<V, P> {
         disposed = true;
         cancel();
         unSubscribe();
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 
     public boolean isFinished() {
@@ -169,10 +179,5 @@ public abstract class Track<V, P> {
     }
 
     @MainThread
-    @CallSuper
-    protected void doBlocking() {
-        if (listener != null) {
-            listener.onTrackStart(id, this);
-        }
-    }
+    protected abstract void doBlocking();
 }

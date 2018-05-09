@@ -7,8 +7,8 @@ import android.support.v4.util.SparseArrayCompat;
 
 public class TrackManager implements Parcelable {
 
-    private final SparseArrayCompat<Track> tracks = new SparseArrayCompat<>();
-    private final SparseArrayCompat<TrackCallbacks> callbacks = new SparseArrayCompat<>();
+    private final SparseArrayCompat<Track<?, ?>> tracks = new SparseArrayCompat<>();
+    private final SparseArrayCompat<TrackCallbacks<?, ?>> callbacks = new SparseArrayCompat<>();
 
     public TrackManager() {
         // Keep default public constructor
@@ -22,9 +22,9 @@ public class TrackManager implements Parcelable {
     }
 
     @NonNull
-    public TrackStarter registerTrackCallbacks(int trackId, @NonNull TrackCallbacks callback) {
+    public <V, P> TrackStarter registerTrackCallbacks(int trackId, @NonNull TrackCallbacks<V, P> callback) {
         callbacks.put(trackId, callback);
-        final Track track = tracks.get(trackId);
+        final Track<V, P> track = (Track<V, P>) tracks.get(trackId);
         if (track != null) {
             track.subscribe(callback);
         }
@@ -41,9 +41,9 @@ public class TrackManager implements Parcelable {
 
     @NonNull
     public <V, P> Track<V, P> getTrack(int trackId) {
-        Track<V, P> track = tracks.get(trackId);
+        Track<V, P> track = (Track<V, P>) tracks.get(trackId);
         if (track == null) {
-            final TrackCallbacks<V, P> callback = callbacks.get(trackId);
+            final TrackCallbacks<V, P> callback = (TrackCallbacks<V, P>) callbacks.get(trackId);
             if (callback == null) {
                 throw new IllegalArgumentException("No track callbacks registered for ID: " + trackId);
             }

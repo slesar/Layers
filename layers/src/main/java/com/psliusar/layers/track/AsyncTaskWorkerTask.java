@@ -15,7 +15,7 @@ public class AsyncTaskWorkerTask<V, P> implements WorkerTask<V, P> {
     @Override
     public void execute(@NonNull AsyncTrack<V, P> parent) {
         if (task.getStatus() == AsyncTask.Status.PENDING) {
-            AsyncTaskCompat.executeParallel(task, parent);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, parent);
         } else {
             // XXX
         }
