@@ -5,8 +5,12 @@ import android.support.annotation.Nullable;
 
 import com.psliusar.layers.subscription.Subscription;
 import com.psliusar.layers.subscription.Subscriptions;
+import com.psliusar.layers.track.TrackManager;
 
 public class ViewModel<M extends Model> {
+
+    @Nullable
+    TrackManager trackManager;
 
     private Subscriptions subscriptions;
 
@@ -40,5 +44,13 @@ public class ViewModel<M extends Model> {
             subscriptions = new Subscriptions();
         }
         subscriptions.manage(subscription);
+    }
+
+    @NonNull
+    public TrackManager getTrackManager() {
+        if (trackManager == null) {
+            trackManager = new TrackManager();
+        }
+        return trackManager;
     }
 }

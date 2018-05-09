@@ -2,6 +2,7 @@ package com.psliusar.layers.track;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 
 public interface WorkerTask<V, P> {
 
@@ -21,4 +22,7 @@ public interface WorkerTask<V, P> {
     boolean isCancelled();
 
     void setListener(@Nullable OnCompletionListener<V, P> listener);
+
+    @WorkerThread
+    void postProgress(@Nullable P progress);
 }

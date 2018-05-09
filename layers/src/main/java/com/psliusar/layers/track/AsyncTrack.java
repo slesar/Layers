@@ -26,6 +26,14 @@ public abstract class AsyncTrack<V, P> extends Track<V, P> {
         }
     };
 
+    @WorkerThread
+    @Override
+    protected void postProgress(@Nullable P progress) {
+        if (task != null) {
+            task.postProgress(progress);
+        }
+    }
+
     @Override
     public void restart() {
         reset();

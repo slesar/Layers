@@ -3,7 +3,6 @@ package com.psliusar.layers.sample.screen.track;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.psliusar.layers.Layer;
 import com.psliusar.layers.Model;
 import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.sample.screen.listener.ListenerModel;
@@ -20,7 +19,7 @@ public class TracksViewModel extends ViewModel<Model> {
         super(null);
     }
 
-    void getSyncResult(@NonNull Layer<?> layer, @NonNull final ListenerModel.Updatable<CharSequence> updatable) {
+    void getSyncResult(@NonNull final ListenerModel.Updatable<CharSequence> updatable) {
         final SimpleTrackCallbacks<Integer, Integer> syncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
             @NonNull
             @Override
@@ -38,10 +37,10 @@ public class TracksViewModel extends ViewModel<Model> {
                 updatable.onUpdate(null);
             }
         };
-        layer.getTrackManager().registerTrackCallbacks(TRACK_SYNC, syncTaskCallbacks).start();
+        getTrackManager().registerTrackCallbacks(TRACK_SYNC, syncTaskCallbacks).start();
     }
 
-    void getAsyncStatus(@NonNull Layer<?> layer, @NonNull final ListenerModel.Updatable<TrackModel.AsyncTrackStatus> updatable) {
+    void getAsyncStatus(@NonNull final ListenerModel.Updatable<TrackModel.AsyncTrackStatus> updatable) {
         final SimpleTrackCallbacks<Integer, Integer> asyncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {
 
             private Integer result = null;
@@ -73,7 +72,7 @@ public class TracksViewModel extends ViewModel<Model> {
                 updatable.onUpdate(new TrackModel.AsyncTrackStatus(result, progress));
             }
         };
-        layer.getTrackManager().registerTrackCallbacks(TRACK_ASYNC, asyncTaskCallbacks).start();
+        getTrackManager().registerTrackCallbacks(TRACK_ASYNC, asyncTaskCallbacks).start();
     }
 
     private static class SampleSyncTrack extends Track<Integer, Integer> {
@@ -89,7 +88,7 @@ public class TracksViewModel extends ViewModel<Model> {
     private static class SampleAsyncTrack extends AsyncTrack<Integer, Integer> {
 
         @Override
-        protected Integer doInBackground() throws Throwable {
+        protected Integer doInBackground() {
             for (int i = 0 ; i < 100; i++) {
                 if (i % 5 == 0) {
                     postProgress(i);

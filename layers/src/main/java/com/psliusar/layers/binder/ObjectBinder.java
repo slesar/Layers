@@ -242,7 +242,7 @@ public abstract class ObjectBinder {
     /* ViewModel */
 
     protected static void putViewModel(@NonNull String key, @Nullable ViewModel<?> value, @NonNull Bundle state) {
-        if (value != null && value.isPersistent()) state.putParcelable(key, new SaveWrapper(value));
+        if (value != null) state.putParcelable(key, new SaveWrapper(value));
     }
 
     // TODO arrays of boxed primitives

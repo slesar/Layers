@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import com.psliusar.layers.binder.Binder;
 import com.psliusar.layers.binder.BinderHolder;
 import com.psliusar.layers.binder.ObjectBinder;
-import com.psliusar.layers.track.TrackManager;
 
 public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View.OnClickListener, BinderHolder {
 
@@ -48,9 +47,6 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
 
     private ObjectBinder layerBinder;
 
-    @Nullable
-    TrackManager trackManager;
-
     public Layer() {
         // Default constructor
     }
@@ -72,9 +68,7 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
     public boolean onBackPressed() {
         if (layers != null && layers.getStackSize() > 1) {
             final Layer<?> topLayer = layers.peek();
-            if (topLayer != null && topLayer.onBackPressed()) {
-                return true;
-            }
+            return topLayer != null && topLayer.onBackPressed();
         }
         return false;
     }
@@ -227,14 +221,6 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
     @NonNull
     protected LayoutInflater getLayoutInflater() {
         return host.getActivity().getLayoutInflater();
-    }
-
-    @NonNull
-    public TrackManager getTrackManager() {
-        if (trackManager == null) {
-            trackManager = new TrackManager();
-        }
-        return trackManager;
     }
 
     @NonNull
