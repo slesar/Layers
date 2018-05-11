@@ -25,12 +25,13 @@ unMock {
 }
 
 dependencies {
-    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:appcompat-v7:$supportLibVersion"
     api project(':binder')
 
     // Tests
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    unmock "org.robolectric:android-all:$unMockRobolectricVersion"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
 }
 
 task androidJavadocs(type: Javadoc) {

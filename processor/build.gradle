@@ -5,9 +5,9 @@ sourceCompatibility = project.property("javaVersion")
 targetCompatibility = project.property("javaVersion")
 
 dependencies {
-    implementation "com.google.android:android:${googleAndroidVersion}"
-    implementation "com.android.support:support-annotations:${supportLibVersion}"
-    implementation "com.squareup:javapoet:${javaPoetVersion}"
+    implementation "com.google.android:android:$googleAndroidVersion"
+    implementation "com.android.support:support-annotations:$supportLibVersion"
+    implementation "com.squareup:javapoet:$javaPoetVersion"
     implementation project(':binder')
 }
 
