@@ -7,19 +7,19 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.psliusar.layers.Layer;
-import com.psliusar.layers.Presenter;
+import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
 
-public class ChildLayer extends Layer<Presenter<?, ?>> {
+public class ChildLayer extends Layer<ViewModel<?>> {
 
     @Bind(R.id.child_title) TextView titleTextView;
     @Save String title;
 
     @Nullable
     @Override
-    protected Presenter<?, ?> onCreatePresenter() {
+    protected ViewModel<?> onCreateViewModel() {
         return null;
     }
 

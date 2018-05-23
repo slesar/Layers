@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-public abstract class DialogLayer<P extends Presenter> extends Layer<P>
+public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
         implements DialogInterface.OnCancelListener, DialogInterface.OnDismissListener {
 
     /**

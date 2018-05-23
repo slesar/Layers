@@ -14,8 +14,9 @@ import com.psliusar.layers.binder.Binder;
 import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.binder.ViewBindManager;
 import com.psliusar.layers.sample.R;
+import com.psliusar.layers.sample.screen.listener.ListenerModel;
 
-public class StackLayer extends Layer<StackPresenter> {
+public class StackLayer extends Layer<StackViewModel> {
 
     @Bind(value = R.id.stack_level, parent = R.id.stack_container) TextView stackLevel;
     @Bind(value = R.id.stack_next_opaque, parent = R.id.stack_container) CheckBox nextOpaque;
@@ -27,8 +28,8 @@ public class StackLayer extends Layer<StackPresenter> {
 
     @Nullable
     @Override
-    protected StackPresenter onCreatePresenter() {
-        return new StackPresenter(this);
+    protected StackViewModel onCreateViewModel() {
+        return new StackViewModel();
     }
 
     @Nullable
@@ -41,13 +42,20 @@ public class StackLayer extends Layer<StackPresenter> {
     protected void onBindView(@NonNull View view) {
         super.onBindView(view);
         new InnerLayerBinder(view);
+
+        getViewModel().getStackLevelText(this, new ListenerModel.Updatable<String>() {
+            @Override
+            public void onUpdate(@Nullable String value) {
+                stackLevel.setText(value);
+            }
+        });
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
         case R.id.stack_next:
-            getPresenter().nextClick();
+            getViewModel().nextClick(this);
             break;
         }
     }
@@ -63,10 +71,6 @@ public class StackLayer extends Layer<StackPresenter> {
 
     public int getLevel() {
         return level;
-    }
-
-    void setStackLevelText(@Nullable CharSequence text) {
-        stackLevel.setText(text);
     }
 
     CharSequence getNextLayerTitle() {

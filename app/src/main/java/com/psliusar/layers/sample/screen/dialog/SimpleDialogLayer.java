@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.psliusar.layers.DialogLayer;
-import com.psliusar.layers.Presenter;
+import com.psliusar.layers.ViewModel;
 
-public class SimpleDialogLayer extends DialogLayer<Presenter<?, ?>> {
+public class SimpleDialogLayer extends DialogLayer<ViewModel<?>> {
 
     private static final String ARGS_TITLE = "ARGS_TITLE";
     private static final String ARGS_MESSAGE = "ARGS_MESSAGE";
@@ -25,7 +25,7 @@ public class SimpleDialogLayer extends DialogLayer<Presenter<?, ?>> {
     }
 
     @Override
-    protected Presenter<?, ?> onCreatePresenter() {
+    protected ViewModel<?> onCreateViewModel() {
         return null;
     }
 

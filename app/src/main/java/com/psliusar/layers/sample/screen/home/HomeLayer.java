@@ -6,9 +6,10 @@ import android.view.ViewGroup;
 
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
+import com.psliusar.layers.sample.MainActivity;
 import com.psliusar.layers.sample.R;
 
-public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListener {
+public class HomeLayer extends Layer<HomeViewModel> implements View.OnClickListener {
 
     @Bind(value = R.id.home_stack, clicks = true) View stackButton;
     @Bind(value = R.id.home_children, clicks = true) View childrenButton;
@@ -19,8 +20,8 @@ public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListe
 
     @Nullable
     @Override
-    protected HomePresenter onCreatePresenter() {
-        return new HomePresenter(this);
+    protected HomeViewModel onCreateViewModel() {
+        return new HomeViewModel();
     }
 
     @Nullable
@@ -33,22 +34,22 @@ public class HomeLayer extends Layer<HomePresenter> implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
         case R.id.home_stack:
-            getPresenter().stackClick();
+            getViewModel().stackClick((MainActivity) getActivity());
             break;
         case R.id.home_children:
-            getPresenter().childrenClick();
+            getViewModel().childrenClick((MainActivity) getActivity());
             break;
         case R.id.home_dialog:
-            getPresenter().dialogClick();
+            getViewModel().dialogClick((MainActivity) getActivity());
             break;
         case R.id.home_activity_listener:
-            getPresenter().listenerClick();
+            getViewModel().listenerClick((MainActivity) getActivity());
             break;
         case R.id.home_save_annotation:
-            getPresenter().saveClick();
+            getViewModel().saveClick((MainActivity) getActivity());
             break;
         case R.id.home_tasks:
-            getPresenter().tasksClick();
+            getViewModel().tasksClick((MainActivity) getActivity());
             break;
         }
     }

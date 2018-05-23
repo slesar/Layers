@@ -3,6 +3,7 @@ package com.psliusar.layers.track;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 import android.support.v4.os.AsyncTaskCompat;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,7 +15,7 @@ public class AsyncTaskWorkerTask<V, P> implements WorkerTask<V, P> {
     @Override
     public void execute(@NonNull AsyncTrack<V, P> parent) {
         if (task.getStatus() == AsyncTask.Status.PENDING) {
-            AsyncTaskCompat.executeParallel(task, parent);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, parent);
         } else {
             // XXX
         }
@@ -36,12 +37,23 @@ public class AsyncTaskWorkerTask<V, P> implements WorkerTask<V, P> {
         task.setListener(listener);
     }
 
+    @WorkerThread
+    @Override
+    public void postProgress(@Nullable P progress) {
+        task.postProgress(progress);
+    }
+
     private static class Task<V, P> extends AsyncTask<AsyncTrack<V, P>, P, V> {
 
         private final AtomicReference<Throwable> throwableRef = new AtomicReference<>();
 
         @Nullable
         private OnCompletionListener<V, P> listener;
+
+        @WorkerThread
+        void postProgress(@Nullable P progress) {
+            publishProgress(progress);
+        }
 
         @Override
         protected V doInBackground(AsyncTrack<V, P>... params) {

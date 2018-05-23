@@ -42,6 +42,7 @@ public class TrackTest {
         track.start();
         track.unSubscribe();
         track.subscribe(listener);
+        track.start();
 
         assertTrue(listener.shotTimes(2));
         assertTrue(listener.restartTimes(0));

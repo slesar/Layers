@@ -14,7 +14,7 @@ public class SimpleAsyncTrack extends AsyncTrack<String, Integer> {
     }
 
     @Override
-    protected String doInBackground() throws Throwable {
+    protected String doInBackground() {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
             if (i > 0) {

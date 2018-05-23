@@ -1,6 +1,7 @@
 package com.psliusar.layers;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,13 +21,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("ResourceType")
 public class LayersTest {
 
     private static final int CHILD_VIEW_1 = 1;
@@ -38,12 +40,12 @@ public class LayersTest {
 
     @Before
     public void setUp() {
-        container = mock(ViewGroup.class);
+        container = spy(new MockedViewGroup(mock(Context.class)));
 
         final LayoutInflater inflater = mock(LayoutInflater.class);
         when(inflater.inflate(eq(0), (ViewGroup) any(), eq(false))).thenAnswer(new Answer<View>() {
             @Override
-            public View answer(InvocationOnMock invocation) throws Throwable {
+            public View answer(InvocationOnMock invocation) {
                 final FrameLayout mockedView = mock(FrameLayout.class);
                 when(mockedView.findViewById(CHILD_VIEW_1)).thenReturn(mock(FrameLayout.class));
                 when(mockedView.findViewById(CHILD_VIEW_2)).thenReturn(mock(FrameLayout.class));
@@ -61,27 +63,27 @@ public class LayersTest {
         layers = new Layers(host, 0, null);
     }
 
-    public void testPauseView() throws Exception {
+    public void testPauseView() {
         // TODO
     }
 
-    public void testResumeView() throws Exception {
+    public void testResumeView() {
         // TODO
     }
 
     @Test
-    public void testSaveState() throws Exception {
+    public void testSaveState() {
         // TODO
         // create new instance of Layers
         // restore stack
         // compare old and new instances of same layer - shouldn't be equal
 
 
-        MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", true);
-        MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", true);
+        final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", true);
+        final MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", true);
         addLayer(layer2.getLayers().at(CHILD_VIEW_1), MockedLayer.class, null, "Child Layer 3", true);
 
-        Bundle state = layers.saveState();
+        final Bundle state = layers.saveState();
 
         layers.destroy();
 
@@ -90,24 +92,24 @@ public class LayersTest {
 
         assertEquals(2, layers.getStackSize());
 
-        assertTrue(((MockedLayer) layers.get(0)).isStateRestored());
+        assertTrue(layers.<MockedLayer>get(0).isStateRestored());
 
-        assertTrue(((MockedLayer) layers.get(1)).isStateRestored());
+        assertTrue(layers.<MockedLayer>get(1).isStateRestored());
         assertNotNull(layers.get(1).getView());
 
         assertEquals(1, layers.get(1).getLayers().at(CHILD_VIEW_1).getStackSize());
 
-        assertTrue(((MockedLayer) layers.get(1).getLayers().at(CHILD_VIEW_1).get(0)).isStateRestored());
+        assertTrue(layers.get(1).getLayers().at(CHILD_VIEW_1).<MockedLayer>get(0).isStateRestored());
         layers.get(1).getLayers().at(CHILD_VIEW_1).resumeView();
         assertNotNull(layers.get(1).getLayers().at(CHILD_VIEW_1).get(0).getView());
 
     }
 
     @Test
-    public void testCreateLayer() throws Exception {
+    public void testCreateLayer() {
         // New Layer, without saved state
-        MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
-        layer.getPresenter();
+        final MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
+        layer.getViewModel();
 
         assertNotNull(layer);
         assertEquals(1, layer.getCreateCalled());
@@ -119,9 +121,9 @@ public class LayersTest {
     }
 
     @Test
-    public void testCreateView() throws Exception {
+    public void testCreateView() {
         // New Layer, without saved state
-        MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
+        final MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
 
         assertNotNull(layer);
         assertEquals(1, layer.getOnCreateViewCalled());
@@ -137,10 +139,10 @@ public class LayersTest {
     }
 
     @Test
-    public void testDestroyView() throws Exception {
+    public void testDestroyView() {
         // Delete permanently
-        MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
-        View view = layer.getView();
+        final MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
+        final View view = layer.getView();
         layers.remove(layer).commit();
 
         assertEquals(0, layer.getSaveViewStateCalled());
@@ -155,9 +157,9 @@ public class LayersTest {
     }
 
     @Test
-    public void testDestroyLayer() throws Exception {
+    public void testDestroyLayer() {
         // Delete permanently
-        MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
+        final MockedLayer layer = addLayer(MockedLayer.class, null, "Test Layer 1", true);
 
         layers.remove(layer).commit();
 
@@ -168,7 +170,7 @@ public class LayersTest {
     }
 
     @Test
-    public void testAddTransparent() throws Exception {
+    public void testAddTransparent() {
         final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
         final MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
         final MockedLayer layer3 = addLayer(MockedLayer.class, null, "Test Layer 3", false);
@@ -190,7 +192,7 @@ public class LayersTest {
     }
 
     @Test
-    public void testAddOpaque() throws Exception {
+    public void testAddOpaque() {
         final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", true);
         final MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
         final MockedLayer layer3 = addLayer(MockedLayer.class, null, "Test Layer 3", true);
@@ -205,11 +207,11 @@ public class LayersTest {
         assertNotNull(layer4.getView());
         assertTrue(layer4.isAttached());
         verify(container, times(2)).removeView(any(View.class));
-        verify(container, times(4)).addView(any(View.class), eq(0));
+        verify(container, times(4)).addView(any(View.class), anyInt());
     }
 
     @Test
-    public void testRemove() throws Exception {
+    public void testRemove() {
         final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
         layers.remove(layer1).commit();
 
@@ -237,7 +239,7 @@ public class LayersTest {
     }
 
     @Test
-    public void testReplace() throws Exception {
+    public void testReplace() {
         addLayer(MockedLayer.class, null, "Test Layer 1", false);
         addLayer(MockedLayer.class, null, "Test Layer 2", false);
         addLayer(MockedLayer.class, null, "Test Layer 3", false);
@@ -246,7 +248,7 @@ public class LayersTest {
 
         replaceLayer(MockedLayer.class, null, "Replacement Layer", false);
         assertEquals(4, layers.getStackSize());
-        Layer<?> topLayer = layers.peek();
+        final Layer<?> topLayer = layers.peek();
         assertNotNull(topLayer);
         assertEquals("Replacement Layer", topLayer.getName());
 
@@ -255,9 +257,9 @@ public class LayersTest {
     }
 
     @Test
-    public void testFind() throws Exception {
+    public void testFind() {
         addLayer(MockedLayer.class, null, "Test Layer 1", true);
-        MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", true);
+        final MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", true);
         addLayer(MockedLayer.class, null, "Test Layer 3", true);
 
         assertNotNull(layers.find("Test Layer 2"));
@@ -265,11 +267,11 @@ public class LayersTest {
     }
 
     @Test
-    public void testPeek() throws Exception {
+    public void testPeek() {
         addLayer(MockedLayer.class, null, "Test Layer 1", true);
         addLayer(MockedLayer.class, null, "Test Layer 2", true);
 
-        Layer<?> pickedLayer = layers.peek();
+        final Layer<?> pickedLayer = layers.peek();
         assertNotNull(pickedLayer);
         assertEquals("Test Layer 2", pickedLayer.getName());
     }
@@ -279,20 +281,20 @@ public class LayersTest {
     }
 
     @Test
-    public void testPop() throws Exception {
+    public void testPop() {
         addLayer(MockedLayer.class, null, "Test Layer 1", false);
         addLayer(MockedLayer.class, null, "Test Layer 2", false);
         addLayer(MockedLayer.class, null, "Test Layer 3", false);
         addLayer(MockedLayer.class, null, "Test Layer 4", false);
         assertEquals(4, layers.getStackSize());
 
-        Layer<?> pop1 = layers.pop();
+        final Layer<?> pop1 = layers.pop();
         assertNotNull(pop1);
         assertEquals("Test Layer 4", pop1.getName());
         layers.pop();
 
         assertEquals(2, layers.getStackSize());
-        Layer<?> pop2 = layers.pop();
+        final Layer<?> pop2 = layers.pop();
         assertNotNull(pop2);
         assertEquals("Test Layer 2", pop2.getName());
 
@@ -300,25 +302,25 @@ public class LayersTest {
     }
 
     @Test
-    public void testPopTo() throws Exception {
+    public void testPopTo() {
         // Pop to Layer 2, inclusive
-        MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
-        MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
+        final MockedLayer layer1 = addLayer(MockedLayer.class, null, "Test Layer 1", false);
+        final MockedLayer layer2 = addLayer(MockedLayer.class, null, "Test Layer 2", false);
         addLayer(MockedLayer.class, null, "Test Layer 3", false);
         addLayer(MockedLayer.class, null, "Test Layer 4", false);
 
-        Layer<?> popped2 = layers.popLayersTo("Test Layer 2", true);
+        final Layer<?> popped2 = layers.popLayersTo("Test Layer 2", true);
         assertEquals(1, layers.getStackSize());
         assertTrue(popped2 == layer2);
         assertTrue(layer1 == layers.peek());
 
         // Pop to Layer 6, not inclusive
-        MockedLayer layer5 = addLayer(MockedLayer.class, null, "Test Layer 5", false);
-        MockedLayer layer6 = addLayer(MockedLayer.class, null, "Test Layer 6", false);
-        MockedLayer layer7 = addLayer(MockedLayer.class, null, "Test Layer 7", false);
+        final MockedLayer layer5 = addLayer(MockedLayer.class, null, "Test Layer 5", false);
+        final MockedLayer layer6 = addLayer(MockedLayer.class, null, "Test Layer 6", false);
+        final MockedLayer layer7 = addLayer(MockedLayer.class, null, "Test Layer 7", false);
         assertEquals(4, layers.getStackSize());
 
-        Layer<?> popped7 = layers.popLayersTo("Test Layer 6", false);
+        final Layer<?> popped7 = layers.popLayersTo("Test Layer 6", false);
         assertEquals(3, layers.getStackSize());
         assertTrue(popped7 == layer7);
         assertTrue(layer6 == layers.peek());
@@ -328,7 +330,7 @@ public class LayersTest {
         addLayer(MockedLayer.class, null, "Test Layer 9", false);
         assertEquals(5, layers.getStackSize());
 
-        Layer<?> popped5 = layers.popLayersTo(null, false);
+        final Layer<?> popped5 = layers.popLayersTo(null, false);
         assertEquals(1, layers.getStackSize());
         assertTrue(popped5 == layer5);
         assertTrue(layer1 == layers.peek());
@@ -338,7 +340,7 @@ public class LayersTest {
         addLayer(MockedLayer.class, null, "Test Layer 11", false);
         assertEquals(3, layers.getStackSize());
 
-        Layer<?> popped1 = layers.popLayersTo(null, true);
+        final Layer<?> popped1 = layers.popLayersTo(null, true);
         assertEquals(0, layers.getStackSize());
         assertTrue(popped1 == layer1);
 
@@ -347,14 +349,14 @@ public class LayersTest {
     }
 
     @Test
-    public void testClear() throws Exception {
+    public void testClear() {
         addLayer(MockedLayer.class, null, "Test Layer 1", false);
         addLayer(MockedLayer.class, null, "Test Layer 2", false);
         addLayer(MockedLayer.class, null, "Test Layer 3", true);
         addLayer(MockedLayer.class, null, "Test Layer 4", true);
         assertEquals(4, layers.getStackSize());
 
-        verify(container, times(4)).addView(any(View.class), eq(0));
+        verify(container, times(4)).addView(any(View.class), anyInt());
         layers.clear();
         assertEquals(0, layers.getStackSize());
 

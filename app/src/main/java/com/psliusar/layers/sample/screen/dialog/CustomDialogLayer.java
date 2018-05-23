@@ -11,7 +11,7 @@ import com.psliusar.layers.DialogLayer;
 import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 
-public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implements View.OnClickListener {
+public class CustomDialogLayer extends DialogLayer<CustomDialogViewModel> implements View.OnClickListener {
 
     private static final String ARGS_TITLE = "ARGS_TITLE";
 
@@ -27,8 +27,8 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
 
     @Nullable
     @Override
-    protected CustomDialogPresenter onCreatePresenter() {
-        return new CustomDialogPresenter(this);
+    protected CustomDialogViewModel onCreateViewModel() {
+        return new CustomDialogViewModel();
     }
 
     @Override
@@ -53,28 +53,12 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogPresenter> implem
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.dialog_action1:
-                getPresenter().onAction1Click();
+                getViewModel().onAction1Click(this);
                 break;
             case R.id.dialog_action2:
-                getPresenter().onAction2Click();
+                getViewModel().onAction2Click(this);
                 break;
         }
-    }
-
-    void performAction1Callback() {
-        OnCustomDialogListener parent = getParent(OnCustomDialogListener.class);
-        if (parent != null) {
-            parent.onDialogAction1(this);
-        }
-        dismiss(false);
-    }
-
-    void performAction2Callback() {
-        OnCustomDialogListener parent = getParent(OnCustomDialogListener.class);
-        if (parent != null) {
-            parent.onDialogAction2(this);
-        }
-        dismiss(false);
     }
 
     public interface OnCustomDialogListener extends OnLayerDialogListener {

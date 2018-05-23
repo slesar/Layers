@@ -6,15 +6,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.psliusar.layers.Layer;
-import com.psliusar.layers.Presenter;
 import com.psliusar.layers.Transition;
+import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.sample.R;
 
-public class ChildrenContainerLayer extends Layer<Presenter<?, ?>> {
+public class ChildrenContainerLayer extends Layer<ViewModel<?>> {
 
     @Nullable
     @Override
-    protected Presenter<?, ?> onCreatePresenter() {
+    protected ViewModel<?> onCreateViewModel() {
         return null;
     }
 

@@ -8,7 +8,7 @@ import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class MockedLayer extends Layer<MockedPresenter> {
+public class MockedLayer extends Layer<MockedViewModel> {
 
     private static final String STATE_STRING_KEY = "STATE_STRING_KEY";
     private static final String STATE_STRING_VALUE = "STATE_STRING_VALUE";
@@ -16,6 +16,7 @@ public class MockedLayer extends Layer<MockedPresenter> {
     private static final String ARGS_KEY = "ARGS_KEY";
     private static final String ARGS_VALUE = "ARGS_VALUE";
 
+    @NonNull
     public static Bundle createArguments() {
         Bundle bundle = new Bundle();
         bundle.putString(ARGS_KEY, ARGS_VALUE);
@@ -182,8 +183,8 @@ public class MockedLayer extends Layer<MockedPresenter> {
     }
 
     @Override
-    protected MockedPresenter onCreatePresenter() {
+    protected MockedViewModel onCreateViewModel() {
         onCreatePresenterCalled++;
-        return new MockedPresenter(this);
+        return new MockedViewModel();
     }
 }
