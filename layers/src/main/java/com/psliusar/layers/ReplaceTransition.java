@@ -22,7 +22,6 @@ public class ReplaceTransition<LAYER extends Layer<?>> extends Transition<LAYER>
 
         // Add a new layer first
         final LAYER layer = (LAYER) layers.commitStackEntry(stackEntry);
-        layers.getStackEntryAt(initialStackSize).layerTypeAnimated = StackEntry.TYPE_TRANSPARENT;
 
         // Then invalidate layer beneath and then remove it (after animation)
         if (initialStackSize > 0) {
@@ -35,10 +34,10 @@ public class ReplaceTransition<LAYER extends Layer<?>> extends Transition<LAYER>
     }
 
     @Override
-    public void cleanUp() {
+    public void finish() {
+        super.finish();
         if (initialStackSize > 0) {
             layers.removeLayerAt(initialStackSize - 1);
         }
-        super.cleanUp();
     }
 }

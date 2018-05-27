@@ -518,20 +518,10 @@ public class Layers {
 
     /* === Transition === */
 
-    void startTransition(@NonNull Transition<?> transition, int minTransparentLayersCount) {
-        this.transition = transition;
+    void startTransition(@NonNull Transition<?> t) {
+        transition = t;
         if (viewPaused) {
             return;
-        }
-        // Prepare for transition
-        final int size = layerStack.size();
-        if (size == 0) {
-            return;
-        }
-        // Reset state
-        for (int i = 0; i < size; i++) {
-            final StackEntry entry = layerStack.get(i);
-            entry.layerTypeAnimated = i < size - minTransparentLayersCount ? entry.layerType : StackEntry.TYPE_TRANSPARENT;
         }
         ensureViews();
     }
@@ -540,8 +530,9 @@ public class Layers {
         // TODO check all the places that depend on stack size
         if (transition != null) {
             // The only reason why it's not null - animations.
-            transition.cancelAnimations();
+            final Transition<?> t = transition;
             transition = null;
+            t.cancelAnimations();
             ensureViews();
         }
     }
@@ -593,29 +584,28 @@ public class Layers {
     /**
      * All "transparent" from top till ground or "opaque", including it.
      *
-     * @param inTransition indicates that index should be calculated for transition state
+     * @param more minimum amount of the layers at the end of the stack to be considered "transparent"
      * @return the lowest visible layer index
      */
-    int getLowestVisibleLayer(boolean inTransition) {
-        final int upper = layerStack.size() - 1;
-        if (upper < 0) {
+    int getLowestVisibleLayer(int more) {
+        final int size = layerStack.size();
+        int lowest = size - 1;
+        if (more > 0) {
+            lowest -= more;
+        }
+        if (lowest < 0) {
             return 0;
         }
-        int lower = upper;
         // from end to beginning, search for opaque layer
-        for (int i = upper; i >= 0; i--) {
-            final StackEntry entry = layerStack.get(i);
-            final int layerType = inTransition ? entry.layerTypeAnimated : entry.layerType;
-            if (layerType == StackEntry.TYPE_TRANSPARENT
-                    || layerType == StackEntry.TYPE_OPAQUE
-                    || i == 0) {
-                lower = i;
-                if (layerType == StackEntry.TYPE_OPAQUE) {
-                    break;
-                }
+        int i = lowest;
+        while (i >= 0) {
+            lowest = i;
+            if (layerStack.get(i).layerType == StackEntry.TYPE_OPAQUE) {
+                break;
             }
+            i--;
         }
-        return lower;
+        return lowest;
     }
 
 
@@ -627,7 +617,7 @@ public class Layers {
             return;
         }
 
-        final int lowest = getLowestVisibleLayer(hasRunningTransition());
+        final int lowest = hasRunningTransition() ? transition.getLowestVisibleLayer() : getLowestVisibleLayer(0);
         for (int i = 0; i < size; i++) {
             final StackEntry entry = layerStack.get(i);
             if (i < lowest) {

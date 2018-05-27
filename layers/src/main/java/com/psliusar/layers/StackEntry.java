@@ -21,19 +21,18 @@ class StackEntry implements Parcelable {
 
     private static final String VIEW_STATE = "STACK_ENTRY.VIEW_STATE";
 
-    final String className;
+    private final String className;
     String name;
     Bundle arguments;
-    Bundle layerState;
-    SparseArray<Parcelable> viewState;
+    private Bundle layerState;
+    private SparseArray<Parcelable> viewState;
     int layerType = TYPE_OPAQUE;
-    int layerTypeAnimated;
     boolean valid = true;
 
     @Nullable
     int[] animations;
 
-    Class<? extends Layer<?>> layerClass;
+    private Class<? extends Layer<?>> layerClass;
     Layer<?> layerInstance;
     int state = LAYER_STATE_EMPTY;
 

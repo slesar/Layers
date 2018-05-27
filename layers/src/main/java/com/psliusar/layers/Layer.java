@@ -132,6 +132,10 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
 
     void saveViewState(@NonNull SparseArray<Parcelable> outState) {
         view.saveHierarchyState(outState);
+        if (layers != null) {
+            // TODO save view state
+            layers.pauseView();
+        }
     }
 
     void saveLayerState(@NonNull Bundle outState) {

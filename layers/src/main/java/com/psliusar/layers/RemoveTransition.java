@@ -29,7 +29,7 @@ public class RemoveTransition<LAYER extends Layer<?>> extends Transition<LAYER> 
 
     @Override
     protected int getMinTransparentLayersCount() {
-        return index < lowestVisibleLayer ? 0 : initialStackSize - index;
+        return 1;
     }
 
     @NonNull
@@ -50,8 +50,8 @@ public class RemoveTransition<LAYER extends Layer<?>> extends Transition<LAYER> 
     }
 
     @Override
-    protected void cleanUp() {
+    protected void finish() {
+        super.finish();
         layers.removeLayerAt(index);
-        super.cleanUp();
     }
 }
