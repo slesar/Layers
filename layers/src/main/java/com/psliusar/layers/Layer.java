@@ -133,7 +133,6 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
     void saveViewState(@NonNull SparseArray<Parcelable> outState) {
         view.saveHierarchyState(outState);
         if (layers != null) {
-            // TODO save view state
             layers.pauseView();
         }
     }
@@ -165,8 +164,6 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
             layers.destroy();
         }
         Binder.unbind(this);
-        // TODO dismiss tracks if finishing
-        // TODO manage TrackManager in Layer?
     }
 
     protected void onDestroyView() {

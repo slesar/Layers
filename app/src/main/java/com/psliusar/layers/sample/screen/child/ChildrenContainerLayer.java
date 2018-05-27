@@ -8,9 +8,13 @@ import android.view.ViewGroup;
 import com.psliusar.layers.Layer;
 import com.psliusar.layers.Transition;
 import com.psliusar.layers.ViewModel;
+import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 
 public class ChildrenContainerLayer extends Layer<ViewModel<?>> {
+
+    @Bind(value = R.id.children_container_add_layer, clicks = true)
+    View addLayerButton;
 
     @Nullable
     @Override
@@ -60,6 +64,28 @@ public class ChildrenContainerLayer extends Layer<ViewModel<?>> {
                     })
                     .setName("Bottom")
                     .commit();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+        case R.id.children_container_add_layer:
+            final int number = getLayers().getStackSize() + 1;
+            getLayers()
+                    .add(ChildLayer.class)
+                    .prepareLayer(new Transition.OnLayerTransition<ChildLayer>() {
+                        @Override
+                        public void onBeforeTransition(@NonNull ChildLayer layer) {
+                            layer.setParameters("Stack layer " + number);
+                        }
+                    })
+                    .setName("Stack #" + number)
+                    .setOpaque(false)
+                    .commit();
+            break;
+        default:
+            super.onClick(v);
         }
     }
 }

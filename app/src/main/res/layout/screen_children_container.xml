@@ -35,4 +35,12 @@
         android:layout_height="150dp"
         android:background="#ccc"/>
 
+    <Button
+        android:id="@+id/children_container_add_layer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="18dp"
+        android:text="Add child layer"/>
+
 </LinearLayout>
