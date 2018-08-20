@@ -55,6 +55,10 @@ public class TrackManager implements Parcelable {
         return track;
     }
 
+    public boolean hasTrack(int trackId) {
+        return tracks.get(trackId) != null;
+    }
+
     public static final Creator<TrackManager> CREATOR = new Creator<TrackManager>() {
         public TrackManager createFromParcel(Parcel in) {
             return new TrackManager(in);

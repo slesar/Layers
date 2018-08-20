@@ -66,11 +66,7 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
     protected abstract VM onCreateViewModel();
 
     public boolean onBackPressed() {
-        if (layers != null && layers.getStackSize() > 1) {
-            final Layer<?> topLayer = layers.peek();
-            return topLayer != null && topLayer.onBackPressed();
-        }
-        return false;
+        return layers != null && layers.tryPop();
     }
 
     void create(@NonNull LayersHost host, @Nullable Bundle arguments, @Nullable String name, @Nullable Bundle savedState) {

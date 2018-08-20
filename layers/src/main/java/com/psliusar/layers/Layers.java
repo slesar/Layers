@@ -157,21 +157,23 @@ public class Layers {
     }
 
     public boolean tryPop() {
-        if (layerStack.size() == 0) {
+        final int size = layerStack.size();
+        if (size == 0) {
             return false;
         }
-        int validItems = 0;
-        for (StackEntry entry : layerStack) {
-            if (entry.valid) {
-                if (validItems > 0) {
-                    final Layer<?> topLayer = entry.layerInstance;
-                    if (topLayer != null && !topLayer.onBackPressed()) {
-                        pop();
-                        return true;
-                    }
-                }
-                validItems++;
+        for (int i = size - 1; i >= 0; i--) {
+            final StackEntry entry = layerStack.get(i);
+            if (!entry.valid) {
+                continue;
             }
+            final Layer<?> topLayer = entry.layerInstance;
+            if (topLayer != null) {
+                if (!topLayer.onBackPressed()) {
+                    pop();
+                }
+                return true;
+            }
+            break;
         }
         return false;
     }

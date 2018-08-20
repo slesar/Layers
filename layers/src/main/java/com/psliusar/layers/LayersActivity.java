@@ -142,7 +142,7 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
 
     @Override
     public void onBackPressed() {
-        if (layers.tryPop()) {
+        if (layers.getStackSize() > 1 && layers.tryPop()) {
             return;
         }
         super.onBackPressed();
