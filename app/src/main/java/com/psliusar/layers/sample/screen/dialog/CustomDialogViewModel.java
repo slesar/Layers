@@ -14,11 +14,11 @@ public class CustomDialogViewModel extends ViewModel<Model> {
 
     void onAction1Click(@NonNull CustomDialogLayer layer) {
         layer.getParent(OnCustomDialogListener.class).onDialogAction1(layer);
-        layer.dismiss(false);
+        layer.getDialogWrapper().dismiss(false);
     }
 
     void onAction2Click(@NonNull CustomDialogLayer layer) {
         layer.getParent(OnCustomDialogListener.class).onDialogAction2(layer);
-        layer.dismiss(false);
+        layer.getDialogWrapper().dismiss(false);
     }
 }

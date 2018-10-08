@@ -7,11 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.psliusar.layers.DialogLayer;
+import com.psliusar.layers.DialogWrapper;
+import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 
-public class CustomDialogLayer extends DialogLayer<CustomDialogViewModel> implements View.OnClickListener {
+public class CustomDialogLayer extends Layer<CustomDialogViewModel> implements View.OnClickListener {
 
     private static final String ARGS_TITLE = "ARGS_TITLE";
 
@@ -25,6 +26,8 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogViewModel> implem
     @Bind(value = R.id.dialog_action2, clicks = true) View action2Button;
     @Bind(R.id.dialog_title) TextView titleTextView;
 
+    private final DialogWrapper wrapper = new DialogWrapper(this);
+
     @Nullable
     @Override
     protected CustomDialogViewModel onCreateViewModel() {
@@ -34,7 +37,7 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogViewModel> implem
     @Override
     protected void onCreate(@Nullable Bundle savedState) {
         super.onCreate(savedState);
-        setCancelable(false);
+        wrapper.setCancelable(false);
     }
 
     @Nullable
@@ -61,7 +64,12 @@ public class CustomDialogLayer extends DialogLayer<CustomDialogViewModel> implem
         }
     }
 
-    public interface OnCustomDialogListener extends OnLayerDialogListener {
+    @NonNull
+    public DialogWrapper getDialogWrapper() {
+        return wrapper;
+    }
+
+    public interface OnCustomDialogListener extends DialogWrapper.OnLayerDialogListener {
 
         void onDialogAction1(@NonNull CustomDialogLayer dialog);
 

@@ -156,7 +156,7 @@ public class Layers {
         return (L) new RemoveTransition<>(this, size - 1).commit();
     }
 
-    public boolean tryPop() {
+    public boolean onBackPressed() {
         final int size = layerStack.size();
         if (size == 0) {
             return false;
@@ -167,13 +167,7 @@ public class Layers {
                 continue;
             }
             final Layer<?> topLayer = entry.layerInstance;
-            if (topLayer != null) {
-                if (!topLayer.onBackPressed()) {
-                    pop();
-                }
-                return true;
-            }
-            break;
+            return topLayer != null && topLayer.onBackPressed();
         }
         return false;
     }

@@ -47,6 +47,8 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
 
     private ObjectBinder layerBinder;
 
+    private LayerDelegate delegate;
+
     public Layer() {
         // Default constructor
     }
@@ -66,7 +68,7 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
     protected abstract VM onCreateViewModel();
 
     public boolean onBackPressed() {
-        return layers != null && layers.tryPop();
+        return layers != null && layers.onBackPressed();
     }
 
     void create(@NonNull LayersHost host, @Nullable Bundle arguments, @Nullable String name, @Nullable Bundle savedState) {
@@ -87,6 +89,9 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
     protected void onCreate(@Nullable Bundle savedState) {
         if (savedState != null) {
             Binder.restore(this, savedState);
+        }
+        if (delegate != null) {
+            delegate.onCreate(savedState);
         }
     }
 
@@ -110,26 +115,36 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
         if (layers != null) {
             layers.resumeView();
         }
+        if (delegate != null) {
+            delegate.restoreViewState(inState);
+        }
     }
 
     /**
      * After attach
      */
     protected void onAttach() {
-
+        if (delegate != null) {
+            delegate.onAttach();
+        }
     }
 
     /**
      * Before detach
      */
     protected void onDetach() {
-
+        if (delegate != null) {
+            delegate.onDetach();
+        }
     }
 
     void saveViewState(@NonNull SparseArray<Parcelable> outState) {
         view.saveHierarchyState(outState);
         if (layers != null) {
             layers.pauseView();
+        }
+        if (delegate != null) {
+            delegate.saveViewState(outState);
         }
     }
 
@@ -144,6 +159,9 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
         onSaveLayerState(customState);
         if (customState.size() > 0) {
             outState.putBundle(SAVED_STATE_CUSTOM, customState);
+        }
+        if (delegate != null) {
+            delegate.saveLayerState(outState);
         }
     }
 
@@ -160,6 +178,9 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
             layers.destroy();
         }
         Binder.unbind(this);
+        if (delegate != null) {
+            delegate.onDestroyView();
+        }
     }
 
     protected void onDestroyView() {
@@ -184,6 +205,9 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
     }
 
     public boolean isViewInLayout() {
+        if (delegate != null) {
+            return delegate.isViewInLayout();
+        }
         return true;
     }
 
@@ -215,9 +239,25 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
         return host;
     }
 
+    public void setDelegate(@Nullable LayerDelegate delegate) {
+        this.delegate = delegate;
+    }
+
+    @Nullable
+    public LayerDelegate getDelegate() {
+        return delegate;
+    }
+
     @NonNull
     protected LayoutInflater getLayoutInflater() {
-        return host.getActivity().getLayoutInflater();
+        LayoutInflater inflater = null;
+        if (delegate != null) {
+            inflater = delegate.getLayoutInflater();
+        }
+        if (inflater == null) {
+            inflater = host.getActivity().getLayoutInflater();
+        }
+        return inflater;
     }
 
     @NonNull
@@ -282,7 +322,7 @@ public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View
         } else if (parentClass.isInstance(parent)) {
             return parentClass.cast(parent);
         } else {
-            return parent.getParent(parentClass);
+            return parent.optParent(parentClass);
         }
     }
 

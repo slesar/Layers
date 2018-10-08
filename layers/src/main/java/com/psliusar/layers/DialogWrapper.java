@@ -14,8 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
-        implements DialogInterface.OnCancelListener, DialogInterface.OnDismissListener {
+public class DialogWrapper implements LayerDelegate, DialogInterface.OnCancelListener, DialogInterface.OnDismissListener {
 
     /**
      * Simple, normal dialog.
@@ -33,7 +32,7 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
     public static final int STYLE_NO_FRAME = 2;
 
     /**
-     * Same as {@link DialogLayer#STYLE_NO_FRAME} but without any user interaction available
+     * Same as {@link DialogWrapper#STYLE_NO_FRAME} but without any user interaction available
      */
     public static final int STYLE_NO_INPUT = 3;
 
@@ -48,10 +47,20 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
     private boolean cancelable = true;
     private boolean notifyOnDismiss = true;
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedState) {
-        super.onCreate(savedState);
+    private final Layer<?> layer;
 
+    public DialogWrapper(@NonNull Layer<?> layer) {
+        this.layer = layer;
+        layer.setDelegate(this);
+    }
+
+    @NonNull
+    public Layer<?> getLayer() {
+        return layer;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedState) {
         if (savedState != null) {
             style = savedState.getInt(PRIVATE_ARGS_DIALOG_STYLE, style);
             theme = savedState.getInt(PRIVATE_ARGS_DIALOG_THEME, theme);
@@ -60,8 +69,7 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
     }
 
     @Override
-    protected void onAttach() {
-        super.onAttach();
+    public void onAttach() {
         if (dialog == null) {
             getLayoutInflater();
         }
@@ -69,16 +77,14 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
     }
 
     @Override
-    void restoreViewState(@Nullable SparseArray<Parcelable> inState) {
-        super.restoreViewState(inState);
+    public void restoreViewState(@Nullable SparseArray<Parcelable> inState) {
         if (dialog != null && inState != null) {
             dialog.onRestoreInstanceState((Bundle) inState.get(0));
         }
     }
 
     @Override
-    void saveViewState(@NonNull SparseArray<Parcelable> outState) {
-        super.saveViewState(outState);
+    public void saveViewState(@NonNull SparseArray<Parcelable> outState) {
         if (dialog != null) {
             final Bundle bundle = dialog.onSaveInstanceState();
             if (bundle != null && bundle.size() > 0) {
@@ -88,20 +94,17 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
     }
 
     @Override
-    protected void onDetach() {
-        super.onDetach();
+    public void onDetach() {
         hideDialog();
     }
 
     @Override
-    protected void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroyView() {
         dialog = null;
     }
 
     @Override
-    void saveLayerState(@NonNull Bundle outState) {
-        super.saveLayerState(outState);
+    public void saveLayerState(@NonNull Bundle outState) {
         if (style != STYLE_NORMAL) {
             outState.putInt(PRIVATE_ARGS_DIALOG_STYLE, style);
         }
@@ -109,18 +112,16 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
             outState.putInt(PRIVATE_ARGS_DIALOG_THEME, theme);
         }
         if (!cancelable) {
-            outState.putBoolean(PRIVATE_ARGS_DIALOG_CANCELABLE, cancelable);
+            outState.putBoolean(PRIVATE_ARGS_DIALOG_CANCELABLE, false);
         }
     }
 
-    @Override
     public boolean isViewInLayout() {
         return false;
     }
 
-    @NonNull
     @Override
-    protected LayoutInflater getLayoutInflater() {
+    public LayoutInflater getLayoutInflater() {
         dialog = onCreateDialog();
         setupDialog();
         return (LayoutInflater) dialog.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -137,7 +138,7 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
 
     @NonNull
     public Dialog onCreateDialog() {
-        return new Dialog(getActivity(), theme);
+        return new Dialog(layer.getActivity(), theme);
     }
 
     @Nullable
@@ -168,11 +169,11 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
 
     private void showDialog() {
         notifyOnDismiss = true;
-        final View view = getView();
+        final View view = layer.getView();
         if (view != null) {
             dialog.setContentView(view);
         }
-        dialog.setOwnerActivity(getActivity());
+        dialog.setOwnerActivity(layer.getActivity());
         dialog.setCancelable(cancelable);
         dialog.setOnCancelListener(this);
         dialog.setOnDismissListener(this);
@@ -194,15 +195,15 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
     @Override
     public void onDismiss(DialogInterface dialog) {
         if (notifyOnDismiss) {
-            final OnLayerDialogListener parent = getParent(OnLayerDialogListener.class);
+            final OnLayerDialogListener parent = layer.optParent(OnLayerDialogListener.class);
             if (parent != null) {
                 parent.onDialogCancel(this);
             }
         }
-        if (isAttached()) {
-            final LayersHost host = getParent(LayersHost.class);
+        if (layer.isAttached()) {
+            final LayersHost host = layer.optParent(LayersHost.class);
             if (host != null) {
-                host.getLayers().remove(this).commit();
+                host.getLayers().remove(layer).commit();
             }
         }
     }
@@ -216,6 +217,6 @@ public abstract class DialogLayer<VM extends ViewModel<?>> extends Layer<VM>
 
     public interface OnLayerDialogListener {
 
-        void onDialogCancel(@NonNull DialogLayer<?> dialog);
+        void onDialogCancel(@NonNull DialogWrapper wrapper);
     }
 }
