@@ -1,7 +1,6 @@
 package com.psliusar.layers.sample;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.ViewGroup;
 
 import com.psliusar.layers.LayersActivity;
@@ -13,6 +12,8 @@ import com.psliusar.layers.sample.screen.home.HomeLayer;
 import com.psliusar.layers.sample.screen.listener.ListenerLayer;
 import com.psliusar.layers.sample.screen.save.SaveLayer;
 import com.psliusar.layers.sample.screen.stack.StackLayer;
+
+import androidx.annotation.NonNull;
 
 public class MainActivity extends LayersActivity {
 

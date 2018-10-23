@@ -1,8 +1,8 @@
 package com.psliusar.layers.callbacks;
 
-import android.support.annotation.NonNull;
-
 import com.psliusar.layers.subscription.Subscription;
+
+import androidx.annotation.NonNull;
 
 public class EventSubscription extends Subscription {
 

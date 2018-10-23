@@ -1,6 +1,6 @@
 package com.psliusar.layers.binder.processor;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class FieldHolder {
 

@@ -1,13 +1,13 @@
 package com.psliusar.layers.binder.processor.builder;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.binder.processor.FieldHolder;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public abstract class StatementsBuilder<F extends FieldHolder> {
 

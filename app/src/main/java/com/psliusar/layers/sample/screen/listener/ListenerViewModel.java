@@ -2,10 +2,11 @@ package com.psliusar.layers.sample.screen.listener;
 
 import android.app.Activity;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 
 import com.psliusar.layers.LayersActivity;
 import com.psliusar.layers.ViewModel;
+
+import androidx.annotation.NonNull;
 
 public class ListenerViewModel extends ViewModel<ListenerModel> {
 

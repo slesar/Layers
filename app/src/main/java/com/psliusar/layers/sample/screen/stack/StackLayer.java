@@ -1,8 +1,6 @@
 package com.psliusar.layers.sample.screen.stack;
 
 import android.graphics.Typeface;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -15,6 +13,9 @@ import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.binder.ViewBindManager;
 import com.psliusar.layers.sample.R;
 import com.psliusar.layers.sample.screen.listener.ListenerModel;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class StackLayer extends Layer<StackViewModel> {
 

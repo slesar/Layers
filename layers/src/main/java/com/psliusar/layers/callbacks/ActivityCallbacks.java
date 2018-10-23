@@ -3,13 +3,14 @@ package com.psliusar.layers.callbacks;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.psliusar.layers.subscription.Subscription;
 import com.psliusar.layers.subscription.Subscriptions;
 
 import java.util.ArrayList;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ActivityCallbacks implements OnActivityListener {
 

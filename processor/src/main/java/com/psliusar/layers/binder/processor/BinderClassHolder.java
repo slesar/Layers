@@ -1,7 +1,5 @@
 package com.psliusar.layers.binder.processor;
 
-import android.support.annotation.NonNull;
-
 import com.psliusar.layers.binder.processor.builder.ClassBuilder;
 import com.psliusar.layers.binder.processor.save.SaveField;
 import com.psliusar.layers.binder.processor.save.SaveStatementsBuilder;
@@ -12,6 +10,8 @@ import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 public class BinderClassHolder {
 

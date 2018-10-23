@@ -1,10 +1,11 @@
 package com.psliusar.layers;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 
 import com.psliusar.layers.binder.ObjectBinder;
 import com.psliusar.layers.track.TrackManager;
+
+import androidx.annotation.NonNull;
 
 /**
  * Base binder for {@link Layer} that manages lifecycle for

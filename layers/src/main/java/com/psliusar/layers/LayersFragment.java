@@ -2,11 +2,10 @@ package com.psliusar.layers;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 public abstract class LayersFragment extends Fragment {
 

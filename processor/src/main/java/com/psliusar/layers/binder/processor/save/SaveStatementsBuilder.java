@@ -1,8 +1,5 @@
 package com.psliusar.layers.binder.processor.save;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.binder.processor.Processor;
 import com.psliusar.layers.binder.processor.builder.StatementsBuilder;
 import com.squareup.javapoet.ClassName;
@@ -15,6 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.lang.model.element.Modifier;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class SaveStatementsBuilder extends StatementsBuilder<SaveField> {
 

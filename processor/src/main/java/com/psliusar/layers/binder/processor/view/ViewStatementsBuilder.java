@@ -1,7 +1,5 @@
 package com.psliusar.layers.binder.processor.view;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.psliusar.layers.binder.processor.Processor;
@@ -18,6 +16,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.lang.model.element.Modifier;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ViewStatementsBuilder extends StatementsBuilder<ViewField> {
 

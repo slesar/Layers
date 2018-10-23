@@ -1,6 +1,5 @@
 package com.psliusar.layers.sample.screen.home;
 
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -8,6 +7,8 @@ import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.MainActivity;
 import com.psliusar.layers.sample.R;
+
+import androidx.annotation.Nullable;
 
 public class HomeLayer extends Layer<HomeViewModel> implements View.OnClickListener {
 

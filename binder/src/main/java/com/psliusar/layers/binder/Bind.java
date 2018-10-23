@@ -1,12 +1,12 @@
 package com.psliusar.layers.binder;
 
-import android.support.annotation.IdRes;
-import android.support.annotation.Nullable;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.Nullable;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.FIELD})

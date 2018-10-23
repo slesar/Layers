@@ -4,13 +4,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.psliusar.layers.LayersActivity;
 import com.psliusar.layers.Model;
 import com.psliusar.layers.callbacks.BaseActivityListener;
 import com.psliusar.layers.subscription.Subscription;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ListenerModel implements Model {
 

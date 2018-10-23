@@ -1,11 +1,11 @@
 package com.psliusar.layers;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.subscription.Subscription;
 import com.psliusar.layers.subscription.Subscriptions;
 import com.psliusar.layers.track.TrackManager;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ViewModel<M extends Model> {
 

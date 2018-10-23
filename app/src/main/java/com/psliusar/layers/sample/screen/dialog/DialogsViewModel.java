@@ -1,9 +1,9 @@
 package com.psliusar.layers.sample.screen.dialog;
 
-import android.support.annotation.NonNull;
-
 import com.psliusar.layers.Model;
 import com.psliusar.layers.ViewModel;
+
+import androidx.annotation.NonNull;
 
 public class DialogsViewModel extends ViewModel<Model> {
 

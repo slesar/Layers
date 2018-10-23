@@ -3,9 +3,6 @@ package com.psliusar.layers.binder;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.SparseArray;
 import android.view.View;
 
@@ -15,6 +12,10 @@ import com.psliusar.layers.track.TrackManager;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 @SuppressWarnings("unused")
 public abstract class ObjectBinder {

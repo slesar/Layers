@@ -2,8 +2,9 @@ package com.psliusar.layers.track;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.v4.util.SparseArrayCompat;
+
+import androidx.annotation.NonNull;
+import androidx.collection.SparseArrayCompat;
 
 public class TrackManager implements Parcelable {
 

@@ -1,7 +1,8 @@
 package com.psliusar.layers.binder;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 public interface FieldStateManager<T> {
 

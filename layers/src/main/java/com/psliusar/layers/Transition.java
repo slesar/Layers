@@ -4,13 +4,14 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.os.Bundle;
-import android.support.annotation.AnimRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.psliusar.layers.animation.SimpleAnimation;
 
 import java.util.HashSet;
+
+import androidx.annotation.AnimRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public abstract class Transition<LAYER extends Layer<?>> {
 

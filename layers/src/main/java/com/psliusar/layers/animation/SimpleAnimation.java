@@ -5,9 +5,6 @@ import android.animation.TimeInterpolator;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.AnimRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
@@ -15,6 +12,10 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 
 import java.util.ArrayList;
+
+import androidx.annotation.AnimRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * Wrapper that uses {@link Animation} to animate View, but behaves like {@link Animator}.

@@ -1,8 +1,5 @@
 package com.psliusar.layers.binder.processor;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.binder.processor.save.SaveFieldProcessor;
 import com.psliusar.layers.binder.processor.view.ViewFieldProcessor;
 
@@ -33,6 +30,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import static javax.tools.Diagnostic.Kind;
 

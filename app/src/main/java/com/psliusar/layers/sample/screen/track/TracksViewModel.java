@@ -1,14 +1,14 @@
 package com.psliusar.layers.sample.screen.track;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.Model;
 import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.sample.screen.listener.ListenerModel;
 import com.psliusar.layers.track.AsyncTrack;
 import com.psliusar.layers.track.SimpleTrackCallbacks;
 import com.psliusar.layers.track.Track;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class TracksViewModel extends ViewModel<Model> {
 

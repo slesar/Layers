@@ -1,6 +1,6 @@
 package com.psliusar.layers;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class ReplaceTransition<LAYER extends Layer<?>> extends Transition<LAYER> {
 

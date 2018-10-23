@@ -1,10 +1,10 @@
 package com.psliusar.layers.subscription;
 
-import android.support.annotation.NonNull;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import androidx.annotation.NonNull;
 
 public class Subscriptions implements Iterable<Subscription> {
 

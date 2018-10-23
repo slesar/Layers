@@ -1,7 +1,5 @@
 package com.psliusar.layers.sample.screen.track;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -11,6 +9,9 @@ import com.psliusar.layers.Layer;
 import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.R;
 import com.psliusar.layers.sample.screen.listener.ListenerModel;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class TracksLayer extends Layer<TracksViewModel> {
 

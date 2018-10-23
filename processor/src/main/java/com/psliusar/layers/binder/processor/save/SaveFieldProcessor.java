@@ -1,8 +1,5 @@
 package com.psliusar.layers.binder.processor.save;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.binder.processor.BinderClassHolder;
 import com.psliusar.layers.binder.processor.FieldProcessor;
@@ -20,6 +17,9 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class SaveFieldProcessor extends FieldProcessor {
 

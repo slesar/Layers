@@ -1,7 +1,8 @@
 package com.psliusar.layers;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 public class RemoveTransition<LAYER extends Layer<?>> extends Transition<LAYER> {
 

@@ -1,8 +1,5 @@
 package com.psliusar.layers.binder.processor.view;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.binder.processor.BinderClassHolder;
 import com.psliusar.layers.binder.processor.FieldProcessor;
@@ -15,6 +12,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ViewFieldProcessor extends FieldProcessor {
 

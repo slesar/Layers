@@ -1,8 +1,5 @@
 package com.psliusar.layers.binder.processor.builder;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.binder.BinderConstants;
 import com.psliusar.layers.binder.processor.LayersAnnotationProcessor;
 import com.squareup.javapoet.ClassName;
@@ -13,6 +10,9 @@ import com.squareup.javapoet.TypeSpec;
 import java.util.List;
 
 import javax.lang.model.element.Modifier;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ClassBuilder {
 

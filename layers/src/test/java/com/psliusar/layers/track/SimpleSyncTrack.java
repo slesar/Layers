@@ -1,6 +1,6 @@
 package com.psliusar.layers.track;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class SimpleSyncTrack extends Track<String, Integer> {
 

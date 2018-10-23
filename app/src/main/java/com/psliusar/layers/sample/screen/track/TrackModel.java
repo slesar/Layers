@@ -1,8 +1,8 @@
 package com.psliusar.layers.sample.screen.track;
 
-import android.support.annotation.Nullable;
-
 import com.psliusar.layers.Model;
+
+import androidx.annotation.Nullable;
 
 public class TrackModel implements Model {
 

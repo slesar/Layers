@@ -1,8 +1,5 @@
 package com.psliusar.layers.binder.processor;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +10,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public abstract class FieldProcessor extends Processor {
 

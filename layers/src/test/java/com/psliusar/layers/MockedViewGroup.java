@@ -1,9 +1,10 @@
 package com.psliusar.layers;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
 
 public class MockedViewGroup extends ViewGroup {
 

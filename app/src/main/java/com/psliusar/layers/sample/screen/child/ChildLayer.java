@@ -1,7 +1,5 @@
 package com.psliusar.layers.sample.screen.child;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -11,6 +9,9 @@ import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.binder.Save;
 import com.psliusar.layers.sample.R;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ChildLayer extends Layer<ViewModel<?>> {
 
