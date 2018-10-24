@@ -1,7 +1,7 @@
 package com.psliusar.layers.sample.screen.listener;
 
 import android.app.Activity;
-import android.net.Uri;
+import android.graphics.Bitmap;
 
 import com.psliusar.layers.LayersActivity;
 import com.psliusar.layers.ViewModel;
@@ -14,7 +14,7 @@ public class ListenerViewModel extends ViewModel<ListenerModel> {
         super(new ListenerModel());
     }
 
-    void getPhoto(@NonNull LayersActivity activity, @NonNull ListenerModel.Updatable<Uri> updatable) {
+    void getPhoto(@NonNull LayersActivity activity, @NonNull ListenerModel.Updatable<Bitmap> updatable) {
         manage(getModel().getPhotoUri(activity, updatable));
     }
 

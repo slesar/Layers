@@ -22,5 +22,11 @@
         android:layout_height="wrap_content"
         android:text="Take a photo"/>
 
+    <ImageView
+        android:id="@+id/listener_image"
+        android:layout_width="256dp"
+        android:layout_height="256dp"
+        android:layout_gravity="center_horizontal"
+        android:scaleType="fitCenter"/>
 
 </LinearLayout>

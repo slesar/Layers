@@ -146,6 +146,10 @@ public abstract class LayersActivity extends AppCompatActivity implements Layers
         if (layers.onBackPressed()) {
             return;
         }
+        if (layers.getStackSize() > 1) {
+            layers.pop();
+            return;
+        }
         super.onBackPressed();
     }
 
