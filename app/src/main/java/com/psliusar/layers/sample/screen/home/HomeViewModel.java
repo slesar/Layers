@@ -30,4 +30,8 @@ public class HomeViewModel extends ViewModel {
     void tasksClick(@NonNull MainActivity activity) {
         activity.showTracks();
     }
+
+    void fragmentClick(@NonNull MainActivity activity) {
+        activity.showFragment();
+    }
 }

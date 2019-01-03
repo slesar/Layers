@@ -1,5 +1,6 @@
 package com.psliusar.layers.sample;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.ViewGroup;
 
@@ -81,5 +82,9 @@ public class MainActivity extends LayersActivity {
         getLayers().add(TracksLayer.class)
                 .setName("Tracks")
                 .commit();
+    }
+
+    public void showFragment() {
+        startActivity(new Intent(this, LayerFragmentActivity.class));
     }
 }

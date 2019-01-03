@@ -12,6 +12,7 @@ import java.util.Collections;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 public class Layers {
 
@@ -31,6 +32,7 @@ public class Layers {
         this(host, View.NO_ID, savedState);
     }
 
+    @VisibleForTesting
     Layers(@NonNull LayersHost host, @IdRes int containerId, @Nullable Bundle savedState) {
         this.host = host;
         this.containerId = containerId;

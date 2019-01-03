@@ -18,6 +18,7 @@ public class HomeLayer extends Layer<HomeViewModel> implements View.OnClickListe
     @Bind(value = R.id.home_activity_listener, clicks = true) View activityListenerButton;
     @Bind(value = R.id.home_save_annotation, clicks = true) View saveAnnotationButton;
     @Bind(value = R.id.home_tasks, clicks = true) View tasksButton;
+    @Bind(value = R.id.home_fragment, clicks = true) View fragmentButton;
 
     @Nullable
     @Override
@@ -51,6 +52,9 @@ public class HomeLayer extends Layer<HomeViewModel> implements View.OnClickListe
             break;
         case R.id.home_tasks:
             getViewModel().tasksClick((MainActivity) getActivity());
+            break;
+        case R.id.home_fragment:
+            getViewModel().fragmentClick((MainActivity) getActivity());
             break;
         }
     }

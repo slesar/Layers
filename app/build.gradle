@@ -24,4 +24,5 @@ dependencies {
 
     annotationProcessor project(':processor')
     implementation project(':layers')
+    implementation project(':fragment')
 }
