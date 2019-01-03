@@ -245,8 +245,21 @@ public abstract class Layer<VM extends ViewModel> implements LayersHost, View.On
     }
 
     @Nullable
-    public LayerDelegate getDelegate() {
-        return delegate;
+    public <D extends LayerDelegate> D getDelegate() {
+        return (D) delegate;
+    }
+
+    /**
+     * Removes Layer from the stack.
+     */
+    public void dismiss() {
+        if (isAttached()) {
+            if (delegate != null) {
+                delegate.onDismiss();
+            } else {
+                host.getLayers().remove(this).commit();
+            }
+        }
     }
 
     @NonNull

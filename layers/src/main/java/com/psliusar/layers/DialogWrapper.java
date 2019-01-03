@@ -105,6 +105,11 @@ public class DialogWrapper implements LayerDelegate, DialogInterface.OnCancelLis
     }
 
     @Override
+    public void onDismiss() {
+        // Callback from LayerDelegate. Nothing to do.
+    }
+
+    @Override
     public void saveLayerState(@NonNull Bundle outState) {
         if (style != STYLE_NORMAL) {
             outState.putInt(PRIVATE_ARGS_DIALOG_STYLE, style);
@@ -201,12 +206,7 @@ public class DialogWrapper implements LayerDelegate, DialogInterface.OnCancelLis
                 parent.onDialogCancel(this);
             }
         }
-        if (layer.isAttached()) {
-            final LayersHost host = layer.optParent(LayersHost.class);
-            if (host != null) {
-                host.getLayers().remove(layer).commit();
-            }
-        }
+        layer.dismiss();
     }
 
     public void dismiss(boolean notify) {

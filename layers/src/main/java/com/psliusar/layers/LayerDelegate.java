@@ -22,6 +22,8 @@ public interface LayerDelegate {
 
     void onDestroyView();
 
+    void onDismiss();
+
     void saveLayerState(@NonNull Bundle outState);
 
     boolean isViewInLayout();
