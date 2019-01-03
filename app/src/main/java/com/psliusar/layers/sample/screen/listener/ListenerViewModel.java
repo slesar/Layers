@@ -8,17 +8,15 @@ import com.psliusar.layers.ViewModel;
 
 import androidx.annotation.NonNull;
 
-public class ListenerViewModel extends ViewModel<ListenerModel> {
+public class ListenerViewModel extends ViewModel {
 
-    public ListenerViewModel() {
-        super(new ListenerModel());
-    }
+    private final ListenerModel model = new ListenerModel();
 
     void getPhoto(@NonNull LayersActivity activity, @NonNull ListenerModel.Updatable<Bitmap> updatable) {
-        manage(getModel().getPhotoUri(activity, updatable));
+        manage(model.getPhotoUri(activity, updatable));
     }
 
     void takePhotoClick(@NonNull Activity activity) {
-        getModel().requestPhoto(activity);
+        model.requestPhoto(activity);
     }
 }

@@ -7,18 +7,12 @@ import com.psliusar.layers.track.TrackManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class ViewModel<M extends Model> {
+public class ViewModel {
 
     @Nullable
     TrackManager trackManager;
 
     private Subscriptions subscriptions;
-
-    private final M model;
-
-    public ViewModel(@Nullable M model) {
-        this.model = model;
-    }
 
     protected void onUnSubscribe() {
 
@@ -32,11 +26,6 @@ public class ViewModel<M extends Model> {
 
     public boolean isPersistent() {
         return true;
-    }
-
-    @Nullable
-    public M getModel() {
-        return model;
     }
 
     public void manage(@NonNull Subscription subscription) {

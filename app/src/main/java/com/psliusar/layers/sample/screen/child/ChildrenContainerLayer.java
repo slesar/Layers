@@ -12,14 +12,14 @@ import com.psliusar.layers.sample.R;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class ChildrenContainerLayer extends Layer<ViewModel<?>> {
+public class ChildrenContainerLayer extends Layer<ViewModel> {
 
     @Bind(value = R.id.children_container_add_layer, clicks = true)
     View addLayerButton;
 
     @Nullable
     @Override
-    protected ViewModel<?> onCreateViewModel() {
+    protected ViewModel onCreateViewModel() {
         return null;
     }
 

@@ -14,7 +14,7 @@ import com.psliusar.layers.ViewModel;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class SimpleDialogLayer extends Layer<ViewModel<?>> {
+public class SimpleDialogLayer extends Layer<ViewModel> {
 
     private static final String ARGS_TITLE = "ARGS_TITLE";
     private static final String ARGS_MESSAGE = "ARGS_MESSAGE";
@@ -49,7 +49,7 @@ public class SimpleDialogLayer extends Layer<ViewModel<?>> {
     };
 
     @Override
-    protected ViewModel<?> onCreateViewModel() {
+    protected ViewModel onCreateViewModel() {
         return null;
     }
 

@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.provider.MediaStore;
 
 import com.psliusar.layers.LayersActivity;
-import com.psliusar.layers.Model;
 import com.psliusar.layers.callbacks.BaseActivityListener;
 import com.psliusar.layers.subscription.Subscription;
 
@@ -15,7 +14,7 @@ import androidx.annotation.Nullable;
 
 import static android.app.Activity.RESULT_OK;
 
-public class ListenerModel implements Model {
+public class ListenerModel {
 
     public interface Updatable<T> {
 

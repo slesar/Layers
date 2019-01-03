@@ -242,7 +242,7 @@ public abstract class ObjectBinder {
 
     /* ViewModel */
 
-    protected static void putViewModel(@NonNull String key, @Nullable ViewModel<?> value, @NonNull Bundle state) {
+    protected static void putViewModel(@NonNull String key, @Nullable ViewModel value, @NonNull Bundle state) {
         if (value != null) state.putParcelable(key, new SaveWrapper(value));
     }
 
@@ -450,7 +450,7 @@ public abstract class ObjectBinder {
     /* ViewModel */
 
     @Nullable
-    protected static <VM extends ViewModel<?>> VM getViewModel(@NonNull String key, @NonNull Bundle state) {
+    protected static <VM extends ViewModel> VM getViewModel(@NonNull String key, @NonNull Bundle state) {
         final SaveWrapper wrapper = state.getParcelable(key);
         return wrapper == null ? null : (VM) wrapper.getObject();
     }

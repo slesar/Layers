@@ -1,6 +1,5 @@
 package com.psliusar.layers.sample.screen.track;
 
-import com.psliusar.layers.Model;
 import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.sample.screen.listener.ListenerModel;
 import com.psliusar.layers.track.AsyncTrack;
@@ -10,14 +9,10 @@ import com.psliusar.layers.track.Track;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class TracksViewModel extends ViewModel<Model> {
+public class TracksViewModel extends ViewModel {
 
     private static final int TRACK_SYNC = 1;
     private static final int TRACK_ASYNC = 2;
-
-    public TracksViewModel() {
-        super(null);
-    }
 
     void getSyncResult(@NonNull final ListenerModel.Updatable<CharSequence> updatable) {
         final SimpleTrackCallbacks<Integer, Integer> syncTaskCallbacks = new SimpleTrackCallbacks<Integer, Integer>() {

@@ -1,10 +1,8 @@
 package com.psliusar.layers.sample.screen.track;
 
-import com.psliusar.layers.Model;
-
 import androidx.annotation.Nullable;
 
-public class TrackModel implements Model {
+public class TrackModel {
 
     public static class AsyncTrackStatus {
 

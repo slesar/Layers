@@ -1,15 +1,10 @@
 package com.psliusar.layers.sample.screen.dialog;
 
-import com.psliusar.layers.Model;
 import com.psliusar.layers.ViewModel;
 
 import androidx.annotation.NonNull;
 
-public class DialogsViewModel extends ViewModel<Model> {
-
-    public DialogsViewModel() {
-        super(null);
-    }
+public class DialogsViewModel extends ViewModel {
 
     void simpleDialogClick(@NonNull DialogsLayer layer) {
         layer.showSimpleDialog("Hello World!", "This is simple AlertDialog controlled via Layer");

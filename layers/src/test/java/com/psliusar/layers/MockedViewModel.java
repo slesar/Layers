@@ -1,8 +1,5 @@
 package com.psliusar.layers;
 
-public class MockedViewModel extends ViewModel<MockedModel> {
+public class MockedViewModel extends ViewModel {
 
-    public MockedViewModel() {
-        super(new MockedModel());
-    }
 }

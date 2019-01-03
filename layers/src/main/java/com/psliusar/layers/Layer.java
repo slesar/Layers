@@ -19,7 +19,7 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public abstract class Layer<VM extends ViewModel<?>> implements LayersHost, View.OnClickListener, BinderHolder {
+public abstract class Layer<VM extends ViewModel> implements LayersHost, View.OnClickListener, BinderHolder {
 
     private static final String SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS";
     private static final String SAVED_STATE_CUSTOM = "LAYER.SAVED_STATE_CUSTOM";

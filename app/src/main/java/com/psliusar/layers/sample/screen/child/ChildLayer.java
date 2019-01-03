@@ -13,14 +13,14 @@ import com.psliusar.layers.sample.R;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class ChildLayer extends Layer<ViewModel<?>> {
+public class ChildLayer extends Layer<ViewModel> {
 
     @Bind(R.id.child_title) TextView titleTextView;
     @Save String title;
 
     @Nullable
     @Override
-    protected ViewModel<?> onCreateViewModel() {
+    protected ViewModel onCreateViewModel() {
         return null;
     }
 

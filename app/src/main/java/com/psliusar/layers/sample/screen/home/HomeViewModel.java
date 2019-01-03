@@ -1,16 +1,11 @@
 package com.psliusar.layers.sample.screen.home;
 
-import com.psliusar.layers.Model;
 import com.psliusar.layers.ViewModel;
 import com.psliusar.layers.sample.MainActivity;
 
 import androidx.annotation.NonNull;
 
-public class HomeViewModel extends ViewModel<Model> {
-
-    public HomeViewModel() {
-        super(null);
-    }
+public class HomeViewModel extends ViewModel {
 
     void stackClick(@NonNull MainActivity activity) {
         activity.addToStack("Level", 1, true);
