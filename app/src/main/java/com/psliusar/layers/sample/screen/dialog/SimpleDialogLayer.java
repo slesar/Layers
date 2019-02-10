@@ -48,6 +48,10 @@ public class SimpleDialogLayer extends Layer<ViewModel> {
         }
     };
 
+    public SimpleDialogLayer() {
+        setDelegate(wrapper);
+    }
+
     @Override
     protected ViewModel onCreateViewModel() {
         return null;

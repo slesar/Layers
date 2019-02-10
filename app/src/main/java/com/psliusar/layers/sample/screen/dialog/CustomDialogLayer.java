@@ -29,6 +29,10 @@ public class CustomDialogLayer extends Layer<CustomDialogViewModel> implements V
 
     private final DialogWrapper wrapper = new DialogWrapper(this);
 
+    public CustomDialogLayer() {
+        setDelegate(wrapper);
+    }
+
     @Nullable
     @Override
     protected CustomDialogViewModel onCreateViewModel() {

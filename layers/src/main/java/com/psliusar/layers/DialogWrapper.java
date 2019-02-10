@@ -52,7 +52,6 @@ public class DialogWrapper implements LayerDelegate, DialogInterface.OnCancelLis
 
     public DialogWrapper(@NonNull Layer<?> layer) {
         this.layer = layer;
-        layer.setDelegate(this);
     }
 
     @NonNull
