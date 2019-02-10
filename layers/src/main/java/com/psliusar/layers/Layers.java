@@ -311,7 +311,7 @@ public class Layers {
 
     /* === Lifecycle === */
 
-    void restoreState() {
+    public void restoreState() {
         stateSaved = false;
         final int size = layerStack.size();
         for (int i = size - 1; i >= 0; i--) {
@@ -327,7 +327,7 @@ public class Layers {
     }
 
     @Nullable
-    Bundle saveState() {
+    public Bundle saveState() {
         final Bundle outState = new Bundle();
         final int size = layerStack.size();
         if (size != 0) {
@@ -437,13 +437,13 @@ public class Layers {
 
     private void createLayer(@NonNull StackEntry entry) {
         final Layer<?> layer = entry.instantiateLayer(host.getActivity().getApplicationContext());
-        layer.create(host, entry.arguments, entry.name, entry.pickLayerSavedState());
+        layer.create(host, entry.arguments, entry.name, entry.getLayerSavedState());
     }
 
     private void createView(@NonNull StackEntry entry, int index) {
         final ViewGroup container = getContainer();
         final Layer<?> layer = entry.layerInstance;
-        final View layerView = layer.onCreateView(layer.isViewInLayout() ? container : null);
+        final View layerView = layer.onCreateView(entry.getLayerSavedState(), layer.isViewInLayout() ? container : null);
         layer.view = layerView;
         if (layerView != null && layer.isViewInLayout()) {
             int fromEnd = 0;
@@ -463,13 +463,13 @@ public class Layers {
         layer.onAttach();
 
         if (layerView != null) {
-            layer.onBindView(layerView);
+            layer.onBindView(entry.getLayerSavedState(), layerView);
             restoreViewState(entry);
         }
     }
 
     private void restoreViewState(@NonNull StackEntry entry) {
-        final SparseArray<Parcelable> savedState = entry.pickViewSavedState();
+        final SparseArray<Parcelable> savedState = entry.getViewSavedState();
         entry.layerInstance.restoreViewState(savedState);
     }
 

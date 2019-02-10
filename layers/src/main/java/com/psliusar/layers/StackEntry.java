@@ -78,10 +78,8 @@ class StackEntry implements Parcelable {
     }
 
     @Nullable
-    Bundle pickLayerSavedState() {
-        final Bundle bundle = layerState;
-        layerState = null;
-        return bundle;
+    Bundle getLayerSavedState() {
+        return layerState;
     }
 
     void setLayerSavedState(@Nullable Bundle state) {
@@ -89,10 +87,8 @@ class StackEntry implements Parcelable {
     }
 
     @Nullable
-    SparseArray<Parcelable> pickViewSavedState() {
-        final SparseArray<Parcelable> array = viewState;
-        viewState = null;
-        return array;
+    SparseArray<Parcelable> getViewSavedState() {
+        return viewState;
     }
 
     void setViewSavedState(@Nullable SparseArray<Parcelable> state) {

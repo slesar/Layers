@@ -55,7 +55,7 @@ public class SimpleDialogLayer extends Layer<ViewModel> {
 
     @Nullable
     @Override
-    protected View onCreateView(@Nullable ViewGroup parent) {
+    protected View onCreateView(@Nullable Bundle savedState, @Nullable ViewGroup parent) {
         return null;
     }
 }

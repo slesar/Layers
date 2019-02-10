@@ -97,10 +97,13 @@ public abstract class Layer<VM extends ViewModel> implements LayersHost, View.On
     }
 
     @Nullable
-    protected abstract View onCreateView(@Nullable ViewGroup parent);
+    protected abstract View onCreateView(@Nullable Bundle savedState, @Nullable ViewGroup parent);
 
-    protected void onBindView(@NonNull View view) {
+    protected void onBindView(@Nullable Bundle savedState, @NonNull View view) {
         Binder.bind(this, view);
+        if (delegate != null) {
+            delegate.onBindView(savedState, view);
+        }
     }
 
     void restoreLayerState() {

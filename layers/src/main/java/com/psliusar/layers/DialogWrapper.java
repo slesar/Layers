@@ -78,6 +78,11 @@ public class DialogWrapper implements LayerDelegate, DialogInterface.OnCancelLis
     }
 
     @Override
+    public void onBindView(@Nullable Bundle savedState, @NonNull View view) {
+        // NO-OP
+    }
+
+    @Override
     public void restoreViewState(@Nullable SparseArray<Parcelable> inState) {
         if (dialog != null && inState != null) {
             dialog.onRestoreInstanceState((Bundle) inState.get(0));

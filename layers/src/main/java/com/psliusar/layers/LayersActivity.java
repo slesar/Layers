@@ -12,9 +12,8 @@ import com.psliusar.layers.callbacks.ActivityCallbacks;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
-public abstract class LayersActivity extends AppCompatActivity implements LayersHost {
+public abstract class LayersActivity extends Activity implements LayersHost {
 
     private static final String SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS";
 

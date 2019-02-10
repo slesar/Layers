@@ -30,7 +30,7 @@ public class DialogsLayer extends Layer<DialogsViewModel> implements View.OnClic
 
     @Nullable
     @Override
-    protected View onCreateView(@Nullable ViewGroup parent) {
+    protected View onCreateView(@Nullable Bundle savedState, @Nullable ViewGroup parent) {
         return inflate(R.layout.screen_dialogs, parent);
     }
 

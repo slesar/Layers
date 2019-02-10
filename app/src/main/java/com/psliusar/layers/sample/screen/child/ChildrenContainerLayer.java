@@ -1,5 +1,6 @@
 package com.psliusar.layers.sample.screen.child;
 
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -25,13 +26,13 @@ public class ChildrenContainerLayer extends Layer<ViewModel> {
 
     @Nullable
     @Override
-    protected View onCreateView(@Nullable ViewGroup parent) {
+    protected View onCreateView(@Nullable Bundle savedState, @Nullable ViewGroup parent) {
         return inflate(R.layout.screen_children_container, parent);
     }
 
     @Override
-    protected void onBindView(@NonNull View view) {
-        super.onBindView(view);
+    protected void onBindView(@Nullable Bundle savedState, @NonNull View view) {
+        super.onBindView(savedState, view);
         if (!isFromSavedState()) {
             getLayers().at(R.id.children_container_top)
                     .add(ChildLayer.class)

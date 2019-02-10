@@ -43,13 +43,13 @@ public class CustomDialogLayer extends Layer<CustomDialogViewModel> implements V
 
     @Nullable
     @Override
-    protected View onCreateView(@Nullable ViewGroup parent) {
+    protected View onCreateView(@Nullable Bundle savedState, @Nullable ViewGroup parent) {
         return inflate(R.layout.screen_dialog_custom, parent);
     }
 
     @Override
-    protected void onBindView(@NonNull View view) {
-        super.onBindView(view);
+    protected void onBindView(@Nullable Bundle savedState, @NonNull View view) {
+        super.onBindView(savedState, view);
         titleTextView.setText(getArguments().getString(ARGS_TITLE));
     }
 

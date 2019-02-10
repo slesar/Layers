@@ -37,13 +37,13 @@ public class SaveLayer extends Layer<SaveViewModel> {
 
     @Nullable
     @Override
-    protected View onCreateView(@Nullable ViewGroup parent) {
+    protected View onCreateView(@Nullable Bundle savedState, @Nullable ViewGroup parent) {
         return inflate(R.layout.screen_save, parent);
     }
 
     @Override
-    protected void onBindView(@NonNull View view) {
-        super.onBindView(view);
+    protected void onBindView(@Nullable Bundle savedState, @NonNull View view) {
+        super.onBindView(savedState, view);
 
         final StringBuilder joinStrings = new StringBuilder();
         for (String s : stringList) {

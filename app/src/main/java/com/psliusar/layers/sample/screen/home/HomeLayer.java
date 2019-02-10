@@ -1,5 +1,6 @@
 package com.psliusar.layers.sample.screen.home;
 
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -28,7 +29,7 @@ public class HomeLayer extends Layer<HomeViewModel> implements View.OnClickListe
 
     @Nullable
     @Override
-    protected View onCreateView(@Nullable ViewGroup parent) {
+    protected View onCreateView(@Nullable Bundle savedState, @Nullable ViewGroup parent) {
         return inflate(R.layout.screen_home, parent);
     }
 

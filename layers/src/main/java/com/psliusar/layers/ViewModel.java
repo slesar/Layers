@@ -12,6 +12,7 @@ public class ViewModel {
     @Nullable
     TrackManager trackManager;
 
+    @Nullable
     private Subscriptions subscriptions;
 
     protected void onUnSubscribe() {
