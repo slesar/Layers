@@ -117,14 +117,14 @@ public class MockedLayer extends Layer<MockedViewModel> {
 
     @Nullable
     @Override
-    protected View onCreateView(@Nullable ViewGroup parent) {
+    protected View onCreateView(@Nullable Bundle savedState, @Nullable ViewGroup parent) {
         onCreateViewCalled++;
         return inflate(0, parent);
     }
 
     @Override
-    protected void onBindView(@NonNull View view) {
-        super.onBindView(view);
+    protected void onBindView(@Nullable Bundle savedState, @NonNull View view) {
+        super.onBindView(savedState, view);
         onBindViewCalled++;
     }
 

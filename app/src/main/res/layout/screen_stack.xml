@@ -3,7 +3,7 @@
     android:id="@+id/stack_container"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:paddingLeft="@dimen/horizontal_margin"
     android:paddingTop="@dimen/vertical_margin"
     android:paddingRight="@dimen/horizontal_margin"
@@ -59,9 +59,15 @@
         android:layout_weight="1"/>
 
     <Button
-        android:id="@+id/stack_next"
+        android:id="@+id/stack_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Next"/>
+        android:text="Add"/>
+
+    <Button
+        android:id="@+id/stack_replace"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Replace"/>
 
 </LinearLayout>

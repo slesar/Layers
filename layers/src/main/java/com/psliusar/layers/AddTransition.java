@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 public class AddTransition<LAYER extends Layer<?>> extends Transition<LAYER> {
 
+    private int lowestVisibleLayer = -1;
+
     AddTransition(@NonNull Layers layers, @NonNull Class<LAYER> layerClass) {
         super(layers, layerClass);
     }
@@ -12,17 +14,35 @@ public class AddTransition<LAYER extends Layer<?>> extends Transition<LAYER> {
         super(layers, index);
     }
 
-    @NonNull
     @Override
-    protected LAYER performOperation() {
-        // TODO index
-        for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
-            animateLayer(layers.getStackEntryAt(i).layerInstance, AnimationType.ANIMATION_LOWER_OUT);
+    protected void onTransition() {
+        super.onTransition();
+
+        // TODO add layer with custom index
+
+        // Add a new layer first
+        stackEntry.inTransition = true;
+        layers.commitStackEntry(stackEntry);
+
+        final int stackSize = layers.getStackSize();
+        lowestVisibleLayer = layers.getLowestVisibleLayer();
+
+        // Mark layers for transition
+        setTransitionState(lowestVisibleLayer);
+
+        if (lowestVisibleLayer >= 0) {
+            for (int i = lowestVisibleLayer; i < stackSize; i++) {
+                animateLayer(layers.getStackEntryAt(i).layerInstance,
+                    i == stackSize - 1 ? AnimationType.ANIMATION_UPPER_IN : AnimationType.ANIMATION_LOWER_OUT);
+            }
         }
+    }
 
-        final LAYER layer = (LAYER) layers.commitStackEntry(stackEntry);
-        animateLayer(layer, AnimationType.ANIMATION_UPPER_IN);
-
-        return layer;
+    @Override
+    protected void onAfterTransition() {
+        super.onAfterTransition();
+        if (resetTransitionState(lowestVisibleLayer)) {
+            layers.ensureViews();
+        }
     }
 }

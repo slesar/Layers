@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -21,12 +22,14 @@ public class Layers {
 
     private final LayersHost host;
     private final int containerId;
+    @Nullable
     private ViewGroup container;
+    @Nullable
     private SparseArray<Layers> layerGroup;
     private ArrayList<StackEntry> layerStack;
-    private boolean viewPaused = false;
+    private boolean viewPaused;
     private boolean stateSaved = false;
-    private Transition<?> transition;
+    private final LinkedList<Transition<?>> transitions = new LinkedList<>();
 
     public Layers(@NonNull LayersHost host, @Nullable Bundle savedState) {
         this(host, View.NO_ID, savedState);
@@ -115,23 +118,20 @@ public class Layers {
     }
 
 
-    /* === Public layer operations === */
+    //region Public layer operations
 
     @NonNull
     public <L extends Layer<?>> Transition<L> add(@NonNull Class<L> layerClass) {
-        finishTransition();
         return new AddTransition<>(this, layerClass);
     }
 
     @NonNull
     public <L extends Layer<?>> Transition<L> replace(@NonNull Class<L> layerClass) {
-        finishTransition();
         return new ReplaceTransition<>(this, layerClass);
     }
 
     @NonNull
     public <L extends Layer<?>> Transition<L> remove(int index) {
-        finishTransition();
         return new RemoveTransition<>(this, index);
     }
 
@@ -149,14 +149,19 @@ public class Layers {
 
     @Nullable
     public <L extends Layer<?>> L pop() {
-        finishTransition();
         final int size = layerStack.size();
         if (size == 0) {
             return null;
         }
 
-        //noinspection unchecked
-        return (L) new RemoveTransition<>(this, size - 1).commit();
+        final L layer = peek();
+        if (layer == null) {
+            return null;
+        }
+
+        new RemoveTransition<>(this, size - 1).commit();
+
+        return layer;
     }
 
     public boolean onBackPressed() {
@@ -250,8 +255,9 @@ public class Layers {
         return size;
     }
 
+    //endregion
 
-    /* === Layer getters === */
+    //region Layer getters
 
     @Nullable
     public <L extends Layer<?>> L peek() {
@@ -289,11 +295,12 @@ public class Layers {
         return null;
     }
 
+    //endregion
 
-    /* === Indicators === */
+    //region Indicators and state
 
     public boolean hasRunningTransition() {
-        return transition != null/* && !transition.isFinished()*/;
+        return transitions.size() != 0;
     }
 
     public boolean isViewPaused() {
@@ -308,8 +315,9 @@ public class Layers {
         return layerStack.size();
     }
 
+    //endregion
 
-    /* === Lifecycle === */
+    //region Lifecycle
 
     public void restoreState() {
         stateSaved = false;
@@ -378,8 +386,9 @@ public class Layers {
         }
     }
 
+    //endregion
 
-    /* === Layer management === */
+    //region Layer management
 
     private void moveToState(@NonNull StackEntry entry, int index, int targetState, boolean saveState) {
         if (targetState <= StackEntry.LAYER_STATE_VIEW_CREATED) {
@@ -437,13 +446,13 @@ public class Layers {
 
     private void createLayer(@NonNull StackEntry entry) {
         final Layer<?> layer = entry.instantiateLayer(host.getActivity().getApplicationContext());
-        layer.create(host, entry.arguments, entry.name, entry.getLayerSavedState());
+        layer.create(host, entry.arguments, entry.name, entry.layerState);
     }
 
     private void createView(@NonNull StackEntry entry, int index) {
         final ViewGroup container = getContainer();
         final Layer<?> layer = entry.layerInstance;
-        final View layerView = layer.onCreateView(entry.getLayerSavedState(), layer.isViewInLayout() ? container : null);
+        final View layerView = layer.onCreateView(entry.layerState, layer.isViewInLayout() ? container : null);
         layer.view = layerView;
         if (layerView != null && layer.isViewInLayout()) {
             int fromEnd = 0;
@@ -463,13 +472,13 @@ public class Layers {
         layer.onAttach();
 
         if (layerView != null) {
-            layer.onBindView(entry.getLayerSavedState(), layerView);
+            layer.onBindView(entry.layerState, layerView);
             restoreViewState(entry);
         }
     }
 
     private void restoreViewState(@NonNull StackEntry entry) {
-        final SparseArray<Parcelable> savedState = entry.getViewSavedState();
+        final SparseArray<Parcelable> savedState = entry.viewState;
         entry.layerInstance.restoreViewState(savedState);
     }
 
@@ -477,7 +486,7 @@ public class Layers {
         final SparseArray<Parcelable> viewState = new SparseArray<>();
         entry.layerInstance.saveViewState(viewState);
         if (viewState.size() > 0) {
-            entry.setViewSavedState(viewState);
+            entry.viewState = viewState;
         }
     }
 
@@ -485,7 +494,7 @@ public class Layers {
         final Bundle bundle = new Bundle();
         entry.layerInstance.saveLayerState(bundle);
         if (bundle.size() > 0) {
-            entry.setLayerSavedState(bundle);
+            entry.layerState = bundle;
         }
     }
 
@@ -514,35 +523,27 @@ public class Layers {
         entry.layerInstance.destroy(!saveState);
     }
 
+    //endregion
 
-    /* === Transition === */
+    //region Transition
 
-    void startTransition(@NonNull Transition<?> t) {
-        transition = t;
-        if (viewPaused) {
-            return;
-        }
-        ensureViews();
-    }
-
-    void finishTransition() {
-        // TODO check all the places that depend on stack size
-        if (transition != null) {
-            // The only reason why it's not null - animations.
-            final Transition<?> t = transition;
-            transition = null;
-            t.cancelAnimations();
-            ensureViews();
+    void addTransition(@NonNull Transition<?> t) {
+        transitions.offer(t);
+        if (transitions.size() == 1) {
+            transitions.peek().apply();
         }
     }
 
-    @Nullable
-    Transition<?> getCurrentTransition() {
-        return transition;
+    void nextTransition() {
+        transitions.poll();
+        if (!transitions.isEmpty()) {
+            transitions.peek().apply();
+        }
     }
 
+    //endregion
 
-    /* === Internal tools === */
+    //region Internal tools
 
     Layer<?> commitStackEntry(@NonNull StackEntry entry) {
         layerStack.add(entry);
@@ -583,40 +584,33 @@ public class Layers {
     /**
      * All "transparent" from top till ground or "opaque", including it.
      *
-     * @param more minimum amount of the layers at the end of the stack to be considered "transparent"
-     * @return the lowest visible layer index
+     * @return the lowest visible layer index or -1 if stack is empty
      */
-    int getLowestVisibleLayer(int more) {
+    int getLowestVisibleLayer() {
         final int size = layerStack.size();
         int lowest = size - 1;
-        if (more > 0) {
-            lowest -= more;
-        }
-        if (lowest < 0) {
-            return 0;
-        }
         // from end to beginning, search for opaque layer
-        int i = lowest;
-        while (i >= 0) {
+        for (int i = lowest; i >= 0; i--) {
             lowest = i;
-            if (layerStack.get(i).layerType == StackEntry.TYPE_OPAQUE) {
+            final StackEntry entry = layerStack.get(i);
+            if (!entry.inTransition && entry.layerType == StackEntry.TYPE_OPAQUE) {
                 break;
             }
-            i--;
         }
         return lowest;
     }
 
+    //endregion
 
-    /* === Views === */
+    //region Views
 
-    private void ensureViews() {
+    void ensureViews() {
         final int size;
         if (viewPaused || (size = layerStack.size()) == 0) {
             return;
         }
 
-        final int lowest = hasRunningTransition() ? transition.getLowestVisibleLayer() : getLowestVisibleLayer(0);
+        final int lowest = getLowestVisibleLayer();
         for (int i = 0; i < size; i++) {
             final StackEntry entry = layerStack.get(i);
             if (i < lowest) {
@@ -636,4 +630,6 @@ public class Layers {
         }
         return container;
     }
+
+    //endregion
 }

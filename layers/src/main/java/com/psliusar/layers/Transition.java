@@ -26,18 +26,14 @@ public abstract class Transition<LAYER extends Layer<?>> {
 
     @Nullable
     private AnimatorSet animatorSet;
-    private final HashSet<Animator> toAnimate = new HashSet<>();
-
-    protected int initialStackSize;
-    protected int lowestVisibleLayer;
+    @Nullable
+    private HashSet<Animator> toAnimate;
     private boolean committed = false;
     private boolean animationEnabled = true;
-    private boolean finished = false;
 
     private final Animator.AnimatorListener animationListener = new AnimatorListenerAdapter() {
         @Override
         public void onAnimationEnd(Animator animation) {
-            animatorSet.removeAllListeners();
             finish();
         }
     };
@@ -75,6 +71,7 @@ public abstract class Transition<LAYER extends Layer<?>> {
 
     @NonNull
     public Transition<LAYER> prepareLayer(@NonNull OnLayerTransition<LAYER> transitionAction) {
+        //noinspection unchecked
         transitionAction.onBeforeTransition((LAYER) stackEntry.layerInstance);
         return this;
     }
@@ -124,29 +121,26 @@ public abstract class Transition<LAYER extends Layer<?>> {
     }
 
     public boolean hasAnimations() {
-        return committed && toAnimate.size() > 0;
+        return committed && toAnimate != null && toAnimate.size() > 0;
     }
 
-    public void cancelAnimations() {
-        if (animatorSet != null) {
-            animatorSet.end();
-        }
-    }
-
-    @NonNull
-    public LAYER commit() {
+    public void commit() {
         if (committed) {
-            throw new IllegalStateException("Current transaction was already committed");
+            throw new IllegalStateException("Current transaction has been already committed");
         }
         committed = true;
 
-        initialStackSize = layers.getStackSize();
-        final int transparentCount = getMinTransparentLayersCount();
-        lowestVisibleLayer = layers.getLowestVisibleLayer(transparentCount);
-        layers.startTransition(this);
+        layers.addTransition(this);
 
-        final LAYER layer = performOperation();
-        if (toAnimate.size() == 0) {
+        // TODO for specific index and non-empty transition queue - throw exception?
+
+        onBeforeTransition();
+    }
+
+    void apply() {
+        onTransition();
+
+        if (toAnimate == null) {
             finish();
         } else {
             animatorSet = new AnimatorSet();
@@ -154,19 +148,33 @@ public abstract class Transition<LAYER extends Layer<?>> {
             animatorSet.playTogether(toAnimate);
             animatorSet.start();
         }
-        return layer;
     }
 
-    @NonNull
-    protected abstract LAYER performOperation();
+    /**
+     * Called when the transition is added to the queue.
+     */
+    protected void onBeforeTransition() {
+
+    }
+
+    /**
+     * A transition itself should be generally happening in this method. This is called right after th transition is taken from the queue.
+     */
+    protected void onTransition() {
+
+    }
+
+    /**
+     * Any clean-up after transition should happen here.
+     */
+    protected void onAfterTransition() {
+
+    }
 
     protected void finish() {
-        if (finished) {
-            return;
-        }
-        finished = true;
-        layers.finishTransition();
-        animatorSet = null;
+        onAfterTransition();
+
+        layers.nextTransition();
     }
 
     @Nullable
@@ -183,16 +191,39 @@ public abstract class Transition<LAYER extends Layer<?>> {
             animation.setTarget(layer.getView());
         }
         if (animation != null) {
+            if (toAnimate == null) {
+                toAnimate = new HashSet<>();
+            }
             toAnimate.add(animation);
         }
         return animation;
     }
 
-    int getMinTransparentLayersCount() {
-        return 0;
+    protected boolean setTransitionState(int fromIndex) {
+        if (fromIndex >= 0) {
+            final int stackSize = layers.getStackSize();
+            for (int i = fromIndex; i < stackSize; i++) {
+                final StackEntry entry = layers.getStackEntryAt(i);
+                if (i != fromIndex) {
+                    // do not touch the lowest one, because it will make getLowestVisibleLayer return different value later
+                    entry.inTransition = true;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    int getLowestVisibleLayer() {
-        return lowestVisibleLayer;
+    protected boolean resetTransitionState(int fromIndex) {
+        if (fromIndex >= 0) {
+            final int stackSize = layers.getStackSize();
+            for (int i = fromIndex; i < stackSize; i++) {
+                layers.getStackEntryAt(i).inTransition = false;
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }

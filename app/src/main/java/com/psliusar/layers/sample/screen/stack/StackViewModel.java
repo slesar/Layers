@@ -19,4 +19,12 @@ public class StackViewModel extends ViewModel {
                 layer.isNextOpaque()
         );
     }
+
+    void replaceClick(@NonNull StackLayer layer) {
+        ((MainActivity) layer.getActivity()).replaceInStack(
+            layer.getNextLayerTitle(),
+            layer.getLevel() + 1,
+            layer.isNextOpaque()
+        );
+    }
 }

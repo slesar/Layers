@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 
 public class RemoveTransition<LAYER extends Layer<?>> extends Transition<LAYER> {
 
+    private int lowestVisibleLayer = -1;
+
     RemoveTransition(@NonNull Layers layers, int index) {
         super(layers, index);
     }
@@ -29,30 +31,33 @@ public class RemoveTransition<LAYER extends Layer<?>> extends Transition<LAYER> 
     }
 
     @Override
-    protected int getMinTransparentLayersCount() {
-        return 1;
-    }
+    protected void onTransition() {
+        super.onTransition();
 
-    @NonNull
-    @Override
-    protected LAYER performOperation() {
-        if (index < 0 || index >= initialStackSize) {
-            throw new IndexOutOfBoundsException("Index: " + index + ", size: " + initialStackSize);
-        }
+        stackEntry.inTransition = true;
 
-        for (int i = lowestVisibleLayer; i < initialStackSize; i++) {
+        final int stackSize = layers.getStackSize();
+        lowestVisibleLayer = layers.getLowestVisibleLayer();
+
+        // Mark layers for transition
+        setTransitionState(lowestVisibleLayer);
+
+        // Make sure we have all required views in layout
+        layers.ensureViews();
+
+        // Animate layers
+        for (int i = lowestVisibleLayer; i < stackSize; i++) {
             animateLayer(layers.getStackEntryAt(i).layerInstance,
-                    i == index ? AnimationType.ANIMATION_UPPER_OUT : AnimationType.ANIMATION_LOWER_IN);
+                i == index ? AnimationType.ANIMATION_UPPER_OUT : AnimationType.ANIMATION_LOWER_IN);
         }
-
-        final StackEntry entry = layers.getStackEntryAt(index);
-        entry.valid = false;
-        return (LAYER) entry.layerInstance;
     }
 
     @Override
-    protected void finish() {
-        super.finish();
+    protected void onAfterTransition() {
+        super.onAfterTransition();
+
+        stackEntry.valid = false;
+        resetTransitionState(lowestVisibleLayer);
         layers.removeLayerAt(index);
     }
 }

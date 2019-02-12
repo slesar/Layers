@@ -22,20 +22,28 @@ class StackEntry implements Parcelable {
 
     private static final String VIEW_STATE = "STACK_ENTRY.VIEW_STATE";
 
-    private final String className;
-    String name;
-    Bundle arguments;
-    private Bundle layerState;
-    private SparseArray<Parcelable> viewState;
-    int layerType = TYPE_OPAQUE;
-    boolean valid = true;
+    //region Retained properties
 
+    private final String className;
+    @Nullable
+    String name;
+    @Nullable
+    Bundle arguments;
+    @Nullable
+    Bundle layerState;
+    @Nullable
+    SparseArray<Parcelable> viewState;
+    int layerType = TYPE_OPAQUE;
     @Nullable
     int[] animations;
+
+    //endregion
 
     private Class<? extends Layer<?>> layerClass;
     Layer<?> layerInstance;
     int state = LAYER_STATE_EMPTY;
+    boolean valid = true;
+    boolean inTransition = false;
 
     StackEntry(@NonNull Class<? extends Layer<?>> layerClass) {
         this.layerClass = layerClass;
@@ -70,29 +78,6 @@ class StackEntry implements Parcelable {
                     + ": make sure class has an empty constructor that is public", e);
         }
         return layerInstance;
-    }
-
-    @NonNull
-    String getLayerClassName() {
-        return className;
-    }
-
-    @Nullable
-    Bundle getLayerSavedState() {
-        return layerState;
-    }
-
-    void setLayerSavedState(@Nullable Bundle state) {
-        layerState = state;
-    }
-
-    @Nullable
-    SparseArray<Parcelable> getViewSavedState() {
-        return viewState;
-    }
-
-    void setViewSavedState(@Nullable SparseArray<Parcelable> state) {
-        viewState = state;
     }
 
     StackEntry(Parcel in) {

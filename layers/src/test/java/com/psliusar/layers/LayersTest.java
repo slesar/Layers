@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("ConstantConditions")
 public class LayersTest {
 
     private static final int CHILD_VIEW_1 = 1;
@@ -264,7 +266,7 @@ public class LayersTest {
         addLayer(MockedLayer.class, null, "Test Layer 3", true);
 
         assertNotNull(layers.find("Test Layer 2"));
-        assertTrue(layer2 == layers.find("Test Layer 2"));
+        assertSame(layer2, layers.find("Test Layer 2"));
     }
 
     @Test
@@ -312,8 +314,8 @@ public class LayersTest {
 
         final Layer<?> popped2 = layers.popLayersTo("Test Layer 2", true);
         assertEquals(1, layers.getStackSize());
-        assertTrue(popped2 == layer2);
-        assertTrue(layer1 == layers.peek());
+        assertSame(popped2, layer2);
+        assertSame(layer1, layers.peek());
 
         // Pop to Layer 6, not inclusive
         final MockedLayer layer5 = addLayer(MockedLayer.class, null, "Test Layer 5", false);
@@ -323,8 +325,8 @@ public class LayersTest {
 
         final Layer<?> popped7 = layers.popLayersTo("Test Layer 6", false);
         assertEquals(3, layers.getStackSize());
-        assertTrue(popped7 == layer7);
-        assertTrue(layer6 == layers.peek());
+        assertSame(popped7, layer7);
+        assertSame(layer6, layers.peek());
 
         // Pop with name == null, not inclusive
         addLayer(MockedLayer.class, null, "Test Layer 8", false);
@@ -333,8 +335,8 @@ public class LayersTest {
 
         final Layer<?> popped5 = layers.popLayersTo(null, false);
         assertEquals(1, layers.getStackSize());
-        assertTrue(popped5 == layer5);
-        assertTrue(layer1 == layers.peek());
+        assertSame(popped5, layer5);
+        assertSame(layer1, layers.peek());
 
         // Pop with name == null, inclusive
         addLayer(MockedLayer.class, null, "Test Layer 10", false);
@@ -343,7 +345,7 @@ public class LayersTest {
 
         final Layer<?> popped1 = layers.popLayersTo(null, true);
         assertEquals(0, layers.getStackSize());
-        assertTrue(popped1 == layer1);
+        assertSame(popped1, layer1);
 
         // TODO when not found
         // TODO with opaque
@@ -370,7 +372,8 @@ public class LayersTest {
             @NonNull Class<L> layerClass,
             @Nullable Bundle arguments,
             @Nullable String name,
-            boolean opaque) {
+            boolean opaque
+    ) {
         final Transition<L> transition = layers.add(layerClass).setOpaque(opaque);
         if (arguments != null) {
             transition.setArguments(arguments);
@@ -378,7 +381,8 @@ public class LayersTest {
         if (name != null) {
             transition.setName(name);
         }
-        return transition.commit();
+        transition.commit();
+        return layers.peek();
     }
 
     @NonNull
@@ -386,16 +390,18 @@ public class LayersTest {
             @NonNull Class<L> layerClass,
             @Nullable Bundle arguments,
             @Nullable String name,
-            boolean opaque) {
+            boolean opaque
+    ) {
         return addLayer(layers, layerClass, arguments, name, opaque);
     }
 
     @NonNull
-    private <L extends Layer<?>> L replaceLayer(
+    private <L extends Layer<?>> void replaceLayer(
             @NonNull Class<L> layerClass,
             @Nullable Bundle arguments,
             @Nullable String name,
-            boolean opaque) {
+            boolean opaque
+    ) {
         final Transition<L> transition = layers.replace(layerClass).setOpaque(opaque);
         if (arguments != null) {
             transition.setArguments(arguments);
@@ -403,6 +409,6 @@ public class LayersTest {
         if (name != null) {
             transition.setName(name);
         }
-        return transition.commit();
+        transition.commit();
     }
 }

@@ -23,7 +23,8 @@ public class StackLayer extends Layer<StackViewModel> {
     @Bind(value = R.id.stack_level, parent = R.id.stack_container) TextView stackLevel;
     @Bind(value = R.id.stack_next_opaque, parent = R.id.stack_container) CheckBox nextOpaque;
     @Bind(value = R.id.stack_next_title, bindManager = TextViewBindManager.class) TextView nextTitle;
-    @Bind(value = R.id.stack_next, clicks = true) View buttonNext;
+    @Bind(value = R.id.stack_add, clicks = true) View buttonAdd;
+    @Bind(value = R.id.stack_replace, clicks = true) View buttonReplace;
 
     @Save CharSequence title;
     @Save int level;
@@ -56,8 +57,11 @@ public class StackLayer extends Layer<StackViewModel> {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-        case R.id.stack_next:
+        case R.id.stack_add:
             getViewModel().nextClick(this);
+            break;
+        case R.id.stack_replace:
+            getViewModel().replaceClick(this);
             break;
         }
     }

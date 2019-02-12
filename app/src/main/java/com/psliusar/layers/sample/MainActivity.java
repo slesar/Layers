@@ -48,6 +48,21 @@ public class MainActivity extends LayersActivity {
                 .commit();
     }
 
+    public void replaceInStack(final CharSequence title, final int level, boolean opaque) {
+        getLayers().replace(StackLayer.class)
+            .prepareLayer(new Transition.OnLayerTransition<StackLayer>() {
+                @Override
+                public void onBeforeTransition(@NonNull StackLayer layer) {
+                    layer.setParameters(title, level);
+                }
+            })
+            .setName("Stack" + level)
+            .setOpaque(opaque)
+            .setInAnimation(R.anim.lower_out, R.anim.upper_in)
+            .setOutAnimation(R.anim.upper_out, R.anim.lower_in)
+            .commit();
+    }
+
     public void showChildrenLayers() {
         getLayers().add(ChildrenContainerLayer.class)
                 .setName("Children")
