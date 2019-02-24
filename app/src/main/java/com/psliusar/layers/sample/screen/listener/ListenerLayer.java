@@ -43,7 +43,7 @@ public class ListenerLayer extends Layer<ListenerViewModel> implements View.OnCl
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(@NonNull View v) {
         switch (v.getId()) {
         case R.id.listener_take_photo:
             getViewModel().takePhotoClick(getActivity());

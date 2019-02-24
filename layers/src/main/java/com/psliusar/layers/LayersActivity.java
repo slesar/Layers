@@ -34,9 +34,6 @@ public abstract class LayersActivity extends Activity implements LayersHost {
     @Override
     protected void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);
-        if (!isFinishing()) {
-            layers.restoreState();
-        }
         activityCallbacks.onRestoreInstanceState(state);
     }
 

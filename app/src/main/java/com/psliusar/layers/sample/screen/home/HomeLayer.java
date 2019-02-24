@@ -9,6 +9,7 @@ import com.psliusar.layers.binder.Bind;
 import com.psliusar.layers.sample.MainActivity;
 import com.psliusar.layers.sample.R;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class HomeLayer extends Layer<HomeViewModel> implements View.OnClickListener {
@@ -34,7 +35,7 @@ public class HomeLayer extends Layer<HomeViewModel> implements View.OnClickListe
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(@NonNull View v) {
         switch (v.getId()) {
         case R.id.home_stack:
             getViewModel().stackClick((MainActivity) getActivity());

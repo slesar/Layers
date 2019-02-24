@@ -106,12 +106,6 @@ public abstract class Layer<VM extends ViewModel> implements LayersHost, View.On
         }
     }
 
-    void restoreLayerState() {
-        if (layers != null) {
-            layers.restoreState();
-        }
-    }
-
     void restoreViewState(@Nullable SparseArray<Parcelable> inState) {
         if (inState != null) {
             view.restoreHierarchyState(inState);
@@ -367,7 +361,7 @@ public abstract class Layer<VM extends ViewModel> implements LayersHost, View.On
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(@NonNull View v) {
         
     }
 
@@ -385,6 +379,7 @@ public abstract class Layer<VM extends ViewModel> implements LayersHost, View.On
         layerBinder = objectBinder;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Layer{" +

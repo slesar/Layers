@@ -55,7 +55,7 @@ public class StackLayer extends Layer<StackViewModel> {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(@NonNull View v) {
         switch (v.getId()) {
         case R.id.stack_add:
             getViewModel().nextClick(this);

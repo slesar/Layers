@@ -58,7 +58,7 @@ public class CustomDialogLayer extends Layer<CustomDialogViewModel> implements V
     }
 
     @Override
-    public void onClick(View view) {
+    public void onClick(@NonNull View view) {
         switch (view.getId()) {
             case R.id.dialog_action1:
                 getViewModel().onAction1Click(this);

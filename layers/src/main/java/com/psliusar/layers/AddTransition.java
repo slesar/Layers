@@ -1,5 +1,7 @@
 package com.psliusar.layers;
 
+import java.util.ArrayList;
+
 import androidx.annotation.NonNull;
 
 public class AddTransition<LAYER extends Layer<?>> extends Transition<LAYER> {
@@ -43,6 +45,13 @@ public class AddTransition<LAYER extends Layer<?>> extends Transition<LAYER> {
         super.onAfterTransition();
         if (resetTransitionState(lowestVisibleLayer)) {
             layers.ensureViews();
+        }
+    }
+
+    @Override
+    protected void fastForward(@NonNull ArrayList<StackEntry> stack) {
+        if (!isApplied()) {
+            stack.add(stackEntry);
         }
     }
 }

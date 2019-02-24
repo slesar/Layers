@@ -2,6 +2,8 @@ package com.psliusar.layers;
 
 import android.os.Bundle;
 
+import java.util.ArrayList;
+
 import androidx.annotation.NonNull;
 
 public class RemoveTransition<LAYER extends Layer<?>> extends Transition<LAYER> {
@@ -34,30 +36,44 @@ public class RemoveTransition<LAYER extends Layer<?>> extends Transition<LAYER> 
     protected void onTransition() {
         super.onTransition();
 
+        // TODO remove layer with custom index
+
         stackEntry.inTransition = true;
 
         final int stackSize = layers.getStackSize();
         lowestVisibleLayer = layers.getLowestVisibleLayer();
 
-        // Mark layers for transition
-        setTransitionState(lowestVisibleLayer);
+        if (index >= lowestVisibleLayer) {
+            // Mark layers for transition
+            setTransitionState(lowestVisibleLayer);
 
-        // Make sure we have all required views in layout
-        layers.ensureViews();
+            // Make sure we have all required views in layout
+            layers.ensureViews();
 
-        // Animate layers
-        for (int i = lowestVisibleLayer; i < stackSize; i++) {
-            animateLayer(layers.getStackEntryAt(i).layerInstance,
-                i == index ? AnimationType.ANIMATION_UPPER_OUT : AnimationType.ANIMATION_LOWER_IN);
+            // Animate layers
+            for (int i = lowestVisibleLayer; i < stackSize; i++) {
+                animateLayer(layers.getStackEntryAt(i).layerInstance,
+                    i == index ? AnimationType.ANIMATION_UPPER_OUT : AnimationType.ANIMATION_LOWER_IN);
+            }
         }
+
+        stackEntry.valid = false;
     }
 
     @Override
     protected void onAfterTransition() {
         super.onAfterTransition();
 
-        stackEntry.valid = false;
-        resetTransitionState(lowestVisibleLayer);
+        if (index >= lowestVisibleLayer) {
+            resetTransitionState(lowestVisibleLayer);
+        }
         layers.removeLayerAt(index);
+    }
+
+    @Override
+    protected void fastForward(@NonNull ArrayList<StackEntry> stack) {
+        if (!isApplied()) {
+            stack.remove(index); // size should be checked earlier
+        }
     }
 }

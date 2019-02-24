@@ -35,7 +35,7 @@ public class DialogsLayer extends Layer<DialogsViewModel> implements View.OnClic
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(@NonNull View v) {
         switch (v.getId()) {
         case R.id.dialogs_simple:
             getViewModel().simpleDialogClick(this);

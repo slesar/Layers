@@ -67,6 +67,7 @@ public class Layers {
         }
     }
 
+    @NonNull
     public Layers at(@IdRes int containerId) {
         if (this.containerId == containerId) {
             return this;
@@ -74,7 +75,9 @@ public class Layers {
         return at(containerId, null);
     }
 
-    private Layers at(int containerId, @Nullable Bundle state) {
+    @VisibleForTesting
+    @NonNull
+    Layers at(int containerId, @Nullable Bundle state) {
         if (layerGroup == null) {
             layerGroup = new SparseArray<>();
         }
@@ -116,7 +119,6 @@ public class Layers {
     public void pauseView() {
         viewPaused = true;
     }
-
 
     //region Public layer operations
 
@@ -162,22 +164,6 @@ public class Layers {
         new RemoveTransition<>(this, size - 1).commit();
 
         return layer;
-    }
-
-    public boolean onBackPressed() {
-        final int size = layerStack.size();
-        if (size == 0) {
-            return false;
-        }
-        for (int i = size - 1; i >= 0; i--) {
-            final StackEntry entry = layerStack.get(i);
-            if (!entry.valid) {
-                continue;
-            }
-            final Layer<?> topLayer = entry.layerInstance;
-            return topLayer != null && topLayer.onBackPressed();
-        }
-        return false;
     }
 
     @Nullable
@@ -234,6 +220,22 @@ public class Layers {
 
         //noinspection unchecked
         return lastEntry == null ? null : (L) lastEntry.layerInstance;
+    }
+
+    public boolean onBackPressed() {
+        final int size = layerStack.size();
+        if (size == 0) {
+            return false;
+        }
+        for (int i = size - 1; i >= 0; i--) {
+            final StackEntry entry = layerStack.get(i);
+            if (!entry.valid) {
+                continue;
+            }
+            final Layer<?> topLayer = entry.layerInstance;
+            return topLayer != null && topLayer.onBackPressed();
+        }
+        return false;
     }
 
     public int clear() {
@@ -319,40 +321,35 @@ public class Layers {
 
     //region Lifecycle
 
-    public void restoreState() {
-        stateSaved = false;
-        final int size = layerStack.size();
-        for (int i = size - 1; i >= 0; i--) {
-            layerStack.get(i).layerInstance.restoreLayerState();
-        }
-
-        // Restore state of layers which are at other containers
-        final int layersCount = layerGroup == null ? 0 : layerGroup.size();
-        for (int i = 0; i < layersCount; i++) {
-            final int key = layerGroup.keyAt(i);
-            layerGroup.get(key).restoreState();
-        }
-    }
-
     @Nullable
     public Bundle saveState() {
         final Bundle outState = new Bundle();
-        final int size = layerStack.size();
+        final int stackSize = layerStack.size();
+
+        final ArrayList<StackEntry> validStack = new ArrayList<>();
+        for (int i = stackSize - 1; i >= 0; i--) {
+            final StackEntry entry = layerStack.get(i);
+            if (!entry.valid) {
+                continue;
+            }
+            validStack.add(entry);
+        }
+
+        for (Transition<?> transition : transitions) {
+            transition.fastForward(validStack);
+        }
+
+        final int size = validStack.size();
         if (size != 0) {
-            final ArrayList<StackEntry> toSave = new ArrayList<>(size);
             for (int i = size - 1; i >= 0; i--) {
-                final StackEntry entry = layerStack.get(i);
-                if (!entry.valid) {
-                    continue;
-                }
-                toSave.add(entry);
+                final StackEntry entry = validStack.get(i);
                 if (entry.layerInstance.view != null) {
                     saveViewState(entry);
                 }
                 saveLayerState(entry);
             }
-            Collections.reverse(toSave);
-            outState.putParcelableArrayList(STATE_STACK, toSave);
+            Collections.reverse(validStack); // since we went backwards
+            outState.putParcelableArrayList(STATE_STACK, validStack);
         }
 
         // Save state of layers which are at other containers
@@ -490,14 +487,6 @@ public class Layers {
         }
     }
 
-    private void saveLayerState(@NonNull StackEntry entry) {
-        final Bundle bundle = new Bundle();
-        entry.layerInstance.saveLayerState(bundle);
-        if (bundle.size() > 0) {
-            entry.layerState = bundle;
-        }
-    }
-
     private void destroyView(@NonNull StackEntry entry, boolean saveState) {
         final Layer<?> layer = entry.layerInstance;
 
@@ -514,6 +503,14 @@ public class Layers {
             getContainer().removeView(layer.view);
         }
         layer.view = null;
+    }
+
+    private void saveLayerState(@NonNull StackEntry entry) {
+        final Bundle bundle = new Bundle();
+        entry.layerInstance.saveLayerState(bundle);
+        if (bundle.size() > 0) {
+            entry.layerState = bundle;
+        }
     }
 
     private void destroyLayer(@NonNull StackEntry entry, boolean saveState) {
@@ -545,11 +542,9 @@ public class Layers {
 
     //region Internal tools
 
-    Layer<?> commitStackEntry(@NonNull StackEntry entry) {
+    void commitStackEntry(@NonNull StackEntry entry) {
         layerStack.add(entry);
         ensureViews();
-
-        return entry.layerInstance;
     }
 
     @NonNull

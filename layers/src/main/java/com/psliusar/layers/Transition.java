@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import com.psliusar.layers.animation.SimpleAnimation;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import androidx.annotation.AnimRes;
@@ -30,6 +31,7 @@ public abstract class Transition<LAYER extends Layer<?>> {
     private HashSet<Animator> toAnimate;
     private boolean committed = false;
     private boolean animationEnabled = true;
+    private boolean applied = false;
 
     private final Animator.AnimatorListener animationListener = new AnimatorListenerAdapter() {
         @Override
@@ -124,6 +126,14 @@ public abstract class Transition<LAYER extends Layer<?>> {
         return committed && toAnimate != null && toAnimate.size() > 0;
     }
 
+    public boolean isCommitted() {
+        return committed;
+    }
+
+    protected boolean isApplied() {
+        return applied;
+    }
+
     public void commit() {
         if (committed) {
             throw new IllegalStateException("Current transaction has been already committed");
@@ -138,6 +148,7 @@ public abstract class Transition<LAYER extends Layer<?>> {
     }
 
     void apply() {
+        applied = true;
         onTransition();
 
         if (toAnimate == null) {
@@ -170,6 +181,8 @@ public abstract class Transition<LAYER extends Layer<?>> {
     protected void onAfterTransition() {
 
     }
+
+    protected abstract void fastForward(@NonNull ArrayList<StackEntry> stack);
 
     protected void finish() {
         onAfterTransition();

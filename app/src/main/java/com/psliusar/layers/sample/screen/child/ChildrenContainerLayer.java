@@ -70,7 +70,7 @@ public class ChildrenContainerLayer extends Layer<ViewModel> {
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(@NonNull View v) {
         switch (v.getId()) {
         case R.id.children_container_add_layer:
             final int number = getLayers().getStackSize() + 1;
