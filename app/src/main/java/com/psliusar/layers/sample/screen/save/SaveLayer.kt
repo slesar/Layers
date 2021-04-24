@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.psliusar.layers.Layer
-import com.psliusar.layers.binder.FieldStateManager
 import com.psliusar.layers.sample.R
 
 class SaveLayer : Layer() {
@@ -33,14 +32,5 @@ class SaveLayer : Layer() {
 
     fun setParameters(vararg items: String) {
         stringList = items.toList()
-    }
-
-    internal class CustomFieldStateManager : FieldStateManager<String> {
-
-        override fun put(key: String, value: String, state: Bundle) {
-            state.putString(key, value)
-        }
-
-        override fun get(key: String, state: Bundle): String? = state.getString(key)
     }
 }

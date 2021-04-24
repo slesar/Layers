@@ -157,7 +157,7 @@ public class SimpleAnimation extends Animator implements Animation.AnimationList
     private void postEvent(int eventType, boolean delayed) {
         if (delayed) {
             if (uiHandler == null) {
-                uiHandler = new Handler(Looper.myLooper(), this);
+                uiHandler = new Handler(Looper.getMainLooper(), this);
             }
             uiHandler.sendEmptyMessage(eventType);
         } else {

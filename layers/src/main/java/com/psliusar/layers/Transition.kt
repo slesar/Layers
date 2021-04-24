@@ -91,8 +91,8 @@ abstract class Transition<L : Layer> private constructor(
      */
     open fun setInAnimation(@AnimRes outAnimId: Int, @AnimRes inAnimId: Int): Transition<L> {
         val anim = stackEntry.animations.or { IntArray(4).also { stackEntry.animations = it } }
-        anim[AnimationType.ANIMATION_LOWER_OUT] = outAnimId
-        anim[AnimationType.ANIMATION_UPPER_IN] = inAnimId
+        anim[AnimationType.ANIMATION_LOWER_OUT.value] = outAnimId
+        anim[AnimationType.ANIMATION_UPPER_IN.value] = inAnimId
         return this
     }
 
@@ -105,8 +105,8 @@ abstract class Transition<L : Layer> private constructor(
      */
     open fun setOutAnimation(@AnimRes outAnimId: Int, @AnimRes inAnimId: Int): Transition<L> {
         val anim = stackEntry.animations.or { IntArray(4).also { stackEntry.animations = it } }
-        anim[AnimationType.ANIMATION_UPPER_OUT] = outAnimId
-        anim[AnimationType.ANIMATION_LOWER_IN] = inAnimId
+        anim[AnimationType.ANIMATION_UPPER_OUT.value] = outAnimId
+        anim[AnimationType.ANIMATION_LOWER_IN.value] = inAnimId
         return this
     }
 
@@ -174,14 +174,14 @@ abstract class Transition<L : Layer> private constructor(
         layers.nextTransition()
     }
 
-    internal fun animateLayer(layer: Layer, @AnimationType animationType: Int): Animator? {
+    internal fun animateLayer(layer: Layer, animationType: AnimationType): Animator? {
         val view = layer.view
         if (!animationEnabled || layers.isViewPaused || !layer.isViewInLayout || view == null) {
             return null
         }
         var anim = layer.getAnimation(animationType)
-        if (anim == null && (stackEntry.animations?.get(animationType) ?: 0) != 0) {
-            anim = SimpleAnimation(view, stackEntry.animations!![animationType])
+        if (anim == null && (stackEntry.animations?.get(animationType.value) ?: 0) != 0) {
+            anim = SimpleAnimation(view, stackEntry.animations!![animationType.value])
             anim.setTarget(view)
         }
         if (anim != null) {

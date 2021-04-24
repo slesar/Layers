@@ -15,6 +15,7 @@ internal class Argument<N>(
         if (bundle == null || !bundle.containsKey(key)) {
             throw IllegalStateException("Argument $key of type $type is not provided")
         }
+        @Suppress("UNCHECKED_CAST")
         return when (type) {
             Int::class.java, Integer.TYPE, java.lang.Integer::class.java -> bundle.getInt(key) as N
             Long::class.java, java.lang.Long.TYPE, java.lang.Long::class.java -> bundle.getLong(key) as N

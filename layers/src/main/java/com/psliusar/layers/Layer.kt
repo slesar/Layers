@@ -23,13 +23,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import com.psliusar.layers.binder.Binder
+import com.psliusar.layers.binder.ObjectBinder
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 
 private const val SAVED_STATE_CHILD_LAYERS = "LAYER.SAVED_STATE_CHILD_LAYERS"
 private const val SAVED_STATE_INTERNAL = "LAYER.SAVED_STATE_INTERNAL"
 private const val SAVED_STATE_CUSTOM = "LAYER.SAVED_STATE_CUSTOM"
+private const val SAVED_STATE_VIEW_MODEL_STORE = "LAYER.SAVED_STATE_VIEW_MODEL_STORE"
 
 abstract class Layer : LayersHost, LifecycleOwner, ViewModelStoreOwner {
 
@@ -112,12 +113,15 @@ abstract class Layer : LayersHost, LifecycleOwner, ViewModelStoreOwner {
         this.name = name
         isFromSavedState = savedState != null
 
-        savedState?.getBundle(SAVED_STATE_CHILD_LAYERS)?.let {
-            _layers = Layers(this, it)
+        savedState?.let { state ->
+            state.getBundle(SAVED_STATE_CHILD_LAYERS)?.let {
+                _layers = Layers(this, it)
+            }
+            state.getBundle(SAVED_STATE_INTERNAL)?.let {
+                _state = it
+            }
         }
-        savedState?.getBundle(SAVED_STATE_INTERNAL)?.let {
-            _state = it
-        }
+
         onCreate(savedState?.getBundle(SAVED_STATE_CUSTOM))
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
@@ -139,7 +143,7 @@ abstract class Layer : LayersHost, LifecycleOwner, ViewModelStoreOwner {
     @CallSuper
     open fun onCreate(savedState: Bundle?) {
         savedState?.let {
-            Binder.restore(this, it)
+            viewModelStore = ObjectBinder.getViewModelStore(SAVED_STATE_VIEW_MODEL_STORE, it)
         }
         delegate?.onCreate(savedState)
     }
@@ -152,10 +156,8 @@ abstract class Layer : LayersHost, LifecycleOwner, ViewModelStoreOwner {
 
     }
 
-    //abstract fun onCreateViewModel(): VM?
-
     override fun getViewModelStore(): ViewModelStore {
-        return viewModelStore.or { ViewModelStore().also { viewModelStore = it } }
+        return viewModelStore ?: ViewModelStore().also { viewModelStore = it }
     }
 
     override fun getLifecycle(): Lifecycle = lifecycleRegistry
@@ -252,7 +254,6 @@ abstract class Layer : LayersHost, LifecycleOwner, ViewModelStoreOwner {
         _viewLifecycleOwner?.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         _viewLifecycleOwner = null
         onDestroyView()
-        //_viewModel?.onUnSubscribe()
         _layers?.destroy()
         delegate?.onDestroyView()
         view = null
@@ -280,15 +281,15 @@ abstract class Layer : LayersHost, LifecycleOwner, ViewModelStoreOwner {
 
     @CallSuper
     open fun onSaveLayerState(outState: Bundle) {
-        Binder.save(this, outState)
+        viewModelStore?.let { vm ->
+            ObjectBinder.putViewModelStore(SAVED_STATE_VIEW_MODEL_STORE, vm, outState)
+        }
     }
 
     internal open fun destroy(finish: Boolean) {
         isFinishing = finish
         onDestroy()
         if (finish) {
-            //_viewModel?.onDestroy()
-            //_viewModel = null
             viewModelStore?.clear()
             viewModelStore = null
         }
@@ -341,7 +342,7 @@ abstract class Layer : LayersHost, LifecycleOwner, ViewModelStoreOwner {
 
     inline fun <reified T> getParent(): T = getParent(T::class.java)
 
-    open fun getAnimation(@AnimationType animationType: Int): Animator? = null
+    open fun getAnimation(animationType: AnimationType): Animator? = null
 
     fun addDelegate(delegate: LayerDelegate) {
         when (val d = this.delegate) {

@@ -54,11 +54,9 @@ class StackEntry private constructor(
             layerInstance = instance
             instance
         } catch (e: InstantiationException) {
-            throw RuntimeException("Unable to instantiate layer " + className
-                + ": make sure class exists, is public, and has an empty constructor", e)
+            throw RuntimeException("Unable to instantiate layer $className: make sure class exists, is public, and has an empty constructor", e)
         } catch (e: IllegalAccessException) {
-            throw RuntimeException("Unable to instantiate layer " + className
-                + ": make sure class has an empty constructor that is public", e)
+            throw RuntimeException("Unable to instantiate layer $className: make sure class has an empty constructor that is public", e)
         }
     }
 

@@ -9,9 +9,7 @@ import com.psliusar.layers.sample.R
 
 class ChildLayer : Layer() {
 
-    //@field:Save
-    //@JvmField
-    var title: String = ""
+    var title: String by savedState()
 
     override fun onCreateView(savedState: Bundle?, parent: ViewGroup?): View? = inflate(R.layout.screen_child, parent)
 

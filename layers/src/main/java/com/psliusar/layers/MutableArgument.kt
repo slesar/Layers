@@ -13,6 +13,7 @@ internal class MutableArgument<N>(
 
     override fun getValue(thisRef: Layer, property: KProperty<*>): N {
         val bundle = thisRef.stateOrArguments ?: Bundle()
+        @Suppress("UNCHECKED_CAST")
         return when (type) {
             Int::class.java, Integer.TYPE, java.lang.Integer::class.java -> bundle.getInt(key) as N
             Long::class.java, java.lang.Long.TYPE, java.lang.Long::class.java -> bundle.getLong(key) as N
