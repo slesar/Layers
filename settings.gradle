@@ -1,1 +1,3 @@
-include ':app', ':layers', ':processor', ':binder', ':fragment'
+include ':app'
+include ':layers'
+include ':fragment'

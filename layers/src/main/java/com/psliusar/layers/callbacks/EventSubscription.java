@@ -7,11 +7,11 @@ import androidx.annotation.NonNull;
 public class EventSubscription extends Subscription {
 
     private final ActivityEvent event;
-    private final OnActivityListener listener;
+    private final OnActivityEventListener listener;
 
     public EventSubscription(
             @NonNull ActivityEvent event,
-            @NonNull OnActivityListener listener) {
+            @NonNull OnActivityEventListener listener) {
         this.event = event;
         this.listener = listener;
     }
@@ -22,7 +22,7 @@ public class EventSubscription extends Subscription {
     }
 
     @NonNull
-    public OnActivityListener getListener() {
+    public OnActivityEventListener getListener() {
         return listener;
     }
 }

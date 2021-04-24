@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class ActivityCallbacks implements OnActivityListener {
+public class ActivityCallbacks implements OnActivityEventListener {
 
     private final Subscriptions subscriptions = new Subscriptions();
 
@@ -121,11 +121,14 @@ public class ActivityCallbacks implements OnActivityListener {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    public boolean onActivityResult(int requestCode, int resultCode, @Nullable Intent intent) {
         for (Subscription s : subscriptions) {
-            unwrap(s).getListener().onActivityResult(requestCode, resultCode, intent);
+            if (unwrap(s).getListener().onActivityResult(requestCode, resultCode, intent)) {
+                return true;
+            }
         }
         unSubscribe(ActivityEvent.ACTIVITY_RESULT);
+        return false;
     }
 
     @Override
@@ -153,12 +156,12 @@ public class ActivityCallbacks implements OnActivityListener {
     }
 
     @NonNull
-    public EventSubscription add(@NonNull OnActivityListener listener) {
+    public EventSubscription add(@NonNull OnActivityEventListener listener) {
         return add(listener, ActivityEvent.DESTROY);
     }
 
     @NonNull
-    public EventSubscription add(@NonNull OnActivityListener listener, @NonNull ActivityEvent event) {
+    public EventSubscription add(@NonNull OnActivityEventListener listener, @NonNull ActivityEvent event) {
         final EventSubscription subscription = new EventSubscription(event, listener);
         subscriptions.manage(subscription);
         return subscription;

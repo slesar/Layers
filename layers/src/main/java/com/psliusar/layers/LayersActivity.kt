@@ -1,0 +1,154 @@
+package com.psliusar.layers
+
+import android.app.Activity
+import android.content.Intent
+import android.content.res.Configuration
+import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.IdRes
+import androidx.appcompat.app.AppCompatActivity
+import com.psliusar.layers.callbacks.ActivityEventListeners
+
+private const val SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS"
+
+abstract class LayersActivity : AppCompatActivity(), LayersHost {
+
+    val activityEventListeners = ActivityEventListeners()
+    private var _layers: Layers? = null
+    override val layers: Layers
+        get() {
+            ensureLayerViews()
+            return _layers ?: throw IllegalStateException("Layers not initialized yet")
+        }
+    var isInSavedState = false
+        private set
+    private var layersStateRestored = false
+
+    override val defaultContainer: ViewGroup
+        get() = getView(android.R.id.content)
+
+    override val activity: Activity
+        get() = this
+
+    override val parentLayer: Layer?
+        get() = null
+
+    override fun onCreate(state: Bundle?) {
+        super.onCreate(state)
+        layersStateRestored = state != null
+        _layers = Layers(this, state?.getBundle(SAVED_STATE_LAYERS))
+        activityEventListeners.onCreate(state)
+    }
+
+    override fun onRestoreInstanceState(state: Bundle) {
+        super.onRestoreInstanceState(state)
+        activityEventListeners.onRestoreInstanceState(state)
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        activityEventListeners.onRestart()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        isInSavedState = false
+        ensureLayerViews()
+        activityEventListeners.onStart()
+    }
+
+    override fun onPostCreate(state: Bundle?) {
+        super.onPostCreate(state)
+        activityEventListeners.onPostCreate(state)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activityEventListeners.onResume()
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        activityEventListeners.onPostResume()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        isInSavedState = true
+        if (!isFinishing) {
+            layers.saveState()?.let {
+                outState.putBundle(SAVED_STATE_LAYERS, it)
+            }
+        }
+        activityEventListeners.onSaveInstanceState(outState)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        activityEventListeners.onPause()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        activityEventListeners.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        layers.destroy()
+        activityEventListeners.onDestroy()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        activityEventListeners.onNewIntent(intent)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        activityEventListeners.onConfigurationChanged(newConfig)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        activityEventListeners.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        activityEventListeners.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        activityEventListeners.onTrimMemory(level)
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        activityEventListeners.onLowMemory()
+    }
+
+    override fun onBackPressed() {
+        if (layers.onBackPressed()) {
+            return
+        }
+        if (layers.stackSize > 1) {
+            layers.pop<Layer>()
+            return
+        }
+        super.onBackPressed()
+    }
+
+    override fun <T : View> getView(@IdRes viewId: Int): T {
+        return findViewById(viewId) ?: throw IllegalArgumentException("View not found")
+    }
+
+    private fun ensureLayerViews() {
+        if (layersStateRestored) {
+            layersStateRestored = false
+            layers.resumeView()
+        }
+    }
+}

@@ -6,7 +6,7 @@ import android.graphics.Bitmap;
 import android.provider.MediaStore;
 
 import com.psliusar.layers.LayersActivity;
-import com.psliusar.layers.callbacks.BaseActivityListener;
+import com.psliusar.layers.callbacks.BaseActivityEventListener;
 import com.psliusar.layers.subscription.Subscription;
 
 import androidx.annotation.NonNull;
@@ -24,7 +24,7 @@ public class ListenerModel {
     private static final int CAMERA_IMAGE = 1001;
 
     public Subscription getPhotoUri(@NonNull LayersActivity activity, @NonNull final Updatable<Bitmap> updatable) {
-        return activity.getActivityCallbacks().add(new BaseActivityListener() {
+        return null;/* activity.getActivityCallbacks().add(new BaseActivityEventListener() {
             @Override
             public void onActivityResult(int requestCode, int resultCode, Intent intent) {
                 if (requestCode == CAMERA_IMAGE && resultCode == RESULT_OK) {
@@ -32,7 +32,7 @@ public class ListenerModel {
                     updatable.onUpdate(image);
                 }
             }
-        });
+        });*/
     }
 
     public void requestPhoto(@NonNull Activity activity) {

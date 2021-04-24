@@ -1,67 +1,30 @@
 package com.psliusar.layers.binder;
 
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.SparseArray;
-import android.view.View;
-
-import com.psliusar.layers.ViewModel;
-import com.psliusar.layers.track.TrackManager;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelStore;
 
 @SuppressWarnings("unused")
 public abstract class ObjectBinder {
 
-    @NonNull
-    protected static View find(@NonNull View container, @IdRes int viewResId) {
-        final View view = container.findViewById(viewResId);
-        if (view == null) {
-            final String viewResName = resolveResourceName(container.getResources(), viewResId);
-            throw new IllegalArgumentException("View with ID 0x" + Integer.toHexString(viewResId)
-                    + (viewResName != null ? " (" + viewResName + ")" : "") + " not found!");
-        }
-        return view;
-    }
-
-    @Nullable
-    private static String resolveResourceName(@NonNull Resources res, int resId) {
-        try {
-            return res.getResourceName(resId);
-        } catch (Resources.NotFoundException ex) {
-            return null;
-        }
-    }
-
-    protected void restore(@NonNull Object object, @NonNull Bundle state) {
+    protected void restore(@NonNull Object target, @NonNull Bundle state) {
 
     }
 
-    protected void save(@NonNull Object object, @NonNull Bundle state) {
+    protected void save(@NonNull Object target, @NonNull Bundle state) {
 
     }
 
-    protected void bind(@NonNull View.OnClickListener listener, @NonNull View view) {
-
-    }
-
-    protected void unbind(@NonNull View.OnClickListener listener) {
-        unbindTrackManagers(listener);
-    }
-
-    protected void unbindTrackManagers(@NonNull Object object) {
-
-    }
-
-    protected static void initClassLoader(@NonNull Bundle state, @NonNull Object obj) {
-        state.setClassLoader(obj.getClass().getClassLoader());
+    protected static void initClassLoader(@NonNull Bundle state, @NonNull Object target) {
+        state.setClassLoader(target.getClass().getClassLoader());
     }
 
     protected static <T> T[] copyParcelableArray(@Nullable Parcelable[] array, @NonNull Class<? extends T[]> targetClass) {
@@ -234,15 +197,9 @@ public abstract class ObjectBinder {
         if (value != null) state.putSerializable(key, value);
     }
 
-    /* Tracks */
-
-    protected static void putTrackManager(@NonNull String key, @Nullable TrackManager value, @NonNull Bundle state) {
-        if (value != null) state.putParcelable(key, value);
-    }
-
     /* ViewModel */
 
-    protected static void putViewModel(@NonNull String key, @Nullable ViewModel value, @NonNull Bundle state) {
+    protected static void putViewModelStore(@NonNull String key, @Nullable ViewModelStore value, @NonNull Bundle state) {
         if (value != null) state.putParcelable(key, new SaveWrapper(value));
     }
 
@@ -440,19 +397,12 @@ public abstract class ObjectBinder {
         return (Serializable[]) state.getSerializable(key);
     }
 
-    /* Tracks */
-
-    @Nullable
-    protected static TrackManager getTrackManager(@NonNull String key, @NonNull Bundle state) {
-        return state.getParcelable(key);
-    }
-
     /* ViewModel */
 
     @Nullable
-    protected static <VM extends ViewModel> VM getViewModel(@NonNull String key, @NonNull Bundle state) {
+    protected static ViewModelStore getViewModelStore(@NonNull String key, @NonNull Bundle state) {
         final SaveWrapper wrapper = state.getParcelable(key);
-        return wrapper == null ? null : (VM) wrapper.getObject();
+        return wrapper == null ? null : (ViewModelStore) wrapper.getObject();
     }
 
     // TODO arrays of boxed primitives

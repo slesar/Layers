@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'de.mobilej.unmock'
 apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion project.property("compileSdkVersion").toInteger()
@@ -10,6 +11,7 @@ android {
         minSdkVersion project.property("minSdkVersion")
         targetSdkVersion project.property("targetSdkVersion")
     }
+
     buildTypes {
         release {
 
@@ -25,13 +27,16 @@ unMock {
 }
 
 dependencies {
+    // Kotlin lib
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
     implementation "androidx.appcompat:appcompat:$androidxVersion"
-    api project(':binder')
 
     // Tests
     unmock "org.robolectric:android-all:$unMockRobolectricVersion"
     testImplementation "junit:junit:$junitVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlinVersion"
 }
 
 task androidJavadocs(type: Javadoc) {
@@ -39,14 +44,14 @@ task androidJavadocs(type: Javadoc) {
 }
 
 task androidJavadocsJar(type: Jar) {
-    classifier = 'javadoc'
-    baseName = 'layers'
+    getArchiveClassifier().set('javadoc')
+    getArchiveBaseName().set('layers')
     from androidJavadocs.destinationDir
 }
 
 task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
-    baseName = 'layers'
+    getArchiveClassifier().set('sources')
+    getArchiveBaseName().set('layers')
     from android.sourceSets.main.java.srcDirs
 }
 
