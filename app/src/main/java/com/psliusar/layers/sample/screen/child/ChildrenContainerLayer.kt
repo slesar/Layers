@@ -2,13 +2,10 @@ package com.psliusar.layers.sample.screen.child
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import com.psliusar.layers.Layer
 import com.psliusar.layers.sample.R
 
-class ChildrenContainerLayer : Layer() {
-
-    override fun onCreateView(savedState: Bundle?, parent: ViewGroup?): View? = inflate(R.layout.screen_children_container, parent)
+class ChildrenContainerLayer : Layer(R.layout.screen_children_container) {
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)

@@ -5,7 +5,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import com.psliusar.layers.Layer
@@ -13,7 +12,7 @@ import com.psliusar.layers.sample.MainActivity
 import com.psliusar.layers.sample.R
 import java.io.Serializable
 
-class StackLayer : Layer() {
+class StackLayer : Layer(R.layout.screen_stack) {
 
     private var title: CharSequence? by savedState()
     private var level: Int by savedState()
@@ -42,10 +41,6 @@ class StackLayer : Layer() {
         super.onCreate(savedState)
         mainActivity = getParent()
         viewModel = getViewModel()
-    }
-
-    override fun onCreateView(savedState: Bundle?, parent: ViewGroup?): View? {
-        return inflate(R.layout.screen_stack, parent)
     }
 
     override fun onBindView(savedState: Bundle?, view: View) {

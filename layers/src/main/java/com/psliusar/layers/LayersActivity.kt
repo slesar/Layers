@@ -9,21 +9,17 @@ import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import com.psliusar.layers.callbacks.ActivityEventListeners
+import com.psliusar.layers.callbacks.OnActivityEventListener
 
 private const val SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS"
 
 abstract class LayersActivity : AppCompatActivity(), LayersHost {
 
-    val activityEventListeners = ActivityEventListeners()
-    private var _layers: Layers? = null
     override val layers: Layers
         get() {
             ensureLayerViews()
             return _layers ?: throw IllegalStateException("Layers not initialized yet")
         }
-    var isInSavedState = false
-        private set
-    private var layersStateRestored = false
 
     override val defaultContainer: ViewGroup
         get() = getView(android.R.id.content)
@@ -33,6 +29,13 @@ abstract class LayersActivity : AppCompatActivity(), LayersHost {
 
     override val parentLayer: Layer?
         get() = null
+
+    var isInSavedState = false
+        private set
+
+    private val activityEventListeners = ActivityEventListeners()
+    private var _layers: Layers? = null
+    private var layersStateRestored = false
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
@@ -143,6 +146,14 @@ abstract class LayersActivity : AppCompatActivity(), LayersHost {
 
     override fun <T : View> getView(@IdRes viewId: Int): T {
         return findViewById(viewId) ?: throw IllegalArgumentException("View not found")
+    }
+
+    fun addEventListener(listener: OnActivityEventListener) {
+        activityEventListeners.addListener(listener)
+    }
+
+    fun removeEventListener(listener: OnActivityEventListener) {
+        activityEventListeners.removeListener(listener)
     }
 
     private fun ensureLayerViews() {

@@ -3,8 +3,6 @@ package com.psliusar.layers.sample.screen.dialog
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.view.View
-import android.view.ViewGroup
 import com.psliusar.layers.DialogWrapper
 import com.psliusar.layers.Layer
 
@@ -13,7 +11,7 @@ private const val ARGS_MESSAGE = "ARGS_MESSAGE"
 
 class SimpleDialogLayer : Layer() {
 
-    private val wrapper = object : DialogWrapper(this@SimpleDialogLayer) {
+    private val dialogWrapper = object : DialogWrapper(this@SimpleDialogLayer) {
 
         override fun onCreateDialog(): Dialog {
             val args = arguments ?: throw IllegalArgumentException("Caller must provide arguments")
@@ -26,10 +24,8 @@ class SimpleDialogLayer : Layer() {
     }
 
     init {
-        addDelegate(wrapper)
+        addDelegate(dialogWrapper)
     }
-
-    override fun onCreateView(savedState: Bundle?, parent: ViewGroup?): View? = null
 
     companion object {
 

@@ -6,10 +6,6 @@ import android.os.Bundle
 
 interface OnActivityEventListener {
 
-    enum class Event {
-
-    }
-
     fun onCreate(state: Bundle?)
 
     fun onRestoreInstanceState(state: Bundle)

@@ -3,7 +3,6 @@ package com.psliusar.layers
 import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
-
 import androidx.annotation.IdRes
 
 interface LayersHost {

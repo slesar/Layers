@@ -5,25 +5,15 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.SparseArray
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import com.psliusar.layers.Layer
 import com.psliusar.layers.sample.R
 
-class SaveLayer : Layer() {
+class SaveLayer : Layer(R.layout.screen_save) {
 
-    //@Save
-    internal var stringList: List<String>? = null
-    //@Save
-    internal var parcelables: SparseArray<Parcelable>? = null
-    //@Save
-    internal var parcelablesArray: Array<Rect>? = null
-    //@Save(stateManager = CustomFieldStateManager::class)
-    internal var customManagerSample: String? = null
-
-    override fun onCreateView(savedState: Bundle?, parent: ViewGroup?): View? {
-        return inflate(R.layout.screen_save, parent)
-    }
+    private var stringList: List<String>? by savedState()
+    private var parcelables: SparseArray<Parcelable>? = null
+    private var parcelablesArray: Array<Rect>? = null
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)

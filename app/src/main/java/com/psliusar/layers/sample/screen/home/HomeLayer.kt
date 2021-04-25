@@ -2,17 +2,14 @@ package com.psliusar.layers.sample.screen.home
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import com.psliusar.layers.Layer
 import com.psliusar.layers.sample.MainActivity
 import com.psliusar.layers.sample.R
 
-class HomeLayer : Layer() {
+class HomeLayer : Layer(R.layout.screen_home) {
 
     private val mainActivity: MainActivity
         get() = activity as MainActivity
-
-    override fun onCreateView(savedState: Bundle?, parent: ViewGroup?): View? = inflate(R.layout.screen_home, parent)
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)

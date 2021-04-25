@@ -14,8 +14,6 @@ private const val ARGS_VALUE = "ARGS_VALUE"
 
 class MockedLayer : Layer() {
 
-    var createCalled = 0
-        private set
     var onCreateCalled = 0
         private set
     var onCreateViewCalled = 0
@@ -43,11 +41,6 @@ class MockedLayer : Layer() {
         private set
     var argumentsPassed = false
         private set
-
-    override fun create(host: LayersHost, arguments: Bundle?, name: String?, savedState: Bundle?) {
-        super.create(host, arguments, name, savedState)
-        createCalled++
-    }
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)

@@ -2,16 +2,13 @@ package com.psliusar.layers.sample.screen.child
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import com.psliusar.layers.Layer
 import com.psliusar.layers.sample.R
 
-class ChildLayer : Layer() {
+class ChildLayer : Layer(R.layout.screen_child) {
 
     var title: String by savedState()
-
-    override fun onCreateView(savedState: Bundle?, parent: ViewGroup?): View? = inflate(R.layout.screen_child, parent)
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)

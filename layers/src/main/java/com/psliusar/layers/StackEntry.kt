@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.SparseArray
-import android.view.View
 
 private const val VIEW_STATE = "STACK_ENTRY.VIEW_STATE"
 
@@ -38,7 +37,7 @@ class StackEntry private constructor(
     internal var layerState: Bundle? = null
     internal var viewState: SparseArray<Parcelable>? = null
     internal var layerType = TYPE_OPAQUE
-    internal var layoutResId: Int = View.NO_ID
+    internal var layoutResId: Int = 0
     internal var animations: IntArray? = null
 
     //endregion

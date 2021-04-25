@@ -2,7 +2,6 @@ package com.psliusar.layers.sample.screen.dialog
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import com.psliusar.layers.DialogWrapper
 import com.psliusar.layers.Layer
@@ -10,7 +9,7 @@ import com.psliusar.layers.sample.R
 
 private const val ARGS_TITLE = "ARGS_TITLE"
 
-class CustomDialogLayer : Layer() {
+class CustomDialogLayer : Layer(R.layout.screen_dialog_custom) {
 
     private val dialogWrapper = DialogWrapper(this).apply {
         cancelable = false
@@ -18,10 +17,6 @@ class CustomDialogLayer : Layer() {
 
     init {
         addDelegate(dialogWrapper)
-    }
-
-    override fun onCreateView(savedState: Bundle?, parent: ViewGroup?): View? {
-        return inflate(R.layout.screen_dialog_custom, parent)
     }
 
     override fun onBindView(savedState: Bundle?, view: View) {

@@ -463,7 +463,6 @@ class LayersTest {
         val layer = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
 
         assertNotNull(layer)
-        assertEquals(1, layer.createCalled)
         assertEquals(1, layer.onCreateCalled)
     }
 
