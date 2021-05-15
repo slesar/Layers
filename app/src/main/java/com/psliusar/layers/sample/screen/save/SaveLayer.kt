@@ -27,8 +27,8 @@ class SaveLayer : Layer(R.layout.screen_save) {
     private var testSparseArray: SparseArray<TestParcelable> by savedState()
     private var testSerializableArray: Array<TestSerializable> by savedState()
     private var testEmptyArray: Array<TestSerializable> by savedState()
-    // TODO not yet supported
     private var testParcelableArray: Array<TestParcelable> by savedState()
+    private var testParcelableArrayList: ArrayList<TestParcelable> by savedState()
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)
@@ -37,7 +37,7 @@ class SaveLayer : Layer(R.layout.screen_save) {
         Log.i(
             "Saved properties",
             String.format(
-                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+                "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
                 testInt,
                 testLong,
                 testFloat,
@@ -50,7 +50,8 @@ class SaveLayer : Layer(R.layout.screen_save) {
                 testSparseArray,
                 testSerializableArray,
                 testEmptyArray,
-                "",//testParcelableArray
+                testParcelableArray,
+                testParcelableArrayList
             )
         )
     }
@@ -69,9 +70,12 @@ class SaveLayer : Layer(R.layout.screen_save) {
         testSparseArray = SparseArray<TestParcelable>().apply {
             put(42, TestParcelable("1, 2, 3, 4"))
         }
-        testSerializableArray = arrayOf(TestSerializable("Serializable in array"))
+        testSerializableArray = arrayOf(TestSerializable("Serializable in Array"))
         testEmptyArray = arrayOf()
-        testParcelableArray = arrayOf(TestParcelable("Parcelable in array"))
+        testParcelableArray = arrayOf(TestParcelable("Parcelable in Array"))
+        testParcelableArrayList = ArrayList<TestParcelable>().apply {
+            add(TestParcelable("Parcelable in ArrayList"))
+        }
     }
 
     private class TestSerializable(private val name: String) : Serializable {

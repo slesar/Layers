@@ -18,7 +18,7 @@ object StateWrapperHelper {
             throw UnsupportedOperationException("Unable to restore value of type $type")
         }
 
-        if (desc.customClass) {
+        if (desc.customType) {
             // Init classloader
             bundle.classLoader = javaClass.classLoader
         }
@@ -27,8 +27,10 @@ object StateWrapperHelper {
             val restored = bundle.get(key) as T?
             when (desc.type) {
                 Serializable::class.java -> restored
-                Parcelable::class.java ->
-                    copyParcelableArray(restored as Array<Parcelable?>?, desc.type as Class<out Array<Parcelable>?>) as T?
+                Parcelable::class.java -> {
+                    val innerType = java.lang.reflect.Array.newInstance(desc.innerType, 0)::class.java
+                    copyParcelableArray(restored as Array<Parcelable?>?, innerType as Class<out Array<Parcelable>?>) as T?
+                }
                 else -> restored
             }
         } else if (!desc.isArrayList && !desc.isArray) {
@@ -93,63 +95,61 @@ object StateWrapperHelper {
     }
 
     private fun <T> copyParcelableArray(array: Array<Parcelable?>?, targetClass: Class<out Array<T>?>): Array<T>? {
-        return if (array == null) null else Arrays.copyOf(array, array.size, targetClass)
-    }
-
-    private fun <T> copySerializableArray(array: Array<Serializable?>?, targetClass: Class<out Array<T>?>): Array<T>? {
-        return if (array == null) null else Arrays.copyOf(array, array.size, targetClass)
+        return array?.let { Arrays.copyOf(it, it.size, targetClass) }
     }
 
     private fun isSupported(desc: TypeDescription): Boolean {
-        if (desc.isArrayList) {
-            return desc.type == null ||
-                desc.type == Int::class.java ||
-                desc.type == String::class.java ||
-                desc.type == CharSequence::class.java ||
-                desc.type == Parcelable::class.java
-        }
-
-        if (desc.isArray) {
-            return desc.type == null ||
+        return when {
+            desc.isArrayList -> {
+                desc.type == null ||
+                    desc.type == Int::class.java ||
+                    desc.type == String::class.java ||
+                    desc.type == CharSequence::class.java ||
+                    desc.type == Parcelable::class.java
+            }
+            desc.isArray -> {
+                desc.type == null ||
+                    desc.type == Boolean::class.java ||
+                    desc.type == Int::class.java ||
+                    desc.type == Long::class.java ||
+                    desc.type == Float::class.java ||
+                    desc.type == Double::class.java ||
+                    desc.type == Byte::class.java ||
+                    desc.type == Short::class.java ||
+                    desc.type == Char::class.java ||
+                    desc.type == String::class.java ||
+                    desc.type == CharSequence::class.java ||
+                    desc.type == Serializable::class.java ||
+                    desc.type == Parcelable::class.java
+            }
+            else -> {
                 desc.type == Boolean::class.java ||
-                desc.type == Int::class.java ||
-                desc.type == Long::class.java ||
-                desc.type == Float::class.java ||
-                desc.type == Double::class.java ||
-                desc.type == Byte::class.java ||
-                desc.type == Short::class.java ||
-                desc.type == Char::class.java ||
-                desc.type == String::class.java ||
-                desc.type == CharSequence::class.java ||
-                desc.type == Serializable::class.java ||
-                desc.type == Parcelable::class.java
+                    desc.type == java.lang.Boolean.TYPE ||
+                    desc.type == java.lang.Boolean::class.java ||
+                    desc.type == Int::class.java ||
+                    desc.type == Integer.TYPE ||
+                    desc.type == java.lang.Integer::class.java ||
+                    desc.type == Long::class.java ||
+                    desc.type == java.lang.Long.TYPE ||
+                    desc.type == java.lang.Long::class.java ||
+                    desc.type == Float::class.java ||
+                    desc.type == java.lang.Float.TYPE ||
+                    desc.type == java.lang.Float::class.java ||
+                    desc.type == Double::class.java ||
+                    desc.type == java.lang.Double.TYPE ||
+                    desc.type == java.lang.Double::class.java ||
+                    desc.type == Byte::class.java ||
+                    desc.type == Short::class.java ||
+                    desc.type == Char::class.java ||
+                    desc.type == String::class.java ||
+                    desc.type == CharSequence::class.java ||
+                    desc.type == Serializable::class.java ||
+                    desc.type == Parcelable::class.java ||
+                    desc.type == Bundle::class.java ||
+                    desc.type == SparseArray::class.java ||
+                    desc.type == ViewModelStore::class.java
+            }
         }
-
-        return desc.type == Boolean::class.java ||
-            desc.type == java.lang.Boolean.TYPE ||
-            desc.type == java.lang.Boolean::class.java ||
-            desc.type == Int::class.java ||
-            desc.type == Integer.TYPE ||
-            desc.type == java.lang.Integer::class.java ||
-            desc.type == Long::class.java ||
-            desc.type == java.lang.Long.TYPE ||
-            desc.type == java.lang.Long::class.java ||
-            desc.type == Float::class.java ||
-            desc.type == java.lang.Float.TYPE ||
-            desc.type == java.lang.Float::class.java ||
-            desc.type == Double::class.java ||
-            desc.type == java.lang.Double.TYPE ||
-            desc.type == java.lang.Double::class.java ||
-            desc.type == Byte::class.java ||
-            desc.type == Short::class.java ||
-            desc.type == Char::class.java ||
-            desc.type == String::class.java ||
-            desc.type == CharSequence::class.java ||
-            desc.type == Serializable::class.java ||
-            desc.type == Parcelable::class.java ||
-            desc.type == Bundle::class.java ||
-            desc.type == SparseArray::class.java ||
-            desc.type == ViewModelStore::class.java
     }
 
     private fun <T> getTypeDescription(type: Class<*>, value: T?): TypeDescription {
@@ -157,48 +157,57 @@ object StateWrapperHelper {
         val isArrayList = !isSparseArray && type == ArrayList::class.java
         val isArray = !isSparseArray && !isArrayList && type.isArray
 
-        val innerClass: Class<*>? = if (isArrayList) {
-            val innerType = (value as ArrayList<*>?)?.firstOrNull()?.javaClass ?: Any::class.java
+        val innerType: Class<*>?
+        val declaredType: Class<*>? = when {
+            isArrayList -> {
+                innerType = (value as ArrayList<*>?)?.firstOrNull()?.javaClass ?: Any::class.java
 
-            when {
-                innerType == String::class.java -> String::class.java
-                innerType == Int::class.java -> Int::class.java
-                CharSequence::class.java.isAssignableFrom(innerType) -> CharSequence::class.java
-                Parcelable::class.java.isAssignableFrom(innerType) -> Parcelable::class.java
-                else -> null
+                when {
+                    innerType == String::class.java -> String::class.java
+                    innerType == Int::class.java -> Int::class.java
+                    CharSequence::class.java.isAssignableFrom(innerType) -> CharSequence::class.java
+                    Parcelable::class.java.isAssignableFrom(innerType) -> Parcelable::class.java
+                    else -> null
+                }
             }
-        } else if (isArray) {
-            val innerType = type.componentType ?: ((value as Array<*>?)?.firstOrNull()?.javaClass ?: Any::class.java)
+            isArray -> {
+                innerType = type.componentType ?: ((value as Array<*>?)?.firstOrNull()?.javaClass ?: Any::class.java)
 
-            when {
-                innerType == String::class.java -> String::class.java
-                CharSequence::class.java.isAssignableFrom(innerType) -> CharSequence::class.java
-                Parcelable::class.java.isAssignableFrom(innerType) -> Parcelable::class.java
-                Serializable::class.java.isAssignableFrom(innerType) -> Serializable::class.java
-                else -> null
+                when {
+                    innerType == String::class.java -> String::class.java
+                    CharSequence::class.java.isAssignableFrom(innerType) -> CharSequence::class.java
+                    Parcelable::class.java.isAssignableFrom(innerType) -> Parcelable::class.java
+                    Serializable::class.java.isAssignableFrom(innerType) -> Serializable::class.java
+                    else -> null
+                }
             }
-        } else {
-            when {
-                type == String::class.java -> String::class.java
-                CharSequence::class.java.isAssignableFrom(type) -> CharSequence::class.java
-                Parcelable::class.java.isAssignableFrom(type) -> Parcelable::class.java
-                Serializable::class.java.isAssignableFrom(type) -> Serializable::class.java
-                else -> type
+            else -> {
+                innerType = null
+
+                when {
+                    type == String::class.java -> String::class.java
+                    CharSequence::class.java.isAssignableFrom(type) -> CharSequence::class.java
+                    Parcelable::class.java.isAssignableFrom(type) -> Parcelable::class.java
+                    Serializable::class.java.isAssignableFrom(type) -> Serializable::class.java
+                    else -> type
+                }
             }
         }
 
         return TypeDescription(
             isArrayList,
             isArray,
-            innerClass == Serializable::class.java || innerClass == Parcelable::class.java || innerClass == Bundle::class.java,
-            innerClass
+            declaredType == Serializable::class.java || declaredType == Parcelable::class.java || declaredType == Bundle::class.java,
+            declaredType,
+            innerType
         )
     }
 
     private data class TypeDescription(
         val isArrayList: Boolean,
         val isArray: Boolean,
-        val customClass: Boolean,
-        val type: Class<*>?
+        val customType: Boolean,
+        val type: Class<*>?,
+        val innerType: Class<*>?
     )
 }
