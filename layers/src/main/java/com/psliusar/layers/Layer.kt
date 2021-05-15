@@ -80,7 +80,7 @@ abstract class Layer(
     protected val layoutInflater: LayoutInflater
         get() = delegate?.layoutInflater ?: host.activity.layoutInflater
 
-    internal var viewModelStore: ViewModelStore? by ViewModelStoreState()
+    private var vmStore: ViewModelStore? by ViewModelStoreState()
 
     private var _state: Bundle? = null
     internal val state: Bundle
@@ -160,7 +160,7 @@ abstract class Layer(
     }
 
     override fun getViewModelStore(): ViewModelStore {
-        return viewModelStore ?: ViewModelStore().also { viewModelStore = it }
+        return vmStore ?: ViewModelStore().also { vmStore = it }
     }
 
     override fun getLifecycle(): Lifecycle = lifecycleRegistry
@@ -196,9 +196,7 @@ abstract class Layer(
             view?.restoreHierarchyState(it)
         }
         _layers?.resumeView()
-        if (delegate != null) {
-            delegate!!.restoreViewState(inState)
-        }
+        delegate?.restoreViewState(inState)
         val lifecycle = activityLifecycle
         if (lifecycle.currentState >= Lifecycle.State.STARTED) {
             onActivityStart()
@@ -292,8 +290,8 @@ abstract class Layer(
         isFinishing = finish
         onDestroy()
         if (finish) {
-            viewModelStore?.clear()
-            viewModelStore = null
+            vmStore?.clear()
+            vmStore = null
         }
         activityLifecycle.removeObserver(activityLifecycleObserver)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)

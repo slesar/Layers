@@ -21,7 +21,7 @@ class ListenerLayer : Layer(R.layout.screen_listener) {
             if (requestCode == CAMERA_IMAGE) {
                 if (resultCode == Activity.RESULT_OK) {
                     val image = intent?.extras?.get("data") as Bitmap?
-                    view?.findViewById<ImageView>(R.id.listener_image)?.setImageBitmap(image)
+                    getView<ImageView>(R.id.listener_image).setImageBitmap(image)
                 }
                 return true
             }
@@ -32,7 +32,7 @@ class ListenerLayer : Layer(R.layout.screen_listener) {
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)
 
-        view.findViewById<View>(R.id.listener_take_photo).setOnClickListener {
+        getView<View>(R.id.listener_take_photo).setOnClickListener {
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             if (intent.resolveActivity(activity.packageManager) != null) {
                 activity.startActivityForResult(intent, CAMERA_IMAGE)

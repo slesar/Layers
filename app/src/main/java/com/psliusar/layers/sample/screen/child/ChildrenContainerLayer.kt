@@ -29,7 +29,7 @@ class ChildrenContainerLayer : Layer(R.layout.screen_children_container) {
                 }
         }
 
-        view.findViewById<View>(R.id.children_container_add_layer).setOnClickListener {
+        getView<View>(R.id.children_container_add_layer).setOnClickListener {
             val number = layers.stackSize + 1
             layers
                 .add<ChildLayer> {

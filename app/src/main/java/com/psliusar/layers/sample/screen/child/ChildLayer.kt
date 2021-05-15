@@ -12,7 +12,7 @@ class ChildLayer : Layer(R.layout.screen_child) {
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)
-        view.findViewById<TextView>(R.id.child_title).text = title
+        getView<TextView>(R.id.child_title).text = title
     }
 
     fun setParameters(title: String) {

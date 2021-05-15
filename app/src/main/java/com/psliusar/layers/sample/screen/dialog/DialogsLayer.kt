@@ -14,10 +14,10 @@ class DialogsLayer : Layer(R.layout.screen_dialogs), CustomDialogLayer.OnCustomD
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)
-        view.findViewById<View>(R.id.dialogs_simple).setOnClickListener {
+        getView<View>(R.id.dialogs_simple).setOnClickListener {
             showSimpleDialog("Hello World!", "This is simple AlertDialog controlled via Layer")
         }
-        view.findViewById<View>(R.id.dialogs_custom).setOnClickListener {
+        getView<View>(R.id.dialogs_custom).setOnClickListener {
             showCustomDialog("Custom dialog")
         }
     }

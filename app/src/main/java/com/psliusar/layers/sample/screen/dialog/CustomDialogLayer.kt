@@ -21,12 +21,12 @@ class CustomDialogLayer : Layer(R.layout.screen_dialog_custom) {
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)
-        view.findViewById<TextView>(R.id.dialog_title).text = arguments!!.getString(ARGS_TITLE)
-        view.findViewById<View>(R.id.dialog_action1).setOnClickListener {
+        getView<TextView>(R.id.dialog_title).text = arguments!!.getString(ARGS_TITLE)
+        getView<View>(R.id.dialog_action1).setOnClickListener {
             getParent<OnCustomDialogListener>().onDialogAction1(this)
             dialogWrapper.dismiss(false)
         }
-        view.findViewById<View>(R.id.dialog_action2).setOnClickListener {
+        getView<View>(R.id.dialog_action2).setOnClickListener {
             getParent<OnCustomDialogListener>().onDialogAction2(this)
             dialogWrapper.dismiss(false)
         }

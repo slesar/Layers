@@ -41,7 +41,7 @@ class FragmentLayer : LayersFragment() {
                 }
         }
 
-        view.findViewById<View>(R.id.children_container_add_layer).setOnClickListener {
+        getView<View>(R.id.children_container_add_layer).setOnClickListener {
             val number = layers.stackSize + 1
             layers.add<ChildLayer> {
                 withLayer { setParameters("Stack layer $number") }

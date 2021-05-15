@@ -13,22 +13,22 @@ class HomeLayer : Layer(R.layout.screen_home) {
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)
-        view.findViewById<View>(R.id.home_stack).setOnClickListener {
+        getView<View>(R.id.home_stack).setOnClickListener {
             mainActivity.addToStack("Level", 1, true)
         }
-        view.findViewById<View>(R.id.home_children).setOnClickListener {
+        getView<View>(R.id.home_children).setOnClickListener {
             mainActivity.showChildrenLayers()
         }
-        view.findViewById<View>(R.id.home_dialog).setOnClickListener {
+        getView<View>(R.id.home_dialog).setOnClickListener {
             mainActivity.showDialogLayers()
         }
-        view.findViewById<View>(R.id.home_activity_listener).setOnClickListener {
+        getView<View>(R.id.home_activity_listener).setOnClickListener {
             mainActivity.showActivityListener()
         }
-        view.findViewById<View>(R.id.home_save_annotation).setOnClickListener {
+        getView<View>(R.id.home_save_annotation).setOnClickListener {
             mainActivity.showSaveState()
         }
-        view.findViewById<View>(R.id.home_fragment).setOnClickListener {
+        getView<View>(R.id.home_fragment).setOnClickListener {
             mainActivity.showFragment()
         }
     }

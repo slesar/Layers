@@ -1,8 +1,6 @@
 package com.psliusar.layers
 
 import android.app.Dialog
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Parcelable
@@ -52,12 +50,6 @@ open class DialogWrapper(
             field = v
             dialog?.setCancelable(v)
         }
-
-    private val context: Context by lazy {
-        ContextWrapper(layer.activity).apply {
-            setTheme(this@DialogWrapper.theme)
-        }
-    }
 
     private var style = STYLE_NORMAL
     private var notifyOnDismiss = true
@@ -124,7 +116,7 @@ open class DialogWrapper(
                 dialog = onCreateDialog()
                 setupDialog()
             }
-            return LayoutInflater.from(context)
+            return LayoutInflater.from(layer.activity)
         }
 
     fun setStyle(style: Int, @StyleRes theme: Int) {
@@ -136,7 +128,7 @@ open class DialogWrapper(
         }
     }
 
-    open fun onCreateDialog(): Dialog = Dialog(context, theme)
+    open fun onCreateDialog(): Dialog = Dialog(layer.activity, theme)
 
     open fun setupDialog() {
         val dialog = dialog ?: return
