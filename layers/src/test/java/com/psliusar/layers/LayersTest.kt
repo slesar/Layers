@@ -1,12 +1,14 @@
 package com.psliusar.layers
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatActivity
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.Lifecycle
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.doReturn
@@ -22,6 +24,7 @@ import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyInt
 
@@ -29,6 +32,10 @@ private const val CHILD_VIEW_1 = 1
 private const val CHILD_VIEW_2 = 2
 
 class LayersTest {
+
+    @Rule
+    @JvmField
+    val rule = InstantTaskExecutorRule()
 
     private val context: Context = mock()
     private val container: ViewGroup = spy(MockedViewGroup(context))
@@ -42,8 +49,12 @@ class LayersTest {
             }
         }
     }
-    private val activity: Activity = mock {
+    private val activityLifecycle: Lifecycle = mock {
+        on { currentState } doReturn Lifecycle.State.RESUMED
+    }
+    private val activity: AppCompatActivity = mock {
         on { layoutInflater } doReturn inflater
+        on { lifecycle } doReturn activityLifecycle
     }
     private val host: LayersHost = mock {
         on { getView<View>(0) } doReturn container

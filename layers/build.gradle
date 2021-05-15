@@ -30,10 +30,12 @@ dependencies {
     // Kotlin lib
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation "androidx.appcompat:appcompat:$androidxVersion"
+    implementation "androidx.appcompat:appcompat:1+"
+    implementation "androidx.lifecycle:lifecycle-common:2+"
 
     // Tests
     unmock "org.robolectric:android-all:$unMockRobolectricVersion"
+    testImplementation "androidx.arch.core:core-testing:2+"
     testImplementation "junit:junit:$junitVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlinVersion"
