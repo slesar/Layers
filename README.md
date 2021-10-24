@@ -1,7 +1,7 @@
 Layers
 ====
 
-One more way to work with Views. MVP, persistent tasks, view binding, state saving are out-of-box.
+One more way to work with Views. MVVM, support for Lifecycle and ViewModel.
 
 License
 --------

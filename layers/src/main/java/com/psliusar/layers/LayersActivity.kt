@@ -13,6 +13,9 @@ import com.psliusar.layers.callbacks.OnActivityEventListener
 
 private const val SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS"
 
+/**
+ * An [AppCompatActivity] that implements [LayersHost].
+ */
 abstract class LayersActivity : AppCompatActivity(), LayersHost {
 
     override val layers: Layers
@@ -30,6 +33,9 @@ abstract class LayersActivity : AppCompatActivity(), LayersHost {
     override val parentLayer: Layer?
         get() = null
 
+    /**
+     * Indicates whether the Activity reached saved state.
+     */
     var isInSavedState = false
         private set
 
@@ -148,14 +154,23 @@ abstract class LayersActivity : AppCompatActivity(), LayersHost {
         return findViewById(viewId) ?: throw IllegalArgumentException("View not found")
     }
 
+    /**
+     * Adds [OnActivityEventListener].
+     */
     fun addEventListener(listener: OnActivityEventListener) {
         activityEventListeners.addListener(listener)
     }
 
+    /**
+     * Removes [OnActivityEventListener].
+     */
     fun removeEventListener(listener: OnActivityEventListener) {
         activityEventListeners.removeListener(listener)
     }
 
+    /**
+     * Ensures that [Layers] has created all needed views in the stack.
+     */
     private fun ensureLayerViews() {
         if (layersStateRestored) {
             layersStateRestored = false

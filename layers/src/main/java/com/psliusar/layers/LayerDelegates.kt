@@ -6,14 +6,23 @@ import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
 
+/**
+ * Propagates [LayerDelegate]'s events to a set of delegates.
+ */
 internal class LayerDelegates : LayerDelegate {
 
-    private val delegates = mutableListOf<LayerDelegate>()
+    private val delegates = mutableSetOf<LayerDelegate>()
 
+    /**
+     * Adds a [LayerDelegate] to the set.
+     */
     fun addDelegate(delegate: LayerDelegate) {
         delegates.add(delegate)
     }
 
+    /**
+     * Removes the [LayerDelegate] from the set.
+     */
     fun removeDelegate(delegate: LayerDelegate) {
         delegates.remove(delegate)
     }

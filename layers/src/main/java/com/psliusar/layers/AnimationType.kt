@@ -1,7 +1,7 @@
 package com.psliusar.layers
 
 /**
- * All possible values of animation type
+ * All possible values of Layer's animation type.
  */
 enum class AnimationType(val value: Int) {
 

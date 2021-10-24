@@ -1,9 +1,12 @@
-package com.psliusar.layers
+package com.psliusar.layers.state
 
-import com.psliusar.layers.binder.StateWrapper
+import com.psliusar.layers.Layer
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
+/**
+ * Provides values from the arguments Bundle of the [Layer].
+ */
 internal class Argument<T>(
     type: Class<T>,
     private val key: String

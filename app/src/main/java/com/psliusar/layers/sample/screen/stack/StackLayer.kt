@@ -11,7 +11,7 @@ import com.psliusar.layers.sample.R
 class StackLayer : Layer(R.layout.screen_stack) {
 
     private var title: CharSequence? by savedState()
-    private var level: Int by savedState()
+    private var level: Int? by savedState()
 
     private lateinit var viewModel: StackViewModel
 
@@ -34,7 +34,7 @@ class StackLayer : Layer(R.layout.screen_stack) {
         getView<View>(R.id.stack_add).setOnClickListener {
             mainActivity.addToStack(
                 nextLayerTitle,
-                level + 1,
+                level!! + 1,
                 isNextOpaque
             )
         }
@@ -42,13 +42,13 @@ class StackLayer : Layer(R.layout.screen_stack) {
         getView<View>(R.id.stack_replace).setOnClickListener {
             mainActivity.replaceInStack(
                 nextLayerTitle,
-                level + 1,
+                level!! + 1,
                 isNextOpaque
             )
         }
 
         title?.let {
-            getView<TextView>(R.id.stack_level).text = viewModel.getStackLevelText(it, level)
+            getView<TextView>(R.id.stack_level).text = viewModel.getStackLevelText(it, level!!)
         }
     }
 

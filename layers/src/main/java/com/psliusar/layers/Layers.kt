@@ -13,26 +13,53 @@ import kotlin.collections.ArrayList
 private const val STATE_STACK = "LAYERS.STATE_STACK"
 private const val STATE_LAYERS = "LAYERS.STATE_LAYERS"
 
+/**
+ * Manages stacks of Layers in view groups. Each [Layer] may or may not provide a view.
+ *
+ * Keeps stack of layers.
+ * Manages lifecycle.
+ * Provides different stacks.
+ *
+ * @param host the host, usually implemented by Activity.
+ * @param containerId the ID of the container (view group) that will be used to stack Layers in it.
+ * @param savedState the state that was saved during configuration change. Contains states for all
+ * stacks controlled by this manager.
+ *
+ * @see saveState
+ */
 class Layers @VisibleForTesting constructor(
     val host: LayersHost,
     val containerId: Int,
     savedState: Bundle?
 ) {
 
+    /**
+     * Main constructor for [Layers]. Uses default container for the stack.
+     *
+     * @param host the host, usually implemented by Activity.
+     * @param savedState the state that was saved during configuration change. Contains states for
+     * all stacks controlled by this manager.
+     */
     constructor(
         host: LayersHost,
         savedState: Bundle?
     ) : this(host, View.NO_ID, savedState)
 
+    /**
+     * Indicates whether there is an active transition happening.
+     */
     val hasRunningTransition: Boolean
         get() = transitions.size != 0
 
-    val isInSavedState: Boolean
-        get() = stateSaved
-
+    /**
+     * Returns the size of the stack.
+     */
     val stackSize: Int
         get() = layerStack.size
 
+    /**
+     * Indicates whether the view creation is paused or not.
+     */
     var isViewPaused = false
         private set
 
@@ -40,7 +67,6 @@ class Layers @VisibleForTesting constructor(
     private val layerStack: ArrayList<StackEntry>
     private var container: ViewGroup? = null
     private var layerGroup: SparseArray<Layers>? = null
-    private var stateSaved = false
 
     init {
         isViewPaused = savedState != null
@@ -52,26 +78,33 @@ class Layers @VisibleForTesting constructor(
             moveToState(entry, i, StackEntry.LAYER_STATE_CREATED, false)
         }
 
-        // Initialize Layers at other containers (groups)
+        // Initialize Layers at other containers (stacks)
         savedState?.getSparseParcelableArray<Bundle>(STATE_LAYERS)
             ?.forEach { key, state ->
                 at(key, state)
             }
     }
 
+    /**
+     * Returns an existing manager or creates a new one for the given container.
+     */
     fun at(@IdRes containerId: Int): Layers = when (containerId) {
         this.containerId -> this
         else -> at(containerId, null)
     }
 
+    /**
+     * Returns an existing manager or creates a new one for the given container.
+     */
     @VisibleForTesting
     internal fun at(@IdRes containerId: Int, state: Bundle?): Layers {
         val group = layerGroup.or { SparseArray<Layers>().also { layerGroup = it } }
-        return group.get(containerId).or { Layers(host, containerId, state).also { group.put(containerId, it) } }
+        return group.getOrPut(containerId) { Layers(host, containerId, state) }
     }
 
     /**
-     * Un-pause View creation. View on the top of the stack will be created if wasn't created already.
+     * Un-pause View creation. View on the top of the stack will be created if it wasn't created
+     * already.
      */
     fun resumeView() {
         if (!isViewPaused) {
@@ -95,16 +128,24 @@ class Layers @VisibleForTesting constructor(
 
     //region Public layer operations
 
-    inline fun <reified L : Layer> add(noinline block: (Transition<L>.() -> Unit)? = null) {
-        add(L::class.java, block)
-    }
-
+    /**
+     * Adds a Layer to the stack.
+     *
+     * @param layerClass the class of the Layer.
+     * @param block the callback to configure transition.
+     */
     fun <L : Layer> add(layerClass: Class<L>, block: (Transition<L>.() -> Unit)? = null) {
         val t = AddTransition(this, layerClass)
         block?.invoke(t)
-        t.commit()
+        addTransition(t)
     }
 
+    /**
+     * Updates a Layer at the given index.
+     *
+     * @param index the index in stack at which a Layer should be updated.
+     * @param arguments the arguments to pass to Layer.
+     */
     fun update(index: Int, arguments: Bundle) {
         val entry = layerStack.getOrNull(index)
             ?: throw IndexOutOfBoundsException("Index: $index, Size: ${layerStack.size}")
@@ -113,22 +154,36 @@ class Layers @VisibleForTesting constructor(
         entry.layerInstance?.update(arguments)
     }
 
-    inline fun <reified L : Layer> replace(noinline block: (Transition<L>.() -> Unit)? = null) {
-        replace(L::class.java, block)
-    }
-
+    /**
+     * Replaces a Layer at the top of the stack with another one.
+     *
+     * @param layerClass the class of the new Layer.
+     * @param block the callback to configure transition.
+     */
     fun <L : Layer> replace(layerClass: Class<L>, block: (Transition<L>.() -> Unit)? = null) {
         val t = ReplaceTransition(this, layerClass)
         block?.invoke(t)
-        t.commit()
+        addTransition(t)
     }
 
+    /**
+     * Removes a Layer at the given index from the stack.
+     *
+     * @param index the index in stack at which a Layer should be removed.
+     * @param block the callback to configure transition.
+     */
     fun <L : Layer> remove(index: Int, block: (Transition<L>.() -> Unit)? = null) {
         val t = RemoveTransition<L>(this, index)
         block?.invoke(t)
-        t.commit()
+        addTransition(t)
     }
 
+    /**
+     * Removes a Layer from the stack.
+     *
+     * @param layer the instance of Layer to remove.
+     * @param block the callback to configure transition.
+     */
     fun <L : Layer> remove(layer: L, block: (Transition<L>.() -> Unit)? = null) {
         layerStack.indexOfLast { it.layerInstance === layer }
             .takeIf { it >= 0 }
@@ -136,9 +191,23 @@ class Layers @VisibleForTesting constructor(
             ?: throw IllegalArgumentException("Layer not found: $layer")
     }
 
+    /**
+     * Pops a Layer out from the top of the stack.
+     *
+     * @return the Layer being removed or null if the stack is empty.
+     */
     fun <L : Layer> pop(): L? = peek<L>()
-        ?.also { RemoveTransition<Layer>(this, layerStack.size - 1).commit() }
+        ?.also {
+            val t = RemoveTransition<Layer>(this, layerStack.size - 1)
+            addTransition(t)
+        }
 
+    /**
+     * Pops Layers out of the stack until a Layer with the given [name].
+     *
+     * @param name the name of the Layer till which Layers should be popped out from the stack.
+     * @param inclusive the flag indicates whether to remove the Layer with the given name or not.
+     */
     fun <L : Layer> popLayersTo(name: String?, inclusive: Boolean): L? {
         val size = layerStack.size
         if (size == 0) {
@@ -151,6 +220,8 @@ class Layers @VisibleForTesting constructor(
             if (inclusive) {
                 val entry = layerStack[0]
                 clear()
+
+                @Suppress("UNCHECKED_CAST")
                 return entry.layerInstance as L?
             }
         } else if (layerStack.none { it.name == name }) {
@@ -177,9 +248,15 @@ class Layers @VisibleForTesting constructor(
 
         resumeView()
 
+        @Suppress("UNCHECKED_CAST")
         return lastEntry?.layerInstance as L?
     }
 
+    /**
+     * Handles `Back` pressing event.
+     *
+     * @return true if the event has been handled, false if the caller should handle the event.
+     */
     fun onBackPressed(): Boolean {
         return layerStack.lastOrNull {
             val layer = it.layerInstance
@@ -187,6 +264,9 @@ class Layers @VisibleForTesting constructor(
         } != null
     }
 
+    /**
+     * Removes all Layers from the stack one by one.
+     */
     fun clear(): Int {
         val size = layerStack.size
         if (size == 0) {
@@ -210,18 +290,38 @@ class Layers @VisibleForTesting constructor(
 
     //region Layer getters
 
+    /**
+     * Returns a Layer from the top of the stack, if there's any.
+     */
     fun <L : Layer> peek(): L? = get(layerStack.size - 1)
 
+    /**
+     * Returns a Layer from the stack by the given index.
+     */
+    @Suppress("UNCHECKED_CAST")
     fun <L : Layer> get(index: Int): L? = layerStack.getOrNull(index)?.layerInstance as L?
 
-    fun <L : Layer> find(name: String?): L? = layerStack.lastOrNull { it.name == name }?.layerInstance as L?
+    /**
+     * Looks up the topmost Layer with the given name in the stack.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <L : Layer> find(name: String?): L? =
+        layerStack.lastOrNull { it.name == name }?.layerInstance as L?
 
+    /**
+     * Returns an index of the topmost Layer in the stack with the given name.
+     */
     fun indexOf(name: String?): Int = layerStack.indexOfLast { it.name == name }
 
     //endregion
 
     //region Lifecycle
 
+    /**
+     * Saves the state of this manager and all nested managers (at different containers).
+     *
+     * @see Layers
+     */
     fun saveState(): Bundle? {
         val outState = Bundle()
 
@@ -251,10 +351,12 @@ class Layers @VisibleForTesting constructor(
             outState.putSparseParcelableArray(STATE_LAYERS, layersArray)
         }
 
-        stateSaved = true
         return outState.takeIf { it.size() > 0 }
     }
 
+    /**
+     * Initiates the end of life of the manager and all its nested managers.
+     */
     fun destroy() {
         val size = layerStack.size
         for (i in size - 1 downTo 0) {
@@ -272,6 +374,15 @@ class Layers @VisibleForTesting constructor(
 
     //region Layer management
 
+    /**
+     * Moves the Layer to a particular state.
+     *
+     * @param entry the stack entry.
+     * @param index the index in the stack.
+     * @param toState the target state.
+     * @param saveState the flag indicating whether the state should be saved or not in case the
+     * Layer or its view gets destroyed.
+     */
     private fun moveToState(entry: StackEntry, index: Int, toState: Int, saveState: Boolean) {
         var targetState = toState
         var state = entry.state
@@ -318,14 +429,25 @@ class Layers @VisibleForTesting constructor(
         }
     }
 
+    /**
+     * Creates an instance of the Layer and puts it into the given stack entry.
+     */
     private fun createLayer(entry: StackEntry) {
-        entry.instantiateLayer().create(host, entry.arguments, entry.name, entry.layerState)
+        entry.instantiateLayer()
+            .create(host, entry.arguments, entry.name, entry.layerState)
     }
 
+    /**
+     * Creates a view for the Layer in stack entry.
+     */
     private fun createView(entry: StackEntry, index: Int) {
         val container = getContainer()
         val layer = entry.layerInstance ?: throw IllegalStateException("Layer instance must exist")
-        layer.createView(entry.layerState, if (layer.isViewInLayout) container else null, entry.layoutResId)
+        layer.createView(
+            entry.layerState,
+            if (layer.isViewInLayout) container else null,
+            entry.layoutResId
+        )
         val layerView = layer.view
         if (layerView != null && layer.isViewInLayout) {
             var fromEnd = 0
@@ -349,11 +471,17 @@ class Layers @VisibleForTesting constructor(
         }
     }
 
+    /**
+     * Restores the view state that was saved before the view was destroyed due to lifecycle.
+     */
     private fun restoreViewState(entry: StackEntry) {
         val savedState = entry.viewState
         entry.layerInstance?.restoreViewState(savedState)
     }
 
+    /**
+     * Saves the view state before the view is going to be destroyed.
+     */
     private fun saveViewState(entry: StackEntry) {
         val viewState = SparseArray<Parcelable>()
         entry.layerInstance?.saveViewState(viewState)
@@ -362,6 +490,9 @@ class Layers @VisibleForTesting constructor(
         }
     }
 
+    /**
+     * Destroys the view.
+     */
     private fun destroyView(entry: StackEntry, saveState: Boolean) {
         val layer = entry.layerInstance ?: throw IllegalStateException("Layer instance must exist")
 
@@ -380,6 +511,11 @@ class Layers @VisibleForTesting constructor(
         }
     }
 
+    /**
+     * Saves the state of the Layer. It contains both states for the view and custom state from
+     * the Layer.
+     * The state of the view is not accessible from the subclasses and is managed automatically.
+     */
     private fun saveLayerState(entry: StackEntry) {
         val bundle = Bundle()
         entry.layerInstance?.saveLayerState(bundle)
@@ -388,6 +524,9 @@ class Layers @VisibleForTesting constructor(
         }
     }
 
+    /**
+     * Destroys the instance of Layer.
+     */
     private fun destroyLayer(entry: StackEntry, saveState: Boolean) {
         if (saveState) {
             saveLayerState(entry)
@@ -399,17 +538,25 @@ class Layers @VisibleForTesting constructor(
 
     //region Transition
 
+    /**
+     * Adds a transition to the list of transition. Immediately starts the transition if there's
+     * only one in the list.
+     * Consequent transitions will be started at the end of previous transition.
+     */
     internal fun addTransition(t: Transition<*>) {
         transitions.offer(t)
         if (transitions.size == 1) {
-            transitions.peek().apply()
+            transitions.peek().start()
         }
     }
 
+    /**
+     * Starts next transition in the list.
+     */
     internal fun nextTransition() {
         transitions.poll()
         if (!transitions.isEmpty()) {
-            transitions.peek().apply()
+            transitions.peek().start()
         }
     }
 
@@ -417,25 +564,31 @@ class Layers @VisibleForTesting constructor(
 
     //region Internal tools
 
+    /**
+     * Adds an entry to the stack.
+     */
     internal fun commitStackEntry(entry: StackEntry) {
         layerStack.add(entry)
         ensureViews()
     }
 
+    /**
+     * Provides an entry by the index.
+     *
+     * @throws IndexOutOfBoundsException
+     */
     internal fun getStackEntryAt(index: Int): StackEntry = layerStack[index]
 
     /**
-     * TODO
-     *
-     * @param index
-     * @param <L>
-     * @return
-    </L> */
+     * Silently removes the Layer from the stack at the given index, with no animations.
+     * Does not throw an exception if the index is incorrect.
+     */
     internal fun <L : Layer> removeLayerAt(index: Int): L? {
         val entry = layerStack.getOrNull(index) ?: return null
 
         moveToState(entry, index, StackEntry.LAYER_STATE_DESTROYED, false)
 
+        @Suppress("UNCHECKED_CAST")
         val layer = layerStack.removeAt(index).layerInstance as L?
 
         ensureViews()
@@ -466,6 +619,11 @@ class Layers @VisibleForTesting constructor(
 
     //region Views
 
+    /**
+     * Goes in stack from top to bottom and ensures the views are in correct state. Layers can be
+     * transparent, which means underlying view must also be created. If a Layer does not have the
+     * view, but it should be, the Layer will be moved into the corresponding state with the view.
+     */
     internal fun ensureViews() {
         val size = layerStack.size
         if (isViewPaused || size == 0) {
@@ -483,14 +641,36 @@ class Layers @VisibleForTesting constructor(
         }
     }
 
+    /**
+     * Returns the container where the views will be placed.
+     */
     private fun getContainer(): ViewGroup = container.or {
         when (containerId) {
             View.NO_ID -> host.defaultContainer
             else -> host.getView(containerId)
         }.also {
+            // We save state manually
             it.isSaveFromParentEnabled = false
             container = it
         }
+    }
+
+    //endregion
+
+    //region Extensions
+
+    /**
+     * Reified extension to add a Layer.
+     */
+    inline fun <reified L : Layer> add(noinline block: (Transition<L>.() -> Unit)? = null) {
+        add(L::class.java, block)
+    }
+
+    /**
+     * Reified extension to replace a Layer.
+     */
+    inline fun <reified L : Layer> replace(noinline block: (Transition<L>.() -> Unit)? = null) {
+        replace(L::class.java, block)
     }
 
     //endregion

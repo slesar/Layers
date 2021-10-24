@@ -8,8 +8,10 @@ import androidx.annotation.AnimRes
 import androidx.annotation.LayoutRes
 import com.psliusar.layers.animation.SimpleAnimation
 import java.util.ArrayList
-import java.util.HashSet
 
+/**
+ * General class that performs transitions between layers.
+ */
 abstract class Transition<L : Layer> private constructor(
     internal val layers: Layers,
     internal val stackEntry: StackEntry,
@@ -21,7 +23,7 @@ abstract class Transition<L : Layer> private constructor(
         layerClass: Class<L>
     ) : this(
         layers,
-        StackEntry(layerClass),//.also { it.instantiateLayer() },
+        StackEntry(layerClass),
         -1
     )
 
@@ -34,56 +36,78 @@ abstract class Transition<L : Layer> private constructor(
         index
     )
 
-    var committed = false
+    /**
+     * Indicates whether the transition has been started.
+     */
+    internal var started = false
         private set
-    internal var applied = false
-        private set
+
     private var animatorSet: AnimatorSet? = null
-    private var toAnimate: HashSet<Animator>? = null
+    private var toAnimate: MutableSet<Animator>? = null
     private var prepareLayer: (L.() -> Unit)? = null
 
     private val animationListener = object : AnimatorListenerAdapter() {
         override fun onAnimationEnd(animation: Animator) {
+            animatorSet = null
             finish()
         }
     }
 
     //region Builder arguments
 
-    var animationEnabled = true
+    /**
+     * Flag that controls whether the animation is enabled for current transition.
+     */
+    var isAnimationEnabled = true
 
+    /**
+     * Custom arguments that will be set to the [Layer] once instantiated.
+     */
     open var arguments: Bundle?
         get() = stackEntry.arguments
         set(v) {
             stackEntry.arguments = v
         }
 
+    /**
+     * Custom name for the [Layer] which can be used later to work with layers stack.
+     */
     open var name: String?
         get() = stackEntry.name
         set(v) {
             stackEntry.name = v
         }
 
+    /**
+     * Opaque layer does not allow any visible layers below it in the stack. When the underlying
+     * layer should be visible, current layer's flag should be set to `false`.
+     */
     open var opaque: Boolean
         get() = stackEntry.layerType == StackEntry.TYPE_OPAQUE
         set(v) {
             stackEntry.layerType = if (v) StackEntry.TYPE_OPAQUE else StackEntry.TYPE_TRANSPARENT
         }
 
+    /**
+     * Custom layout resource that could be set to [Layer]. This is useful when the same class can
+     * be used with different layouts in some circumstances.
+     */
     open var layoutResId: Int
         get() = stackEntry.layoutResId
         set(@LayoutRes v) {
             stackEntry.layoutResId = v
         }
 
+    /**
+     * Callback to setup the layer during transition.
+     */
     open fun withLayer(block: L.() -> Unit) {
-        //@Suppress("UNCHECKED_CAST") XXX
-        //block(stackEntry.layerInstance as L)
         prepareLayer = block
     }
 
     /**
-     * Direct animation
+     * Direct animation.
+     * Note that [Layer] has a callback to specify a custom animation - [Layer.getAnimation].
      *
      * @param outAnimId layer(s) that comes out
      * @param inAnimId layer that comes in
@@ -97,7 +121,8 @@ abstract class Transition<L : Layer> private constructor(
     }
 
     /**
-     * Reverse animation
+     * Reverse animation.
+     * Note that [Layer] has a callback to specify a custom animation - [Layer.getAnimation].
      *
      * @param outAnimId layer that pops out from the top of the stack
      * @param inAnimId layer(s) that returns back from the stack
@@ -112,88 +137,118 @@ abstract class Transition<L : Layer> private constructor(
 
     // endregion
 
-    fun isFinished(): Boolean = committed && animatorSet == null
+    /**
+     * Says whether the transition is complete (animation is finished) or not.
+     */
+    fun isFinished(): Boolean = started && animatorSet == null
 
-    fun hasAnimations(): Boolean = committed && (toAnimate?.size ?: 0) > 0
+    /**
+     * Checks if the transition is started and performs animations.
+     */
+    fun hasAnimations(): Boolean = started && (toAnimate?.size ?: 0) > 0
 
-    fun commit() {
-        check(!committed) { "Current transaction has been already committed" }
-        committed = true
+    /**
+     * Starts the transition. If there any animations specified for the transition, they will be
+     * started immediately.
+     */
+    internal fun start() {
+        // TODO for specific index and non-empty transition queue - throw exception?
+        onBeforeTransition()
+
+        check(!started) { "Current transaction has been already started" }
 
         stackEntry.instantiateLayer()
+        @Suppress("UNCHECKED_CAST")
         prepareLayer?.invoke(stackEntry.layerInstance as L)
-        layers.addTransition(this)
 
-        // TODO for specific index and non-empty transition queue - throw exception?
-
-        onBeforeTransition()
-    }
-
-    internal fun apply() {
-        applied = true
+        started = true
         onTransition()
 
-        if (toAnimate == null) {
+        val animate = toAnimate
+        if (animate == null) {
             finish()
         } else {
             AnimatorSet().apply {
                 animatorSet = this
                 addListener(animationListener)
-                playTogether(toAnimate)
+                playTogether(animate)
                 start()
             }
         }
     }
 
     /**
-     * Called when the transition is added to the queue.
+     * Called when the transition is just about to start.
      */
     internal open fun onBeforeTransition() {
 
     }
 
     /**
-     * A transition itself should be generally happening in this method. This is called right after th transition is taken from the queue.
+     * A transition itself should be generally happening in this method. This is called right after
+     * the transition is started.
      */
-    internal open fun onTransition() {
-
-    }
+    internal abstract fun onTransition()
 
     /**
      * Any clean-up after transition should happen here.
      */
-    internal open fun onAfterTransition() {
+    internal abstract fun onAfterTransition()
 
-    }
-
+    /**
+     * This method is called when the transition should be finished immediately. The final state
+     * should be applied if the transition is still in progress.
+     */
     internal abstract fun fastForward(stack: ArrayList<StackEntry>)
 
+    /**
+     * Marks the end of the transition and starts next transition in queue in [Layers].
+     */
     internal fun finish() {
         onAfterTransition()
 
         layers.nextTransition()
     }
 
+    /**
+     * Creates animation for the layer.
+     */
     internal fun animateLayer(layer: Layer, animationType: AnimationType): Animator? {
         val view = layer.view
-        if (!animationEnabled || layers.isViewPaused || !layer.isViewInLayout || view == null) {
+        if (!isAnimationEnabled || layers.isViewPaused || !layer.isViewInLayout || view == null) {
             return null
         }
         var anim = layer.getAnimation(animationType)
-        if (anim == null && (stackEntry.animations?.get(animationType.value) ?: 0) != 0) {
-            anim = SimpleAnimation(view, stackEntry.animations!![animationType.value])
+        val animations = stackEntry.animations
+        if (anim == null && animations != null && animations[animationType.value] != 0) {
+            anim = SimpleAnimation(view, animations[animationType.value])
             anim.setTarget(view)
         }
         if (anim != null) {
-            toAnimate.or { HashSet<Animator>().also { toAnimate = it } }.add(anim)
+            anim.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    layer.onAnimationStart(animationType)
+                }
+
+                override fun onAnimationEnd(animation: Animator) {
+                    layer.onAnimationFinish(animationType)
+                }
+            })
+            toAnimate.or { mutableSetOf<Animator>().also { toAnimate = it } }.add(anim)
         }
         return anim
     }
 
+    /**
+     * Marks layers in stack as in transition.
+     *
+     * @param fromIndex the index from which layers should be marked for transition
+     */
     internal fun setTransitionState(fromIndex: Int): Boolean {
         return if (fromIndex >= 0) {
             val stackSize = layers.stackSize
-            // do not touch the lowest one, because it will make getLowestVisibleLayer return different value later
+            // Do not touch the lowest one, because it will make getLowestVisibleLayer return
+            // different value later.
             for (i in fromIndex + 1 until stackSize) {
                 layers.getStackEntryAt(i).inTransition = true
             }
@@ -203,6 +258,11 @@ abstract class Transition<L : Layer> private constructor(
         }
     }
 
+    /**
+     * Resets transition state in layers stack.
+     *
+     * @param fromIndex the index from which to reset transition state
+     */
     internal fun resetTransitionState(fromIndex: Int): Boolean {
         return if (fromIndex >= 0) {
             val stackSize = layers.stackSize

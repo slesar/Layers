@@ -15,12 +15,22 @@ private const val PRIVATE_ARGS_DIALOG_STYLE = "DIALOG_LAYER.PRIVATE_DIALOG_STYLE
 private const val PRIVATE_ARGS_DIALOG_THEME = "DIALOG_LAYER.PRIVATE_DIALOG_THEME"
 private const val PRIVATE_ARGS_DIALOG_CANCELABLE = "DIALOG_LAYER.PRIVATE_DIALOG_CANCELABLE"
 
+/**
+ * A delegate that makes [Layer] behave like a dialog.
+ * Should be added to Layer in its constructor to work properly.
+ */
 open class DialogWrapper(
     val layer: Layer
 ) : LayerDelegate, DialogInterface.OnCancelListener, DialogInterface.OnDismissListener {
 
+    /**
+     * Callback interface.
+     */
     interface OnLayerDialogListener {
 
+        /**
+         * Called when a dialog gets dismissed.
+         */
         fun onDialogCancel(wrapper: DialogWrapper)
     }
 
@@ -38,13 +48,28 @@ open class DialogWrapper(
         const val STYLE_NO_INPUT = 3
     }
 
-    override val isViewInLayout: Boolean = false
+    override val isViewInLayout: Boolean = false // Do not place the view in layout
 
+    override val layoutInflater: LayoutInflater?
+        get() = layer.activity.layoutInflater
+
+    /**
+     * An actual instance of dialog.
+     */
     var dialog: Dialog? = null
-
-    var theme = 0
         private set
 
+    /**
+     * Custom theme resource for the dialog.
+     */
+    @StyleRes
+    var themeResId = 0
+        private set
+
+    /**
+     * Flag that makes the dialog cancellable by user. When the dialog is not cancellable the user
+     * should choose an action that will dismiss the dialog.
+     */
     var cancelable = true
         set(v) {
             field = v
@@ -57,15 +82,15 @@ open class DialogWrapper(
     override fun onCreate(savedState: Bundle?) {
         savedState?.let {
             style = it.getInt(PRIVATE_ARGS_DIALOG_STYLE, style)
-            theme = it.getInt(PRIVATE_ARGS_DIALOG_THEME, theme)
+            themeResId = it.getInt(PRIVATE_ARGS_DIALOG_THEME, themeResId)
             cancelable = it.getBoolean(PRIVATE_ARGS_DIALOG_CANCELABLE, cancelable)
         }
     }
 
     override fun onAttach() {
         if (dialog == null) {
-            // Init Layout Inflater
-            layoutInflater
+            dialog = onCreateDialog()
+            onDialogCreated()
         }
         showDialog()
     }
@@ -91,6 +116,8 @@ open class DialogWrapper(
     }
 
     override fun onDestroyView() {
+        notifyOnDismiss = false
+        dialog?.dismiss()
         dialog = null
     }
 
@@ -102,39 +129,42 @@ open class DialogWrapper(
         if (style != STYLE_NORMAL) {
             outState.putInt(PRIVATE_ARGS_DIALOG_STYLE, style)
         }
-        if (theme != 0) {
-            outState.putInt(PRIVATE_ARGS_DIALOG_THEME, theme)
+        if (themeResId != 0) {
+            outState.putInt(PRIVATE_ARGS_DIALOG_THEME, themeResId)
         }
         if (!cancelable) {
             outState.putBoolean(PRIVATE_ARGS_DIALOG_CANCELABLE, false)
         }
     }
 
-    override val layoutInflater: LayoutInflater?
-        get() {
-            if (dialog == null) {
-                dialog = onCreateDialog()
-                setupDialog()
-            }
-            return LayoutInflater.from(layer.activity)
-        }
-
+    /**
+     * Sets the custom style and theme.
+     */
     fun setStyle(style: Int, @StyleRes theme: Int) {
         this.style = style
         if (theme != 0) {
-            this.theme = theme
+            this.themeResId = theme
         } else if (style == STYLE_NO_FRAME || style == STYLE_NO_INPUT) {
-            this.theme = android.R.style.Theme_Panel
+            this.themeResId = android.R.style.Theme_Panel
         }
     }
 
-    open fun onCreateDialog(): Dialog = Dialog(layer.activity, theme)
+    /**
+     * Creates an instance of dialog. May be overridden by subclasses.
+     */
+    open fun onCreateDialog(): Dialog = Dialog(layer.activity, themeResId)
 
-    open fun setupDialog() {
+    /**
+     * Called when the dialog is created.
+     */
+    open fun onDialogCreated() {
         val dialog = dialog ?: return
         when (style) {
             STYLE_NO_INPUT -> {
-                dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                dialog.window?.addFlags(
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                )
                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
             }
             STYLE_NO_FRAME, STYLE_NO_TITLE -> dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -168,6 +198,9 @@ open class DialogWrapper(
         layer.dismiss()
     }
 
+    /**
+     * Dismisses the dialog and removes Layer from the stack.
+     */
     fun dismiss(notify: Boolean) {
         notifyOnDismiss = notify
         dialog?.takeIf { it.isShowing }?.dismiss()

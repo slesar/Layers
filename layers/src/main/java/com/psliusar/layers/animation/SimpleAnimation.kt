@@ -20,7 +20,7 @@ import androidx.annotation.AnimRes
  * When cancel is called, listeners will get both calls -
  * [AnimatorListener.onAnimationCancel] and [AnimatorListener.onAnimationEnd]
  */
-class SimpleAnimation(
+internal class SimpleAnimation(
     /** Target view to apply animation to  */
     private val view: View,
     @AnimRes animResId: Int
@@ -30,8 +30,8 @@ class SimpleAnimation(
     private val animation: Animation = AnimationUtils.loadAnimation(view.context, animResId)
 
     /**
-     * Some listener methods should be called in a next frame. This handler will be used to send message
-     * to next frame.
+     * Some listener methods should be called in a next frame. This handler will be used to send
+     * a message to next frame.
      */
     private var uiHandler: Handler? = null
 

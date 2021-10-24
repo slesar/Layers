@@ -2,10 +2,15 @@ package com.psliusar.layers
 
 import java.util.ArrayList
 
-class ReplaceTransition<L : Layer> : Transition<L> {
+/**
+ * Transition replaces [Layer] in the stack.
+ */
+internal class ReplaceTransition<L : Layer> : Transition<L> {
 
+    /** Replaces top [Layer] in the stack */
     constructor(layers: Layers, layerClass: Class<L>) : super(layers, layerClass)
 
+    /** Replaces [Layer] by the given index in the stack */
     constructor(layers: Layers, index: Int) : super(layers, index)
 
     private var lowestVisibleLayer = -1
@@ -49,10 +54,10 @@ class ReplaceTransition<L : Layer> : Transition<L> {
     }
 
     override fun fastForward(stack: ArrayList<StackEntry>) {
-        if (!applied) {
+        if (!started) {
             stack.add(stackEntry)
         }
-        if ((!applied || hasAnimations()) && replaceLayerIndex >= 0) {
+        if ((!started || hasAnimations()) && replaceLayerIndex >= 0) {
             stack.removeAt(replaceLayerIndex)
         }
     }

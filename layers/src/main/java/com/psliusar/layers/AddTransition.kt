@@ -2,10 +2,15 @@ package com.psliusar.layers
 
 import java.util.ArrayList
 
-class AddTransition<L : Layer> : Transition<L> {
+/**
+ * Transition adds [Layer] to the stack.
+ */
+internal class AddTransition<L : Layer> : Transition<L> {
 
+    /** Adds [Layer] to top of the stack */
     constructor(layers: Layers, layerClass: Class<L>) : super(layers, layerClass)
 
+    /** Adds [Layer] at the given index to the stack */
     constructor(layers: Layers, index: Int) : super(layers, index)
 
     private var lowestVisibleLayer = -1
@@ -25,8 +30,10 @@ class AddTransition<L : Layer> : Transition<L> {
 
         if (lowestVisibleLayer >= 0) {
             for (i in lowestVisibleLayer until stackSize) {
-                val layer = layers.getStackEntryAt(i).layerInstance ?: throw IllegalStateException("Layer instance must exist")
-                val anim = if (i == stackSize - 1) AnimationType.ANIMATION_UPPER_IN else AnimationType.ANIMATION_LOWER_OUT
+                val layer = layers.getStackEntryAt(i).layerInstance
+                    ?: throw IllegalStateException("Layer instance must exist")
+                val anim = if (i == stackSize - 1)
+                    AnimationType.ANIMATION_UPPER_IN else AnimationType.ANIMATION_LOWER_OUT
                 animateLayer(layer, anim)
             }
         }
@@ -39,7 +46,7 @@ class AddTransition<L : Layer> : Transition<L> {
     }
 
     override fun fastForward(stack: ArrayList<StackEntry>) {
-        if (!applied) {
+        if (!started) {
             stack.add(stackEntry)
         }
     }

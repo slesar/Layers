@@ -8,7 +8,7 @@ import com.psliusar.layers.sample.R
 
 class ChildLayer : Layer(R.layout.screen_child) {
 
-    var title: String by savedState()
+    private var title: String? by savedState()
 
     override fun onBindView(savedState: Bundle?, view: View) {
         super.onBindView(savedState, view)

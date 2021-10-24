@@ -3,7 +3,13 @@ package com.psliusar.layers
 import android.os.Bundle
 import java.util.ArrayList
 
-class RemoveTransition<L : Layer>(layers: Layers, index: Int) : Transition<L>(layers, index) {
+/**
+ * Transition removes [Layer] from the stack.
+ */
+internal class RemoveTransition<L : Layer> : Transition<L> {
+
+    /** Removes [Layer] from the stack at the given index */
+    constructor(layers: Layers, index: Int) : super(layers, index)
 
     private var lowestVisibleLayer = -1
 
@@ -57,7 +63,7 @@ class RemoveTransition<L : Layer>(layers: Layers, index: Int) : Transition<L>(la
     }
 
     override fun fastForward(stack: ArrayList<StackEntry>) {
-        if (!applied) {
+        if (!started) {
             stack.removeAt(index) // size should be checked earlier
         }
     }

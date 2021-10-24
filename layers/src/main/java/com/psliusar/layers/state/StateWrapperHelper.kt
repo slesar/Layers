@@ -1,4 +1,4 @@
-package com.psliusar.layers.binder
+package com.psliusar.layers.state
 
 import android.os.Bundle
 import android.os.Parcelable
@@ -8,8 +8,15 @@ import java.io.Serializable
 import java.util.ArrayList
 import java.util.Arrays
 
-object StateWrapperHelper {
+/**
+ * Helper object to save values into [Bundle] and read values from it.
+ */
+internal object StateWrapperHelper {
 
+    /**
+     * Restores a value of the given [type] by the [key] from the given [bundle].
+     * Not all types are supported. Refer to [isSupported] for all supported types.
+     */
     @Suppress("UNCHECKED_CAST")
     fun <T> restoreValue(bundle: Bundle, type: Class<T>, key: String): T? {
         val desc = getTypeDescription(type, null)
@@ -18,8 +25,8 @@ object StateWrapperHelper {
             throw UnsupportedOperationException("Unable to restore value of type $type")
         }
 
+        // Custom classes have to be deserialized with proper class loader.
         if (desc.customType) {
-            // Init classloader
             bundle.classLoader = javaClass.classLoader
         }
 
@@ -28,6 +35,7 @@ object StateWrapperHelper {
             when (desc.type) {
                 Serializable::class.java -> restored
                 Parcelable::class.java -> {
+                    // Parcelable array needs to be copied to an array of proper type
                     val innerType = java.lang.reflect.Array.newInstance(desc.innerType, 0)::class.java
                     copyParcelableArray(restored as Array<Parcelable?>?, innerType as Class<out Array<Parcelable>?>) as T?
                 }
@@ -36,6 +44,8 @@ object StateWrapperHelper {
         } else if (!desc.isArrayList && !desc.isArray) {
             when (desc.type) {
                 SparseArray::class.java -> bundle.getSparseParcelableArray<Parcelable>(key) as T?
+                // ViewModelStore is being stored in Bundle just to be able to handle it over to
+                // a new instance of Activity
                 ViewModelStore::class.java -> bundle.getParcelable<SaveWrapper>(key)?.value as T?
                 else -> bundle.get(key) as T?
             }
@@ -44,6 +54,10 @@ object StateWrapperHelper {
         }
     }
 
+    /**
+     * Saves a value of the given [type] by the [key] in the given [bundle].
+     * Not all types are supported. Refer to [isSupported] for all supported types.
+     */
     fun <T> saveValue(bundle: Bundle, type: Class<T>, key: String, value: T?) {
         value ?: return
         val desc = getTypeDescription(type, value)
@@ -94,61 +108,64 @@ object StateWrapperHelper {
         }
     }
 
-    private fun <T> copyParcelableArray(array: Array<Parcelable?>?, targetClass: Class<out Array<T>?>): Array<T>? {
-        return array?.let { Arrays.copyOf(it, it.size, targetClass) }
-    }
+    private fun <T> copyParcelableArray(
+        array: Array<Parcelable?>?,
+        targetClass: Class<out Array<T>?>
+    ): Array<T>? = array?.let { Arrays.copyOf(it, it.size, targetClass) }
 
-    private fun isSupported(desc: TypeDescription): Boolean {
-        return when {
-            desc.isArrayList -> {
-                desc.type == null ||
-                    desc.type == Int::class.java ||
-                    desc.type == String::class.java ||
-                    desc.type == CharSequence::class.java ||
-                    desc.type == Parcelable::class.java
-            }
-            desc.isArray -> {
-                desc.type == null ||
-                    desc.type == Boolean::class.java ||
-                    desc.type == Int::class.java ||
-                    desc.type == Long::class.java ||
-                    desc.type == Float::class.java ||
-                    desc.type == Double::class.java ||
-                    desc.type == Byte::class.java ||
-                    desc.type == Short::class.java ||
-                    desc.type == Char::class.java ||
-                    desc.type == String::class.java ||
-                    desc.type == CharSequence::class.java ||
-                    desc.type == Serializable::class.java ||
-                    desc.type == Parcelable::class.java
-            }
-            else -> {
+    /**
+     * Checks if the type could be read and written to [Bundle]. Basically, most of the types that
+     * [Bundle] can handle is supported.
+     */
+    private fun isSupported(desc: TypeDescription): Boolean = when {
+        desc.isArrayList -> {
+            desc.type == null ||
+                desc.type == Int::class.java ||
+                desc.type == String::class.java ||
+                desc.type == CharSequence::class.java ||
+                desc.type == Parcelable::class.java
+        }
+        desc.isArray -> {
+            desc.type == null ||
                 desc.type == Boolean::class.java ||
-                    desc.type == java.lang.Boolean.TYPE ||
-                    desc.type == java.lang.Boolean::class.java ||
-                    desc.type == Int::class.java ||
-                    desc.type == Integer.TYPE ||
-                    desc.type == java.lang.Integer::class.java ||
-                    desc.type == Long::class.java ||
-                    desc.type == java.lang.Long.TYPE ||
-                    desc.type == java.lang.Long::class.java ||
-                    desc.type == Float::class.java ||
-                    desc.type == java.lang.Float.TYPE ||
-                    desc.type == java.lang.Float::class.java ||
-                    desc.type == Double::class.java ||
-                    desc.type == java.lang.Double.TYPE ||
-                    desc.type == java.lang.Double::class.java ||
-                    desc.type == Byte::class.java ||
-                    desc.type == Short::class.java ||
-                    desc.type == Char::class.java ||
-                    desc.type == String::class.java ||
-                    desc.type == CharSequence::class.java ||
-                    desc.type == Serializable::class.java ||
-                    desc.type == Parcelable::class.java ||
-                    desc.type == Bundle::class.java ||
-                    desc.type == SparseArray::class.java ||
-                    desc.type == ViewModelStore::class.java
-            }
+                desc.type == Int::class.java ||
+                desc.type == Long::class.java ||
+                desc.type == Float::class.java ||
+                desc.type == Double::class.java ||
+                desc.type == Byte::class.java ||
+                desc.type == Short::class.java ||
+                desc.type == Char::class.java ||
+                desc.type == String::class.java ||
+                desc.type == CharSequence::class.java ||
+                desc.type == Serializable::class.java ||
+                desc.type == Parcelable::class.java
+        }
+        else -> {
+            desc.type == Boolean::class.java ||
+                desc.type == java.lang.Boolean.TYPE ||
+                desc.type == java.lang.Boolean::class.java ||
+                desc.type == Int::class.java ||
+                desc.type == Integer.TYPE ||
+                desc.type == java.lang.Integer::class.java ||
+                desc.type == Long::class.java ||
+                desc.type == java.lang.Long.TYPE ||
+                desc.type == java.lang.Long::class.java ||
+                desc.type == Float::class.java ||
+                desc.type == java.lang.Float.TYPE ||
+                desc.type == java.lang.Float::class.java ||
+                desc.type == Double::class.java ||
+                desc.type == java.lang.Double.TYPE ||
+                desc.type == java.lang.Double::class.java ||
+                desc.type == Byte::class.java ||
+                desc.type == Short::class.java ||
+                desc.type == Char::class.java ||
+                desc.type == String::class.java ||
+                desc.type == CharSequence::class.java ||
+                desc.type == Serializable::class.java ||
+                desc.type == Parcelable::class.java ||
+                desc.type == Bundle::class.java ||
+                desc.type == SparseArray::class.java ||
+                desc.type == ViewModelStore::class.java
         }
     }
 
@@ -171,7 +188,8 @@ object StateWrapperHelper {
                 }
             }
             isArray -> {
-                innerType = type.componentType ?: ((value as Array<*>?)?.firstOrNull()?.javaClass ?: Any::class.java)
+                innerType = type.componentType
+                    ?: ((value as Array<*>?)?.firstOrNull()?.javaClass ?: Any::class.java)
 
                 when {
                     innerType == String::class.java -> String::class.java
@@ -197,7 +215,9 @@ object StateWrapperHelper {
         return TypeDescription(
             isArrayList,
             isArray,
-            declaredType == Serializable::class.java || declaredType == Parcelable::class.java || declaredType == Bundle::class.java,
+            declaredType == Serializable::class.java ||
+                declaredType == Parcelable::class.java ||
+                declaredType == Bundle::class.java,
             declaredType,
             innerType
         )

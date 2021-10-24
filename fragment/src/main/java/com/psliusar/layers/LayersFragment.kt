@@ -4,12 +4,20 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.CallSuper
 import androidx.annotation.IdRes
+import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 
 private const val SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS"
 
-abstract class LayersFragment : Fragment(), LayersHost {
+/**
+ * A [Fragment] implementing [LayersHost]. May be used as an isolated container to host Layers.
+ * Subclasses must specify an ID of default ViewGroup that will host the default stack of layers.
+ */
+abstract class LayersFragment(
+    @LayoutRes contentLayoutId: Int = 0
+) : Fragment(contentLayoutId), LayersHost {
 
     private var _layers: Layers? = null
     override val layers: Layers
@@ -54,7 +62,14 @@ abstract class LayersFragment : Fragment(), LayersHost {
         layers.destroy()
     }
 
-    fun onBackPressed(): Boolean = _layers?.onBackPressed() == true || _layers?.pop<Layer>() != null
+    /**
+     * A useful method to pop the stack of layers.
+     *
+     * @return true if the back press was handled. False if the stack is empty.
+     */
+    @CallSuper
+    open fun onBackPressed(): Boolean =
+        _layers?.onBackPressed() == true || _layers?.pop<Layer>() != null
 
     override fun <T : View> getView(viewId: Int): T = requireView().findViewById(viewId)
 

@@ -1,15 +1,19 @@
-package com.psliusar.layers
+package com.psliusar.layers.state
 
-import android.os.Bundle
 import androidx.lifecycle.ViewModelStore
-import com.psliusar.layers.binder.StateWrapper
+import com.psliusar.layers.Layer
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-class ViewModelStoreState : StateWrapper<ViewModelStore>(ViewModelStore::class.java), ReadWriteProperty<Layer, ViewModelStore?> {
+/**
+ * Reads and writes [ViewModelStore] into the state bundle of the [Layer].
+ */
+internal class ViewModelStoreState :
+    StateWrapper<ViewModelStore>(ViewModelStore::class.java),
+    ReadWriteProperty<Layer, ViewModelStore?> {
 
     override fun getValue(thisRef: Layer, property: KProperty<*>): ViewModelStore? {
-        val bundle = thisRef.stateOrArguments ?: Bundle.EMPTY
+        val bundle = thisRef.state
         return getValue(bundle, property.name)
     }
 
