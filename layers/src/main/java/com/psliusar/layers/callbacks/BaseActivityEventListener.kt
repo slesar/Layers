@@ -4,6 +4,9 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 
+/**
+ * Base implementation with empty methods. To reduce boilerplate code in implementations.
+ */
 abstract class BaseActivityEventListener : OnActivityEventListener {
 
     override fun onCreate(state: Bundle?) {}
@@ -32,9 +35,17 @@ abstract class BaseActivityEventListener : OnActivityEventListener {
 
     override fun onConfigurationChanged(newConfig: Configuration?) {}
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?): Boolean = false
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        intent: Intent?
+    ): Boolean = false
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {}
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {}
 
     override fun onTrimMemory(level: Int) {}
 

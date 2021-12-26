@@ -12,29 +12,10 @@ import java.util.ArrayList
 /**
  * General class that performs transitions between layers.
  */
-abstract class Transition<L : Layer> private constructor(
+abstract class Transition<L : Layer> internal constructor(
     internal val layers: Layers,
-    internal val stackEntry: StackEntry,
-    internal val index: Int
+    internal val stackEntry: StackEntry
 ) {
-
-    constructor(
-        layers: Layers,
-        layerClass: Class<L>
-    ) : this(
-        layers,
-        StackEntry(layerClass),
-        -1
-    )
-
-    constructor(
-        layers: Layers,
-        index: Int
-    ) : this(
-        layers,
-        layers.getStackEntryAt(index),
-        index
-    )
 
     /**
      * Indicates whether the transition has been started.
@@ -54,6 +35,11 @@ abstract class Transition<L : Layer> private constructor(
     }
 
     //region Builder arguments
+
+    /**
+     * The index of the Layer in stack.
+     */
+    open var index: Int = -1
 
     /**
      * Flag that controls whether the animation is enabled for current transition.
@@ -199,7 +185,9 @@ abstract class Transition<L : Layer> private constructor(
      * This method is called when the transition should be finished immediately. The final state
      * should be applied if the transition is still in progress.
      */
-    internal abstract fun fastForward(stack: ArrayList<StackEntry>)
+    internal open fun fastForward(stack: ArrayList<StackEntry>) {
+        animatorSet?.end()
+    }
 
     /**
      * Marks the end of the transition and starts next transition in queue in [Layers].

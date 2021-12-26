@@ -4,9 +4,12 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 
+/**
+ * Propagates all events to a set of listeners.
+ */
 class ActivityEventListeners : OnActivityEventListener {
 
-    private val listeners = mutableListOf<OnActivityEventListener>()
+    private val listeners = mutableSetOf<OnActivityEventListener>()
 
     fun addListener(listener: OnActivityEventListener) {
         listeners.add(listener)
@@ -100,7 +103,11 @@ class ActivityEventListeners : OnActivityEventListener {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         listeners.forEach {
             it.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }

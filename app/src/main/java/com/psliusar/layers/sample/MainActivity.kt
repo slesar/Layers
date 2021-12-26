@@ -11,14 +11,13 @@ import com.psliusar.layers.sample.screen.listener.ListenerLayer
 import com.psliusar.layers.sample.screen.save.SaveLayer
 import com.psliusar.layers.sample.screen.stack.StackLayer
 
-class MainActivity : LayersActivity() {
+class MainActivity : LayersActivity(R.layout.activity_main) {
 
     override val defaultContainer: ViewGroup
         get() = getView(R.id.container)
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
-        setContentView(R.layout.activity_main)
         if (state == null) {
             layers.add<HomeLayer> {
                 name = "Home"
@@ -31,8 +30,13 @@ class MainActivity : LayersActivity() {
             withLayer { setParameters(title, level) }
             name = "Stack$level"
             this.opaque = opaque
-            setInAnimation(R.anim.lower_out, R.anim.upper_in)
-            setOutAnimation(R.anim.upper_out, R.anim.lower_in)
+            if (opaque) {
+                setInAnimation(R.anim.lower_out, R.anim.upper_in)
+                setOutAnimation(R.anim.upper_out, R.anim.lower_in)
+            } else {
+                setInAnimation(0, R.anim.upper_in)
+                setOutAnimation(R.anim.upper_out, 0)
+            }
         }
     }
 
@@ -43,6 +47,12 @@ class MainActivity : LayersActivity() {
             this.opaque = opaque
             setInAnimation(R.anim.lower_out, R.anim.upper_in)
             setOutAnimation(R.anim.upper_out, R.anim.lower_in)
+        }
+    }
+
+    fun showCards() {
+        layers.add<CardsLayer> {
+            name = "Cards"
         }
     }
 

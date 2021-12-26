@@ -4,14 +4,19 @@ import android.os.Bundle
 import java.util.ArrayList
 
 /**
- * Transition removes [Layer] from the stack.
+ * Transition removes [Layer] from the stack at the given index. Removes from the top of the stack
+ * if the index is omitted.
  */
-internal class RemoveTransition<L : Layer> : Transition<L> {
-
-    /** Removes [Layer] from the stack at the given index */
-    constructor(layers: Layers, index: Int) : super(layers, index)
+internal class RemoveTransition<L : Layer>(
+    layers: Layers,
+    index: Int
+) : Transition<L>(layers, layers.getStackEntryAt(index)) {
 
     private var lowestVisibleLayer = -1
+
+    init {
+        this.index = index
+    }
 
     override var arguments: Bundle?
         get() = super.arguments
@@ -30,29 +35,31 @@ internal class RemoveTransition<L : Layer> : Transition<L> {
     }
 
     override fun onTransition() {
-        // TODO remove layer with custom index
-
         stackEntry.inTransition = true
 
         val stackSize = layers.stackSize
         lowestVisibleLayer = layers.getLowestVisibleLayer()
-
-        if (index >= lowestVisibleLayer) {
-            // Mark layers for transition
-            setTransitionState(lowestVisibleLayer)
-
-            // Make sure we have all required views in layout
-            layers.ensureViews()
-
-            // Animate layers
-            for (i in lowestVisibleLayer until stackSize) {
-                val layer = layers.getStackEntryAt(i).layerInstance ?: throw IllegalStateException("Layer instance must exist")
-                val anim = if (i == index) AnimationType.ANIMATION_UPPER_OUT else AnimationType.ANIMATION_LOWER_IN
-                animateLayer(layer, anim)
-            }
-        }
-
         stackEntry.valid = false
+
+        if (index < lowestVisibleLayer) return
+
+        // Mark layers for transition
+        setTransitionState(lowestVisibleLayer)
+
+        // Make sure we have all required views in layout for animation
+        layers.ensureViews()
+
+        // Animate layers
+        for (i in lowestVisibleLayer until stackSize) {
+            val layer = layers.getStackEntryAt(i).layerInstance
+                ?: throw IllegalStateException("Layer instance must exist")
+            val anim = when {
+                i == index -> AnimationType.ANIMATION_UPPER_OUT
+                i < index -> AnimationType.ANIMATION_LOWER_IN
+                else -> continue
+            }
+            animateLayer(layer, anim)
+        }
     }
 
     override fun onAfterTransition() {
@@ -63,8 +70,8 @@ internal class RemoveTransition<L : Layer> : Transition<L> {
     }
 
     override fun fastForward(stack: ArrayList<StackEntry>) {
-        if (!started) {
-            stack.removeAt(index) // size should be checked earlier
-        }
+        if (started) return
+
+        stack.removeAt(index) // size should be checked earlier
     }
 }

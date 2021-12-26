@@ -313,6 +313,11 @@ class Layers @VisibleForTesting constructor(
      */
     fun indexOf(name: String?): Int = layerStack.indexOfLast { it.name == name }
 
+    /**
+     * Looks up the given Layer's index in the stack.
+     */
+    fun indexOf(layer: Layer): Int = layerStack.indexOfLast { it.layerInstance === layer }
+
     //endregion
 
     //region Lifecycle
@@ -567,8 +572,12 @@ class Layers @VisibleForTesting constructor(
     /**
      * Adds an entry to the stack.
      */
-    internal fun commitStackEntry(entry: StackEntry) {
-        layerStack.add(entry)
+    internal fun addStackEntry(entry: StackEntry, index: Int = -1) {
+        if (index == -1) {
+            layerStack.add(entry)
+        } else {
+            layerStack.add(index, entry)
+        }
         ensureViews()
     }
 

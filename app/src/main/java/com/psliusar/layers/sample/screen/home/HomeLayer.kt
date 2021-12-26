@@ -16,6 +16,9 @@ class HomeLayer : Layer(R.layout.screen_home) {
         getView<View>(R.id.home_stack).setOnClickListener {
             mainActivity.addToStack("Level", 1, true)
         }
+        getView<View>(R.id.home_cards).setOnClickListener {
+            mainActivity.showCards()
+        }
         getView<View>(R.id.home_children).setOnClickListener {
             mainActivity.showChildrenLayers()
         }

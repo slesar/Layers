@@ -110,9 +110,9 @@ class LayersTest {
 
     @Test
     fun add_transparent() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", false)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", false)
-        val layer3 = addLayer(MockedLayer::class.java, null, "Test Layer 3", false)
+        val layer1 = addLayer("Test Layer 1", false)
+        val layer2 = addLayer("Test Layer 2", false)
+        val layer3 = addLayer("Test Layer 3", false)
 
         verify(container, times(0)).removeView(any())
 
@@ -131,10 +131,10 @@ class LayersTest {
 
     @Test
     fun add_opaque() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", false)
-        val layer3 = addLayer(MockedLayer::class.java, null, "Test Layer 3", true)
-        val layer4 = addLayer(MockedLayer::class.java, null, "Test Layer 4", false)
+        val layer1 = addLayer("Test Layer 1", true)
+        val layer2 = addLayer("Test Layer 2", false)
+        val layer3 = addLayer("Test Layer 3", true)
+        val layer4 = addLayer("Test Layer 4", false)
 
         assertNull(layer1.view)
         assertFalse(layer1.isAttached)
@@ -150,10 +150,10 @@ class LayersTest {
 
     @Test
     fun replace_withTransparent() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", false)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", false)
-        val layer3 = addLayer(MockedLayer::class.java, null, "Test Layer 3", false)
-        val layer4 = addLayer(MockedLayer::class.java, null, "Test Layer 4", false)
+        val layer1 = addLayer("Test Layer 1", false)
+        val layer2 = addLayer("Test Layer 2", false)
+        val layer3 = addLayer("Test Layer 3", false)
+        val layer4 = addLayer("Test Layer 4", false)
         assertEquals(4, layers.stackSize)
 
         val replacement = replaceLayer(MockedLayer::class.java, null, "Replacement Layer", false)
@@ -172,8 +172,8 @@ class LayersTest {
 
     @Test
     fun replace_withOpaque() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", true)
+        val layer1 = addLayer("Test Layer 1", true)
+        val layer2 = addLayer("Test Layer 2", true)
         assertEquals(2, layers.stackSize)
 
         val replacement = replaceLayer(MockedLayer::class.java, null, "Replacement Layer", true)
@@ -190,10 +190,10 @@ class LayersTest {
 
     @Test
     fun replace_withOpaqueInStack() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", false)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", true)
-        val layer3 = addLayer(MockedLayer::class.java, null, "Test Layer 3", false)
-        val layer4 = addLayer(MockedLayer::class.java, null, "Test Layer 4", false)
+        val layer1 = addLayer("Test Layer 1", false)
+        val layer2 = addLayer("Test Layer 2", true)
+        val layer3 = addLayer("Test Layer 3", false)
+        val layer4 = addLayer("Test Layer 4", false)
         assertEquals(4, layers.stackSize)
 
         val replacement = replaceLayer(MockedLayer::class.java, null, "Replacement Layer", true)
@@ -212,10 +212,10 @@ class LayersTest {
 
     @Test
     fun remove_byIndex() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", true)
-        val layer3 = addLayer(MockedLayer::class.java, null, "Test Layer 3", true)
-        val layer4 = addLayer(MockedLayer::class.java, null, "Test Layer 4", true)
+        val layer1 = addLayer("Test Layer 1", true)
+        val layer2 = addLayer("Test Layer 2", true)
+        val layer3 = addLayer("Test Layer 3", true)
+        val layer4 = addLayer("Test Layer 4", true)
         assertEquals(4, layers.stackSize)
 
         layers.remove<Layer>(2)
@@ -226,15 +226,15 @@ class LayersTest {
 
     @Test
     fun remove_byInstance() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", false)
+        val layer1 = addLayer("Test Layer 1", false)
         layers.remove(layer1)
 
         assertEquals(0, layers.stackSize)
 
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", false)
-        val layer3 = addLayer(MockedLayer::class.java, null, "Test Layer 3", true)
-        val layer4 = addLayer(MockedLayer::class.java, null, "Test Layer 4", false)
-        val layer5 = addLayer(MockedLayer::class.java, null, "Test Layer 5", false)
+        val layer2 = addLayer("Test Layer 2", false)
+        val layer3 = addLayer("Test Layer 3", true)
+        val layer4 = addLayer("Test Layer 4", false)
+        val layer5 = addLayer("Test Layer 5", false)
         layers.remove(layer2)
         layers.remove(layer4)
 
@@ -254,10 +254,10 @@ class LayersTest {
 
     @Test
     fun pop_transparent() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", false)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", false)
-        val layer3 = addLayer(MockedLayer::class.java, null, "Test Layer 3", false)
-        val layer4 = addLayer(MockedLayer::class.java, null, "Test Layer 4", false)
+        val layer1 = addLayer("Test Layer 1", false)
+        val layer2 = addLayer("Test Layer 2", false)
+        val layer3 = addLayer("Test Layer 3", false)
+        val layer4 = addLayer("Test Layer 4", false)
         assertEquals(4, layers.stackSize)
 
         val pop1 = layers.pop<Layer>()
@@ -278,10 +278,10 @@ class LayersTest {
 
     @Test
     fun pop_opaque() {
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", true)
-        val layer3 = addLayer(MockedLayer::class.java, null, "Test Layer 3", true)
-        val layer4 = addLayer(MockedLayer::class.java, null, "Test Layer 4", true)
+        val layer1 = addLayer("Test Layer 1", true)
+        val layer2 = addLayer("Test Layer 2", true)
+        val layer3 = addLayer("Test Layer 3", true)
+        val layer4 = addLayer("Test Layer 4", true)
         assertEquals(4, layers.stackSize)
 
         val pop1 = layers.pop<Layer>()
@@ -303,10 +303,10 @@ class LayersTest {
     @Test
     fun popLayersTo_transparent() {
         // Pop to Layer 2, inclusive
-        val layer1 = addLayer(MockedLayer::class.java, null, "Test Layer 1", false)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", false)
-        addLayer(MockedLayer::class.java, null, "Test Layer 3", false)
-        addLayer(MockedLayer::class.java, null, "Test Layer 4", false)
+        val layer1 = addLayer("Test Layer 1", false)
+        val layer2 = addLayer("Test Layer 2", false)
+        addLayer("Test Layer 3", false)
+        addLayer("Test Layer 4", false)
 
         val popped2 = layers.popLayersTo<Layer>("Test Layer 2", true)
         assertEquals(1, layers.stackSize)
@@ -314,9 +314,9 @@ class LayersTest {
         assertSame(layer1, layers.peek())
 
         // Pop to Layer 6, not inclusive
-        val layer5 = addLayer(MockedLayer::class.java, null, "Test Layer 5", false)
-        val layer6 = addLayer(MockedLayer::class.java, null, "Test Layer 6", false)
-        val layer7 = addLayer(MockedLayer::class.java, null, "Test Layer 7", false)
+        val layer5 = addLayer("Test Layer 5", false)
+        val layer6 = addLayer("Test Layer 6", false)
+        val layer7 = addLayer("Test Layer 7", false)
         assertEquals(4, layers.stackSize)
 
         val popped7 = layers.popLayersTo<Layer>("Test Layer 6", false)
@@ -325,8 +325,8 @@ class LayersTest {
         assertSame(layer6, layers.peek())
 
         // Pop with name == null, not inclusive
-        addLayer(MockedLayer::class.java, null, "Test Layer 8", false)
-        addLayer(MockedLayer::class.java, null, "Test Layer 9", false)
+        addLayer("Test Layer 8", false)
+        addLayer("Test Layer 9", false)
         assertEquals(5, layers.stackSize)
 
         val popped5 = layers.popLayersTo<Layer>(null, false)
@@ -335,8 +335,8 @@ class LayersTest {
         assertSame(layer1, layers.peek())
 
         // Pop with name == null, inclusive
-        addLayer(MockedLayer::class.java, null, "Test Layer 10", false)
-        addLayer(MockedLayer::class.java, null, "Test Layer 11", false)
+        addLayer("Test Layer 10", false)
+        addLayer("Test Layer 11", false)
         assertEquals(3, layers.stackSize)
 
         val popped1 = layers.popLayersTo<Layer>(null, true)
@@ -361,10 +361,10 @@ class LayersTest {
 
     @Test
     fun clear() {
-        addLayer(MockedLayer::class.java, null, "Test Layer 1", false)
-        addLayer(MockedLayer::class.java, null, "Test Layer 2", false)
-        addLayer(MockedLayer::class.java, null, "Test Layer 3", true)
-        addLayer(MockedLayer::class.java, null, "Test Layer 4", true)
+        addLayer("Test Layer 1", false)
+        addLayer("Test Layer 2", false)
+        addLayer("Test Layer 3", true)
+        addLayer("Test Layer 4", true)
         assertEquals(4, layers.stackSize)
 
         verify(container, times(4)).addView(any(), anyInt())
@@ -376,8 +376,8 @@ class LayersTest {
 
     @Test
     fun peek() {
-        addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
-        addLayer(MockedLayer::class.java, null, "Test Layer 2", true)
+        addLayer("Test Layer 1", true)
+        addLayer("Test Layer 2", true)
 
         val pickedLayer = layers.peek<Layer>()
         assertNotNull(pickedLayer)
@@ -391,9 +391,9 @@ class LayersTest {
 
     @Test
     fun find() {
-        addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
-        val layer2 = addLayer(MockedLayer::class.java, null, "Test Layer 2", true)
-        addLayer(MockedLayer::class.java, null, "Test Layer 3", true)
+        addLayer("Test Layer 1", true)
+        val layer2 = addLayer("Test Layer 2", true)
+        addLayer("Test Layer 3", true)
 
         assertNotNull(layers.find("Test Layer 2"))
         assertSame(layer2, layers.find("Test Layer 2"))
@@ -471,7 +471,7 @@ class LayersTest {
     @Test
     fun createLayer_new() {
         // New Layer, without saved state
-        val layer = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
+        val layer = addLayer("Test Layer 1", true)
 
         assertNotNull(layer)
         assertEquals(1, layer.onCreateCalled)
@@ -485,7 +485,7 @@ class LayersTest {
     @Test
     fun createView() {
         // New Layer, without saved state
-        val layer = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
+        val layer = addLayer("Test Layer 1", true)
 
         assertNotNull(layer)
         assertEquals(1, layer.onCreateViewCalled)
@@ -515,7 +515,7 @@ class LayersTest {
     @Test
     fun destroyView() {
         // Delete permanently
-        val layer = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
+        val layer = addLayer("Test Layer 1", true)
         val view = layer.view
         layers.remove(layer)
 
@@ -540,7 +540,7 @@ class LayersTest {
     @Test
     fun destroyLayer() {
         // Delete permanently
-        val layer = addLayer(MockedLayer::class.java, null, "Test Layer 1", true)
+        val layer = addLayer("Test Layer 1", true)
 
         layers.remove(layer)
 
@@ -599,13 +599,11 @@ class LayersTest {
         return layers.peek()!!
     }
 
-    private fun <L : Layer> addLayer(
-        layerClass: Class<L>,
-        arguments: Bundle?,
+    private fun addLayer(
         name: String?,
         opaque: Boolean
-    ): L {
-        return addLayer(layers, layerClass, arguments, name, opaque)
+    ): MockedLayer {
+        return addLayer(layers, MockedLayer::class.java, null, name, opaque)
     }
 
     private fun <L : Layer> replaceLayer(

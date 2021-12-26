@@ -3,39 +3,45 @@ package com.psliusar.layers
 import java.util.ArrayList
 
 /**
- * Transition adds [Layer] to the stack.
+ * Transition adds [Layer] to the stack at the given index. Adds to the top of the stack if
+ * the index is omitted.
  */
-internal class AddTransition<L : Layer> : Transition<L> {
-
-    /** Adds [Layer] to top of the stack */
-    constructor(layers: Layers, layerClass: Class<L>) : super(layers, layerClass)
-
-    /** Adds [Layer] at the given index to the stack */
-    constructor(layers: Layers, index: Int) : super(layers, index)
+internal class AddTransition<L : Layer>(
+    layers: Layers,
+    layerClass: Class<L>
+) : Transition<L>(layers, StackEntry(layerClass)) {
 
     private var lowestVisibleLayer = -1
 
     override fun onTransition() {
-        // TODO add layer with custom index
-
         // Add a new layer first
         stackEntry.inTransition = true
-        layers.commitStackEntry(stackEntry)
+        layers.addStackEntry(stackEntry, index)
 
         val stackSize = layers.stackSize
+        val insertedIndex = if (index == -1) {
+            stackSize - 1
+        } else {
+            index
+        }
+
         lowestVisibleLayer = layers.getLowestVisibleLayer()
+        // No animations for invisible changes
+        if (lowestVisibleLayer < 0 || insertedIndex < lowestVisibleLayer) return
 
         // Mark layers for transition
         setTransitionState(lowestVisibleLayer)
 
-        if (lowestVisibleLayer >= 0) {
-            for (i in lowestVisibleLayer until stackSize) {
-                val layer = layers.getStackEntryAt(i).layerInstance
-                    ?: throw IllegalStateException("Layer instance must exist")
-                val anim = if (i == stackSize - 1)
-                    AnimationType.ANIMATION_UPPER_IN else AnimationType.ANIMATION_LOWER_OUT
-                animateLayer(layer, anim)
+        // Animate Layers
+        for (i in lowestVisibleLayer until stackSize) {
+            val layer = layers.getStackEntryAt(i).layerInstance
+                ?: throw IllegalStateException("Layer instance must exist")
+            val anim = when {
+                i == insertedIndex -> AnimationType.ANIMATION_UPPER_IN // New Layer
+                i > insertedIndex -> continue // Do not animate Layers above the inserted one
+                else -> AnimationType.ANIMATION_LOWER_OUT // Existing Layers below
             }
+            animateLayer(layer, anim)
         }
     }
 
@@ -46,8 +52,12 @@ internal class AddTransition<L : Layer> : Transition<L> {
     }
 
     override fun fastForward(stack: ArrayList<StackEntry>) {
-        if (!started) {
+        if (started) return
+
+        if (index == -1) {
             stack.add(stackEntry)
+        } else {
+            stack.add(index, stackEntry)
         }
     }
 }

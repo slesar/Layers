@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/stack_container"
+    android:layout_width="match_parent"
+    android:layout_height="96dp"
+    android:layout_marginBottom="-20dp"
+    android:orientation="horizontal"
+    android:background="@drawable/card"
+    android:paddingLeft="@dimen/horizontal_margin"
+    android:paddingTop="@dimen/vertical_margin"
+    android:paddingRight="@dimen/horizontal_margin"
+    android:paddingBottom="@dimen/vertical_margin"
+    android:clickable="true">
+
+    <TextView
+        android:id="@+id/card_title"
+        android:layout_width="0dp"
+        android:layout_height="36dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="18dp"
+        android:gravity="center_vertical"
+        android:textSize="@dimen/text_medium"
+        android:textStyle="bold"
+        tools:text="title"/>
+
+    <ImageButton
+        android:id="@+id/card_replace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="12dp"
+        android:padding="6dp"
+        android:src="@drawable/ic_refresh"
+        app:tint="#666"
+        android:background="@null"/>
+
+    <ImageButton
+        android:id="@+id/card_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:src="@drawable/ic_delete"
+        app:tint="#666"
+        android:background="@null"/>
+
+</LinearLayout>

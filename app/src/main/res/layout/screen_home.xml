@@ -23,6 +23,12 @@
         android:text="Stack demo"/>
 
     <Button
+        android:id="@+id/home_cards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cards demo"/>
+
+    <Button
         android:id="@+id/home_children"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

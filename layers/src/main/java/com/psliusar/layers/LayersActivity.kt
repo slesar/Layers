@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
+import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import com.psliusar.layers.callbacks.ActivityEventListeners
 import com.psliusar.layers.callbacks.OnActivityEventListener
@@ -16,7 +17,9 @@ private const val SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS"
 /**
  * An [AppCompatActivity] that implements [LayersHost].
  */
-abstract class LayersActivity : AppCompatActivity(), LayersHost {
+abstract class LayersActivity(
+    @LayoutRes contentLayoutId: Int = 0
+) : AppCompatActivity(contentLayoutId), LayersHost {
 
     override val layers: Layers
         get() {
