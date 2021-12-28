@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.annotation.AnimRes
 import androidx.annotation.LayoutRes
 import com.psliusar.layers.animation.SimpleAnimation
-import java.util.ArrayList
 
 /**
  * General class that performs transitions between layers.
@@ -185,7 +184,7 @@ abstract class Transition<L : Layer> internal constructor(
      * This method is called when the transition should be finished immediately. The final state
      * should be applied if the transition is still in progress.
      */
-    internal open fun fastForward(stack: ArrayList<StackEntry>) {
+    internal open fun fastForward() {
         animatorSet?.end()
     }
 

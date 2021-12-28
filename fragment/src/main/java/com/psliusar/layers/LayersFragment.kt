@@ -8,6 +8,7 @@ import androidx.annotation.CallSuper
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 
 private const val SAVED_STATE_LAYERS = "LAYERS.SAVED_STATE_LAYERS"
 
@@ -31,6 +32,9 @@ abstract class LayersFragment(
 
     override val activity: Activity
         get() = requireActivity()
+
+    override val activityLifecycle: Lifecycle
+        get() = requireActivity().lifecycle
 
     override val parentLayer: Layer? = null
 

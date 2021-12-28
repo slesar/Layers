@@ -1,9 +1,7 @@
 package com.psliusar.layers.sample.screen.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import com.psliusar.layers.LayersFragment
 import com.psliusar.layers.sample.R
 import com.psliusar.layers.sample.screen.child.ChildLayer
@@ -11,13 +9,9 @@ import com.psliusar.layers.sample.screen.child.ChildLayer
 /**
  * Logic is copied from [com.psliusar.layers.sample.screen.child.ChildrenContainerLayer].
  */
-class FragmentLayer : LayersFragment() {
+class FragmentLayer : LayersFragment(R.layout.screen_children_container) {
 
     override val defaultContainerId: Int = R.id.children_container
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.screen_children_container, container, false)
-    }
 
     override fun onViewCreated(view: View, state: Bundle?) {
         super.onViewCreated(view, state)

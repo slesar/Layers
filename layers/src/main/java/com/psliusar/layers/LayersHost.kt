@@ -4,6 +4,7 @@ import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
+import androidx.lifecycle.Lifecycle
 
 /**
  * Layers manager works at the special host that must meet some requirements. This interface
@@ -24,13 +25,17 @@ interface LayersHost {
 
     /**
      * The [Activity].
-     * Important: the Activity should implement LifecycleOwner interface.
      */
     val activity: Activity
 
     /**
+     * A [Lifecycle] of the hosting [Activity].
+     */
+    val activityLifecycle: Lifecycle
+
+    /**
      * If the current host is a [Layer], it will be returned. If the host is not a [Layer], then
-     * `null` will be returned. Layers can use this property to communicate with layers up in
+     * `null` will be returned. Layers can use this property to communicate with other layers up in
      * hierarchy.
      */
     val parentLayer: Layer?

@@ -65,6 +65,9 @@ abstract class Layer(
     override val activity: Activity
         get() = host.activity
 
+    override val activityLifecycle: Lifecycle
+        get() = host.activityLifecycle
+
     override val parentLayer: Layer?
         get() = host as? Layer
 
@@ -153,9 +156,6 @@ abstract class Layer(
      */
     protected val layoutInflater: LayoutInflater
         get() = delegate?.layoutInflater ?: host.activity.layoutInflater
-
-    private val activityLifecycle: Lifecycle
-        get() = (host.activity as LifecycleOwner).lifecycle
 
     private val activityLifecycleObserver = LifecycleEventObserver { _, event ->
         when (event) {

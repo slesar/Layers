@@ -67,6 +67,7 @@ class Layers @VisibleForTesting constructor(
     private val layerStack: ArrayList<StackEntry>
     private var container: ViewGroup? = null
     private var layerGroup: SparseArray<Layers>? = null
+    private val listeners = mutableSetOf<LayersEventListener>()
 
     init {
         isViewPaused = savedState != null
@@ -124,6 +125,26 @@ class Layers @VisibleForTesting constructor(
      */
     fun pauseView() {
         isViewPaused = true
+    }
+
+    /**
+     * Registers a listener.
+     */
+    fun addLayersEventListener(listener: LayersEventListener) {
+        listeners.add(listener)
+    }
+
+    /**
+     * Un-registers a listener.
+     */
+    fun removeLayersEventListener(listener: LayersEventListener) {
+        listeners.remove(listener)
+    }
+
+    private fun notifyStackChanged() {
+        listeners.forEach {
+            it.onStackChanged(this)
+        }
     }
 
     //region Public layer operations
@@ -248,6 +269,8 @@ class Layers @VisibleForTesting constructor(
 
         resumeView()
 
+        notifyStackChanged()
+
         @Suppress("UNCHECKED_CAST")
         return lastEntry?.layerInstance as L?
     }
@@ -258,10 +281,10 @@ class Layers @VisibleForTesting constructor(
      * @return true if the event has been handled, false if the caller should handle the event.
      */
     fun onBackPressed(): Boolean {
-        return layerStack.lastOrNull {
-            val layer = it.layerInstance
-            it.valid && layer != null && layer.onBackPressed()
-        } != null
+        return layerStack
+            .lastOrNull { it.valid && it.layerInstance != null }
+            ?.layerInstance
+            ?.onBackPressed() == true
     }
 
     /**
@@ -282,6 +305,8 @@ class Layers @VisibleForTesting constructor(
         layerStack.clear()
 
         resumeView()
+
+        notifyStackChanged()
 
         return size
     }
@@ -331,7 +356,7 @@ class Layers @VisibleForTesting constructor(
         val outState = Bundle()
 
         transitions.forEach {
-            it.fastForward(layerStack)
+            it.fastForward()
         }
 
         layerStack.filterTo(ArrayList()) { it.valid }.takeIf { it.size > 0 }?.let { stack ->
@@ -536,7 +561,7 @@ class Layers @VisibleForTesting constructor(
         if (saveState) {
             saveLayerState(entry)
         }
-        entry.layerInstance?.destroy(!saveState) // XXX
+        entry.layerInstance?.destroy(!saveState)
     }
 
     //endregion
@@ -551,7 +576,12 @@ class Layers @VisibleForTesting constructor(
     internal fun addTransition(t: Transition<*>) {
         transitions.offer(t)
         if (transitions.size == 1) {
-            transitions.peek().start()
+            val transition = transitions.first()
+            transition.start()
+
+            listeners.forEach {
+                it.onTransitionStarted(this, transition)
+            }
         }
     }
 
@@ -559,9 +589,18 @@ class Layers @VisibleForTesting constructor(
      * Starts next transition in the list.
      */
     internal fun nextTransition() {
-        transitions.poll()
+        val t = transitions.removeFirst()
+        listeners.forEach {
+            it.onTransitionFinished(this, t)
+        }
+
         if (!transitions.isEmpty()) {
-            transitions.peek().start()
+            val transition = transitions.first()
+            transition.start()
+
+            listeners.forEach {
+                it.onTransitionStarted(this, transition)
+            }
         }
     }
 
@@ -571,14 +610,43 @@ class Layers @VisibleForTesting constructor(
 
     /**
      * Adds an entry to the stack.
+     *
+     * @param entry the entry to add.
+     * @param index the index to put the entry at. Optional. The entry will be added at the top of
+     * the stack when [index] == -1 or omitted.
+     * @param views the flag saying whether it is required to create views in stack after the
+     * operation.
      */
-    internal fun addStackEntry(entry: StackEntry, index: Int = -1) {
+    internal fun addStackEntry(entry: StackEntry, index: Int = -1, views: Boolean = true) {
         if (index == -1) {
             layerStack.add(entry)
         } else {
             layerStack.add(index, entry)
         }
-        ensureViews()
+        if (views) {
+            ensureViews()
+        }
+        notifyStackChanged()
+    }
+
+    /**
+     * Removes an entry from the stack.
+     *
+     * @param index the index to remove the entry at. Optional. The entry will be removed from the
+     * top of the stack when [index] == -1 or omitted.
+     * @param views the flag saying whether it is required to create views in stack after the
+     * operation.
+     */
+    internal fun removeStackEntry(index: Int, views: Boolean = true) {
+        if (index == -1) {
+            layerStack.removeLastOrNull()
+        } else {
+            layerStack.removeAt(index)
+        }
+        if (views) {
+            ensureViews()
+        }
+        notifyStackChanged()
     }
 
     /**
@@ -601,6 +669,7 @@ class Layers @VisibleForTesting constructor(
         val layer = layerStack.removeAt(index).layerInstance as L?
 
         ensureViews()
+        notifyStackChanged()
 
         return layer
     }
@@ -683,4 +752,25 @@ class Layers @VisibleForTesting constructor(
     }
 
     //endregion
+
+    /**
+     * An interface used to watch for different events inside [Layers].
+     */
+    interface LayersEventListener {
+
+        /**
+         * Gets called when transition is started.
+         */
+        fun onTransitionStarted(layers: Layers, transition: Transition<*>)
+
+        /**
+         * Gets called when the transition has just finished.
+         */
+        fun onTransitionFinished(layers: Layers, transition: Transition<*>)
+
+        /**
+         * Gets called any time the stack of Layers changes.
+         */
+        fun onStackChanged(layers: Layers)
+    }
 }

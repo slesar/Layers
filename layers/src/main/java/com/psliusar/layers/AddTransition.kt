@@ -1,7 +1,5 @@
 package com.psliusar.layers
 
-import java.util.ArrayList
-
 /**
  * Transition adds [Layer] to the stack at the given index. Adds to the top of the stack if
  * the index is omitted.
@@ -51,13 +49,9 @@ internal class AddTransition<L : Layer>(
         }
     }
 
-    override fun fastForward(stack: ArrayList<StackEntry>) {
+    override fun fastForward() {
         if (started) return
 
-        if (index == -1) {
-            stack.add(stackEntry)
-        } else {
-            stack.add(index, stackEntry)
-        }
+        layers.addStackEntry(stackEntry, index, false)
     }
 }

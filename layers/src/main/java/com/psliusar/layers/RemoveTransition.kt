@@ -1,7 +1,6 @@
 package com.psliusar.layers
 
 import android.os.Bundle
-import java.util.ArrayList
 
 /**
  * Transition removes [Layer] from the stack at the given index. Removes from the top of the stack
@@ -69,9 +68,9 @@ internal class RemoveTransition<L : Layer>(
         layers.removeLayerAt<Layer>(index)
     }
 
-    override fun fastForward(stack: ArrayList<StackEntry>) {
+    override fun fastForward() {
         if (started) return
 
-        stack.removeAt(index) // size should be checked earlier
+        layers.removeStackEntry(index, false) // size should be checked earlier
     }
 }

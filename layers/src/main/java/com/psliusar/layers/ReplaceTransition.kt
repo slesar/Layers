@@ -1,7 +1,5 @@
 package com.psliusar.layers
 
-import java.util.ArrayList
-
 /**
  * Transition replaces [Layer] by the given index in the stack. Replaces Layer at the top of the
  * stack if the index is omitted.
@@ -63,15 +61,10 @@ internal class ReplaceTransition<L : Layer>(
         }
     }
 
-    override fun fastForward(stack: ArrayList<StackEntry>) {
+    override fun fastForward() {
         if (started) return
 
-        if (index == -1) {
-            stack.removeLastOrNull()
-            stack.add(stackEntry)
-        } else {
-            stack.removeAt(index)
-            stack.add(index, stackEntry)
-        }
+        layers.removeStackEntry(index, false)
+        layers.addStackEntry(stackEntry, index, false)
     }
 }

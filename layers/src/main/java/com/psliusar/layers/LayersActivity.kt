@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import com.psliusar.layers.callbacks.ActivityEventListeners
 import com.psliusar.layers.callbacks.OnActivityEventListener
 
@@ -32,6 +33,9 @@ abstract class LayersActivity(
 
     override val activity: Activity
         get() = this
+
+    override val activityLifecycle: Lifecycle
+        get() = lifecycle
 
     override val parentLayer: Layer?
         get() = null
